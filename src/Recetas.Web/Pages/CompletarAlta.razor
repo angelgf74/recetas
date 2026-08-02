@@ -1,0 +1,90 @@
+@page "/registro/completar"
+@using System.ComponentModel.DataAnnotations
+@using Recetas.Contratos.Registro
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+
+<PageTitle>Elegir contraseña · Recetas</PageTitle>
+
+<h1>Elige tu contraseña</h1>
+
+@if (string.IsNullOrWhiteSpace(Token))
+{
+    <div class="aviso aviso-error" role="alert">
+        Este enlace no es válido. Vuelve a <a href="/registro">pedir el alta</a>.
+    </div>
+}
+else if (_completado)
+{
+    <div class="aviso aviso-exito" role="status">
+        Cuenta creada. Ya puedes <a href="/sesion">iniciar sesión</a>.
+    </div>
+}
+else
+{
+    <p>Es el último paso: elige la contraseña con la que entrarás a partir de ahora.</p>
+
+    @if (_resultado is { Correcta: false })
+    {
+        <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
+    }
+
+    <EditForm Model="_formulario" OnValidSubmit="EnviarAsync" FormName="completar-alta">
+        <DataAnnotationsValidator />
+
+        <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <InputText id="contrasena" @bind-Value="_formulario.Contrasena" type="password"
+                       autocomplete="new-password" disabled="@_enviando" />
+            <ValidationMessage For="() => _formulario.Contrasena" />
+            <p class="ayuda">
+                Al menos @PeticionDeCompletarRegistro.LongitudMinimaDeContrasena caracteres.
+                Una frase que recuerdes protege más que una palabra corta con símbolos.
+            </p>
+        </div>
+
+        <button type="submit" class="boton" disabled="@_enviando">
+            @(_enviando ? "Creando la cuenta…" : "Crear mi cuenta")
+        </button>
+    </EditForm>
+}
+
+@code {
+    private readonly Formulario _formulario = new();
+    private ResultadoDeLlamada? _resultado;
+    private bool _enviando;
+    private bool _completado;
+
+    /// <summary>
+    /// Llega en la URL del enlace del correo. Es lo único que viaja por ahí:
+    /// la contraseña se envía después, en el cuerpo del POST.
+    /// </summary>
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "token")]
+    public string? Token { get; set; }
+
+    private async Task EnviarAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            return;
+        }
+
+        _enviando = true;
+        _resultado = null;
+
+        _resultado = await Api.CompletarAltaAsync(Token, _formulario.Contrasena);
+        _completado = _resultado.Correcta;
+
+        _enviando = false;
+    }
+
+    private sealed class Formulario
+    {
+        [Required(ErrorMessage = "Elige una contraseña.")]
+        [MinLength(PeticionDeCompletarRegistro.LongitudMinimaDeContrasena,
+            ErrorMessage = "La contraseña debe tener al menos {1} caracteres.")]
+        [MaxLength(PeticionDeCompletarRegistro.LongitudMaximaDeContrasena)]
+        public string Contrasena { get; set; } = string.Empty;
+    }
+}

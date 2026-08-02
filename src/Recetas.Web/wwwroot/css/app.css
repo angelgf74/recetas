@@ -1,0 +1,145 @@
+/* Estilos globales: solo reset, tipografía base y los elementos de formulario
+   que comparten todas las pantallas. Lo específico va en el .razor.css de cada una. */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--fuente);
+    font-size: var(--texto-base);
+    line-height: var(--interlineado);
+    color: var(--color-texto);
+    background-color: var(--color-fondo);
+    -webkit-text-size-adjust: 100%;
+}
+
+h1 {
+    font-size: var(--texto-titulo);
+    line-height: 1.25;
+    margin: 0 0 var(--espacio-3);
+}
+
+p {
+    margin: 0 0 var(--espacio-4);
+}
+
+a {
+    color: var(--color-acento);
+}
+
+/* Formularios ------------------------------------------------------------ */
+
+.campo {
+    display: block;
+    margin-bottom: var(--espacio-4);
+}
+
+.campo > label {
+    display: block;
+    margin-bottom: var(--espacio-2);
+    font-weight: 600;
+}
+
+.campo input {
+    width: 100%;
+    min-height: var(--altura-tactil);
+    padding: 0 var(--espacio-3);
+    font-family: inherit;
+    /* 16px como mínimo: por debajo, iOS hace zoom al enfocar el campo. */
+    font-size: max(1rem, var(--texto-base));
+    color: inherit;
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-pequeno);
+}
+
+.campo input:focus-visible {
+    outline: 2px solid var(--color-acento);
+    outline-offset: 1px;
+}
+
+.ayuda {
+    margin: var(--espacio-2) 0 0;
+    font-size: var(--texto-pequeno);
+    color: var(--color-texto-tenue);
+}
+
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: var(--altura-tactil);
+    padding: 0 var(--espacio-5);
+    font-family: inherit;
+    font-size: var(--texto-base);
+    font-weight: 600;
+    color: #fff;
+    background-color: var(--color-acento);
+    border: none;
+    border-radius: var(--radio-pequeno);
+    cursor: pointer;
+}
+
+.boton:hover:not(:disabled) {
+    background-color: var(--color-acento-oscuro);
+}
+
+.boton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.boton:focus-visible {
+    outline: 2px solid var(--color-texto);
+    outline-offset: 2px;
+}
+
+/* Avisos ----------------------------------------------------------------- */
+
+.aviso {
+    padding: var(--espacio-3) var(--espacio-4);
+    margin-bottom: var(--espacio-4);
+    border-radius: var(--radio-pequeno);
+    font-size: var(--texto-pequeno);
+}
+
+.aviso-error {
+    color: var(--color-error);
+    background-color: var(--color-error-fondo);
+    border: 1px solid currentColor;
+}
+
+.aviso-exito {
+    color: var(--color-exito);
+    background-color: var(--color-exito-fondo);
+    border: 1px solid currentColor;
+}
+
+.validation-message {
+    display: block;
+    margin-top: var(--espacio-2);
+    font-size: var(--texto-pequeno);
+    color: var(--color-error);
+}
+
+/* Error no controlado de Blazor. La plantilla lo trae oculto y lo muestra al fallar. */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--espacio-3) var(--espacio-4);
+    color: #fff;
+    background-color: var(--color-error);
+}
+
+#blazor-error-ui .dismiss {
+    float: right;
+    cursor: pointer;
+}

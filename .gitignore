@@ -1,0 +1,32 @@
+## Compilación .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+*.user
+*.suo
+
+## Configuración local con secretos — nunca al repositorio
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Local.json
+.env
+.env.*
+!.env.example
+
+## Almacenamiento de fotos en desarrollo (feature 004)
+fotos/
+
+## Paquetes de despliegue
+artifacts/
+
+## Herramientas y editores
+.vs/
+.idea/
+.vscode/
+*.swp
+
+## Sistema operativo
+Thumbs.db
+.DS_Store

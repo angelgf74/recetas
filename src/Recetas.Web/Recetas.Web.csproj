@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+
+    <!--
+      Sin huellas en el nombre de los recursos.
+
+      Con ellas, el publicado inserta en index.html un <script type="importmap">
+      EN LÍNEA que traduce `dotnet.js` al nombre con huella. Ese script en línea
+      choca de frente con la política de seguridad de contenido del sitio, que no
+      admite 'unsafe-inline': el navegador lo bloquea, se queda sin el mapa, pide
+      `_framework/dotnet.js` tal cual, recibe un 404 y Blazor no llega a arrancar.
+
+      Las alternativas eran peores. Añadir 'unsafe-inline' anularía buena parte de
+      la protección contra XSS, que aquí importa especialmente porque el token de
+      acceso vive en localStorage. Autorizar el script por su hash obligaría a
+      recalcularlo y a tocar la configuración de nginx en cada despliegue, porque
+      el contenido del mapa cambia con cada huella.
+
+      El precio de quitarlas es que los ficheros de _framework/ ya no se pueden
+      cachear como inmutables y hay que revalidarlos; con ETag eso es un 304
+      barato. Se prefiere pagarlo antes que debilitar la política.
+      Ver deploy/nginx/recetas, que ajusta el cacheo en consecuencia.
+    -->
+    <WasmFingerprintAssets>false</WasmFingerprintAssets>
+    <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Recetas.Contratos\Recetas.Contratos.csproj" />
+  </ItemGroup>
+
+</Project>

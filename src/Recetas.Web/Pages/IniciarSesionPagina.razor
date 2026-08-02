@@ -1,0 +1,83 @@
+@page "/sesion"
+@using System.ComponentModel.DataAnnotations
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+@inject AlmacenDeSesion Sesion
+
+<PageTitle>Iniciar sesión · Recetas</PageTitle>
+
+<h1>Iniciar sesión</h1>
+
+@if (_iniciada)
+{
+    <div class="aviso aviso-exito" role="status">
+        Sesión iniciada. Tu recetario llegará con la siguiente feature.
+    </div>
+}
+else
+{
+    @if (_resultado is { Correcta: false })
+    {
+        <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
+    }
+
+    <EditForm Model="_formulario" OnValidSubmit="EnviarAsync" FormName="iniciar-sesion">
+        <DataAnnotationsValidator />
+
+        <div class="campo">
+            <label for="correo">Correo electrónico</label>
+            <InputText id="correo" @bind-Value="_formulario.Correo" type="email"
+                       autocomplete="email" inputmode="email" disabled="@_enviando" />
+            <ValidationMessage For="() => _formulario.Correo" />
+        </div>
+
+        <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <InputText id="contrasena" @bind-Value="_formulario.Contrasena" type="password"
+                       autocomplete="current-password" disabled="@_enviando" />
+            <ValidationMessage For="() => _formulario.Contrasena" />
+        </div>
+
+        <button type="submit" class="boton" disabled="@_enviando">
+            @(_enviando ? "Entrando…" : "Entrar")
+        </button>
+    </EditForm>
+
+    <p class="ayuda">
+        ¿Todavía no tienes cuenta? <a href="/registro">Crear una</a>
+    </p>
+}
+
+@code {
+    private readonly Formulario _formulario = new();
+    private ResultadoDeLlamada? _resultado;
+    private bool _enviando;
+    private bool _iniciada;
+
+    private async Task EnviarAsync()
+    {
+        _enviando = true;
+        _resultado = null;
+
+        var (resultado, acceso) = await Api.IniciarSesionAsync(_formulario.Correo, _formulario.Contrasena);
+        _resultado = resultado;
+
+        if (resultado.Correcta && acceso is not null)
+        {
+            await Sesion.GuardarAsync(acceso.Token);
+            _iniciada = true;
+        }
+
+        _enviando = false;
+    }
+
+    private sealed class Formulario
+    {
+        [Required(ErrorMessage = "Indica tu correo electrónico.")]
+        [EmailAddress(ErrorMessage = "Ese correo electrónico no parece válido.")]
+        public string Correo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Indica tu contraseña.")]
+        public string Contrasena { get; set; } = string.Empty;
+    }
+}

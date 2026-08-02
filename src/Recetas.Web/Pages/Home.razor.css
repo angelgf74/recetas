@@ -1,0 +1,15 @@
+.acciones {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--espacio-4);
+    margin-top: var(--espacio-6);
+}
+
+.acciones .boton {
+    text-decoration: none;
+}
+
+.enlace-secundario {
+    font-size: var(--texto-pequeno);
+}

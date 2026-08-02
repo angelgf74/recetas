@@ -1,0 +1,31 @@
+/* Diseñado para móvil primero: una columna estrecha centrada, que en pantallas
+   grandes simplemente se queda centrada en lugar de estirarse. */
+
+.cabecera {
+    display: flex;
+    align-items: center;
+    min-height: var(--altura-tactil);
+    padding: 0 var(--espacio-4);
+    background-color: var(--color-superficie);
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.marca {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-texto);
+    text-decoration: none;
+}
+
+.contenido {
+    width: 100%;
+    max-width: var(--ancho-formulario);
+    margin: 0 auto;
+    padding: var(--espacio-6) var(--espacio-4) var(--espacio-7);
+}
+
+@media (min-width: 40rem) {
+    .contenido {
+        padding-top: var(--espacio-7);
+    }
+}

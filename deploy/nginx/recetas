@@ -1,0 +1,156 @@
+# Recetas — server blocks de nginx.
+#
+# Cadena completa: Cloudflare → cloudflared → nginx :80 → Kestrel :54009
+#
+#   recetas.angelgf.com.es      → web Blazor WebAssembly (estática)
+#   recetas-api.angelgf.com.es  → API .NET
+#
+# Escuchan en el puerto 80 y se distinguen por server_name, igual que el resto de
+# los sitios del servidor. Sin `default_server`, así que no pueden capturar
+# tráfico ajeno: nginx solo les entrega lo que coincida con su nombre.
+#
+# Sin certificados: el TLS lo termina Cloudflare en su borde y el túnel entrega
+# en claro por loopback. No hay nada que renovar aquí.
+#
+# El túnel `angelgf.com.es` ya enruta ambos hostnames a http://localhost.
+
+# ---------------------------------------------------------------------------
+# Política de seguridad de contenido
+# ---------------------------------------------------------------------------
+#
+# Se define una vez y se usa en los dos `location` que sirven el documento, con
+# un `map` en lugar de repetir la cadena: son más de cien caracteres y dos
+# copias acabarían divergiendo.
+#
+#   script-src 'wasm-unsafe-eval'  IMPRESCINDIBLE: Blazor WebAssembly compila el
+#                       runtime .NET en el navegador y sin esto no arranca; la
+#                       aplicación se queda en la pantalla de carga. Es la forma
+#                       acotada de permitirlo, mucho más estrecha que
+#                       'unsafe-eval', que abriría también eval() de JavaScript.
+#   connect-src         solo el hostname de la API, único destino al que llama.
+#   img-src             incluye el host de la API porque las fotos de las recetas
+#                       las servirá ella (feature 004), no este sitio.
+#   style-src 'unsafe-inline'  Blazor inyecta estilos en línea para los
+#                       componentes; sin esto la interfaz se ve rota.
+#   frame-ancestors     sustituye a X-Frame-Options: nadie nos mete en un iframe.
+#
+# Importa especialmente aquí porque el token de acceso vive en localStorage
+# (ver el plan de la feature 002) y un XSS bastaría para llevárselo.
+#
+# El `map` necesita una variable de entrada aunque no dependa de ella; se usa
+# $host y un único caso por defecto.
+map $host $recetas_csp {
+    default "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://recetas-api.angelgf.com.es data:; font-src 'self'; connect-src 'self' https://recetas-api.angelgf.com.es; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'";
+}
+
+# ---------------------------------------------------------------------------
+# API
+# ---------------------------------------------------------------------------
+
+server {
+    listen 80;
+    server_name recetas-api.angelgf.com.es;
+
+    access_log /var/log/nginx/recetas-api.access.log;
+    error_log  /var/log/nginx/recetas-api.error.log;
+
+    # Las recetas llevan fotos (feature 004). 1m se quedaría corto para una
+    # imagen de móvil y el usuario vería un 413 sin explicación.
+    client_max_body_size 10m;
+
+    location / {
+        proxy_pass http://127.0.0.1:54009;
+
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto https;
+
+        # IP real del cliente.
+        #
+        # Se SOBRESCRIBE X-Forwarded-For con la cabecera que pone Cloudflare, en
+        # lugar de acumularla con $proxy_add_x_forwarded_for: si se acumulara, un
+        # cliente podría inyectar valores falsos por la izquierda y falsear su IP
+        # para saltarse el límite de peticiones del alta y del inicio de sesión.
+        #
+        # OJO: la API todavía NO lee estas cabeceras. Hasta que se configure
+        # ForwardedHeaders con ForwardLimit=1, el limitador ve la IP del túnel y
+        # todos los usuarios comparten cubo. Está anotado como pendiente en
+        # spec/features/002-cuentas-de-usuario/tasks.md.
+        proxy_set_header X-Forwarded-For $http_cf_connecting_ip;
+        proxy_set_header X-Real-IP       $http_cf_connecting_ip;
+
+        proxy_read_timeout 60s;
+        proxy_buffering off;
+
+        # Ninguna respuesta autenticada debe quedar cacheada, ni aquí ni en el
+        # borde de Cloudflare: una receta privada servida a otro usuario sería
+        # exactamente lo que la feature 003 existe para impedir.
+        proxy_no_cache 1;
+        proxy_cache_bypass 1;
+        add_header Cache-Control "no-store" always;
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Web
+# ---------------------------------------------------------------------------
+
+server {
+    listen 80;
+    server_name recetas.angelgf.com.es;
+
+    # La web publicada, dentro de la release activa. Al colgar de `current`, la
+    # web y la API son siempre de la misma versión y una reversión las devuelve
+    # a ambas a la vez.
+    #
+    # Mientras no haya despliegue este directorio no existe y el sitio devuelve
+    # 404, que es lo esperado.
+    root /apps/recetas/current/web;
+    index index.html;
+
+    access_log /var/log/nginx/recetas.access.log;
+    error_log  /var/log/nginx/recetas.error.log;
+
+    # Las cabeceras de seguridad van dentro de los `location` que sirven el
+    # documento HTML, y no aquí arriba, por una trampa de nginx: `add_header` NO
+    # se hereda en un bloque que define los suyos, y los de abajo definen su
+    # Cache-Control. Puestas a este nivel se perderían sin que nada avisara.
+
+    # Runtime y ensamblados de Blazor.
+    #
+    # NO se cachean como inmutables. El proyecto publica sin huellas en el nombre
+    # (ver WasmFingerprintAssets en Recetas.Web.csproj: las huellas obligaban a un
+    # mapa de importaciones en línea que la política de seguridad de contenido
+    # bloquea). Con nombres estables, un `immutable` de un año dejaría a los
+    # visitantes clavados en la versión anterior tras cada despliegue.
+    #
+    # `no-cache` no significa "no guardar": el navegador conserva la copia y
+    # revalida con su ETag, así que lo normal es un 304 sin cuerpo. Se paga una
+    # petición condicional por fichero a cambio de que los despliegues se vean.
+    location /_framework/ {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache";
+    }
+
+    # index.html nunca se cachea: es quien apunta a la versión del runtime.
+    # Cacheado, un despliegue nuevo seguiría sirviendo la aplicación anterior.
+    location = /index.html {
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+
+        add_header Content-Security-Policy $recetas_csp always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    }
+
+    # El resto cae en la aplicación: enrutado en cliente. Es lo que hace que el
+    # enlace del correo, /registro/completar?token=…, funcione al abrirlo
+    # directamente en lugar de dar 404.
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+
+        add_header Content-Security-Policy $recetas_csp always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    }
+}

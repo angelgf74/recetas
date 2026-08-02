@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Recetas.Api/Recetas.Api.csproj" />
+    <Project Path="src/Recetas.Aplicacion/Recetas.Aplicacion.csproj" />
+    <Project Path="src/Recetas.Contratos/Recetas.Contratos.csproj" />
+    <Project Path="src/Recetas.Dominio/Recetas.Dominio.csproj" />
+    <Project Path="src/Recetas.Infraestructura/Recetas.Infraestructura.csproj" />
+    <Project Path="src/Recetas.Web/Recetas.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Recetas.Api.Tests/Recetas.Api.Tests.csproj" />
+    <Project Path="tests/Recetas.Aplicacion.Tests/Recetas.Aplicacion.Tests.csproj" />
+    <Project Path="tests/Recetas.Arquitectura.Tests/Recetas.Arquitectura.Tests.csproj" />
+    <Project Path="tests/Recetas.Dominio.Tests/Recetas.Dominio.Tests.csproj" />
+    <Project Path="tests/Recetas.Infraestructura.Tests/Recetas.Infraestructura.Tests.csproj" />
+  </Folder>
+</Solution>

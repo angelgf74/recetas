@@ -1,0 +1,208 @@
+# Despliegue
+
+Recetas se despliega en **agfserver-angel** (`192.168.0.185`), detrás del túnel
+de Cloudflare `angelgf.com.es`.
+
+```
+Internet → Cloudflare → cloudflared → nginx :80 ─┬→ /apps/recetas/current/web  (estático)
+                                                  └→ Kestrel :54009            (API)
+```
+
+| Pieza | Valor |
+|---|---|
+| Web | `https://recetas.angelgf.com.es` |
+| API | `https://recetas-api.angelgf.com.es` |
+| Puerto de Kestrel | `54009` (loopback; 54001–54008 estaban ocupados) |
+| Usuario del servicio | `webapps` |
+| Directorio base | `/apps/recetas` |
+| Base de datos | `recetas`, autenticación `peer` por socket Unix |
+
+## Despliegue habitual
+
+```powershell
+./deploy/publish.ps1
+```
+
+Compila API y web, genera el bundle de migraciones, transfiere y activa. Si algo
+falla a partir de la parada del servicio, revierte a la release anterior.
+
+Para revisar el paquete sin subir nada: `./deploy/publish.ps1 -SoloEmpaquetar`.
+
+## Preparación del servidor (solo la primera vez)
+
+Todos estos pasos necesitan `sudo`, que en este servidor **pide contraseña**, así
+que hay que ejecutarlos a mano.
+
+### 1. Base de datos
+
+La autenticación es `peer` sobre el socket Unix: PostgreSQL identifica al cliente
+por el usuario del sistema, así que el rol debe llamarse igual que el usuario que
+ejecuta el servicio (`webapps`) y no hace falta contraseña.
+
+```bash
+sudo -u postgres psql <<'SQL'
+-- El rol ya existe si hay otras aplicaciones en el servidor; no pasa nada si falla.
+CREATE ROLE webapps WITH LOGIN;
+CREATE DATABASE recetas OWNER webapps;
+SQL
+```
+
+### 2. Directorios
+
+```bash
+sudo install -d -o webapps -g webapps -m 2775 /apps/recetas
+sudo install -d -o webapps -g webapps -m 2775 /apps/recetas/releases /apps/recetas/incoming /apps/recetas/efbundle-cache
+# Fotos de las recetas (feature 004). Se crea ya para no volver aquí.
+sudo install -d -o webapps -g webapps -m 2775 /apps/recetas/fotos
+```
+
+El bit `2775` (setgid + escritura de grupo) es lo que permite que `angel`
+despliegue y que `webapps` lea, sin pelearse por los permisos en cada release.
+
+### 3. Configuración
+
+Dos ficheros separados **por sensibilidad**: el script de despliegue necesita la
+cadena de conexión para migrar, pero no debe poder leer los secretos.
+
+```bash
+sudo install -d -o root -g root -m 755 /etc/recetas
+```
+
+**`/etc/recetas/db.env`** — sin secretos, legible:
+
+```bash
+sudo tee /etc/recetas/db.env >/dev/null <<'EOF'
+# Cadena de conexion. Sin contrasenia: autenticacion peer sobre el socket Unix.
+# No contiene secretos, y por eso es legible: el script de despliegue la lee para
+# aplicar las migraciones sin necesitar acceso a los secretos de la aplicacion.
+ConnectionStrings__Recetas=Host=/var/run/postgresql;Username=webapps;Database=recetas
+EOF
+sudo chmod 644 /etc/recetas/db.env
+```
+
+**`/etc/recetas/api.env`** — secretos, solo para `webapps`:
+
+```bash
+# Genera una clave de firma aleatoria (la API no arranca con menos de 32 caracteres).
+CLAVE_JWT="$(openssl rand -base64 48)"
+
+sudo tee /etc/recetas/api.env >/dev/null <<EOF
+Jwt__ClaveDeFirma=$CLAVE_JWT
+Jwt__Emisor=recetas
+Jwt__Audiencia=recetas
+
+Correo__UsarBrevo=true
+Correo__ClaveDeApi=PON_AQUI_LA_CLAVE_DE_BREVO
+Correo__CorreoRemitente=no-responder@angelgf.com.es
+Correo__NombreRemitente=Recetas
+Correo__BaseDeLaWeb=https://recetas.angelgf.com.es
+
+Cors__Origenes__0=https://recetas.angelgf.com.es
+EOF
+
+sudo chown webapps:webapps /etc/recetas/api.env
+sudo chmod 600 /etc/recetas/api.env
+```
+
+> **Cambiar `Jwt__ClaveDeFirma` invalida todas las sesiones abiertas.** No es
+> grave —los usuarios vuelven a iniciar sesión—, pero conviene saberlo antes de
+> regenerarla sin querer.
+
+> Las variables de entorno de .NET usan `__` (dos guiones bajos) donde la
+> configuración usa `:`. Y los arrays se indexan: `Cors__Origenes__0`.
+
+### 4. nginx
+
+```bash
+scp deploy/nginx/recetas agfserver-angel:/tmp/recetas-nginx
+ssh -t agfserver-angel "sudo install -o root -g root -m 644 /tmp/recetas-nginx /etc/nginx/sites-available/recetas \
+  && sudo ln -sfn /etc/nginx/sites-available/recetas /etc/nginx/sites-enabled/recetas \
+  && sudo nginx -t && sudo systemctl reload nginx"
+```
+
+Encadenado con `&&` a propósito: si `nginx -t` falla no llega a recargar, y el
+servidor sigue sirviendo la configuración anterior.
+
+### 5. systemd
+
+```bash
+scp deploy/systemd/recetas-api.service agfserver-angel:/tmp/recetas-api.service
+ssh -t agfserver-angel "sudo install -o root -g root -m 644 /tmp/recetas-api.service /etc/systemd/system/recetas-api.service \
+  && sudo systemctl daemon-reload \
+  && sudo systemctl enable recetas-api"
+```
+
+**No se arranca todavía**: sin una release desplegada, `/apps/recetas/current` no
+existe y el servicio entraría en bucle de reinicio. El primer
+`./deploy/publish.ps1` lo arranca.
+
+### 6. Permitir que el despliegue gestione el servicio
+
+`remote-activate.sh` para y arranca el servicio con `sudo -n` (sin contraseña).
+Sin esta regla, cada despliegue se quedaría colgado pidiéndola.
+
+```bash
+sudo tee /etc/sudoers.d/recetas-deploy >/dev/null <<'EOF'
+angel ALL=(root) NOPASSWD: /usr/bin/systemctl start recetas-api, /usr/bin/systemctl stop recetas-api
+angel ALL=(webapps) NOPASSWD: SETENV: /apps/recetas/releases/*/efbundle
+EOF
+sudo chmod 440 /etc/sudoers.d/recetas-deploy
+sudo visudo -c
+```
+
+Acotada a propósito: solo arrancar y parar *ese* servicio, y ejecutar el bundle
+de migraciones *como* `webapps`. No es un permiso general de administración.
+
+> **`SETENV:` no es opcional.** El script invoca el bundle con
+> `sudo --preserve-env=ConnectionStrings__Recetas,DOTNET_BUNDLE_EXTRACT_BASE_DIR`,
+> y sudo rechaza conservar el entorno si la regla no lleva esa etiqueta. Sin ella
+> el despliegue falla en las migraciones con un mensaje de autenticación que no
+> apunta en absoluto a la causa.
+
+Si el despliegue falla con `sudo: interactive authentication is required` o
+`A terminal is required to authenticate`, es que este fichero falta o su regla no
+casa con el comando: comprueba que `which systemctl` devuelve `/usr/bin/systemctl`.
+
+### 7. Correo (Brevo)
+
+Sin esto el alta de usuarios **se rompe en silencio**: los mensajes salen pero
+acaban en spam, y el usuario nunca recibe el enlace.
+
+- Autenticar el dominio remitente en Brevo: añadir los registros **SPF y DKIM**
+  que indique su panel al DNS de `angelgf.com.es` en Cloudflare.
+- Verificar el remitente `no-responder@angelgf.com.es`.
+- Comprobar el límite diario del plan contratado: agotarlo deja el registro
+  inutilizable.
+
+## Comprobación
+
+```bash
+ssh agfserver-angel "systemctl status recetas-api --no-pager | head -20"
+ssh agfserver-angel "curl -fsS http://127.0.0.1:54009/salud"
+curl -fsS https://recetas-api.angelgf.com.es/salud
+```
+
+`/salud` responde `200` con `{"estado":"correcto","baseDeDatos":true}` cuando la
+API alcanza PostgreSQL, y `503` cuando no.
+
+## Reversión
+
+Las 5 últimas releases se conservan en `/apps/recetas/releases`.
+
+```bash
+ssh -t agfserver-angel "sudo systemctl stop recetas-api \
+  && ln -sfn /apps/recetas/releases/<RELEASE-ANTERIOR> /apps/recetas/current \
+  && sudo systemctl start recetas-api"
+```
+
+> **Las migraciones no se revierten solas.** Si la release fallida cambió el
+> esquema, volver al código anterior no deshace ese cambio. Mientras las
+> migraciones sean aditivas no hay problema; una que borre o renombre columnas
+> exige un plan de vuelta atrás propio.
+
+## Registros
+
+```bash
+ssh agfserver-angel "journalctl -u recetas-api -n 100 --no-pager"
+ssh agfserver-angel "sudo tail -f /var/log/nginx/recetas-api.error.log"
+```

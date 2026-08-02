@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: recetas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: recetas
+      POSTGRES_USER: recetas
+      # Solo para desarrollo local. En el servidor, por variable de entorno.
+      POSTGRES_PASSWORD: recetas_local
+    ports:
+      # 5433 en el host: el 5432 lo ocupa otro proyecto en esta máquina.
+      # Dentro del contenedor sigue siendo el 5432.
+      - "5433:5432"
+    volumes:
+      - recetas-datos:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U recetas -d recetas"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  recetas-datos:

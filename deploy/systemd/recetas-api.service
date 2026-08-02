@@ -1,0 +1,73 @@
+[Unit]
+Description=Recetas API
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=notify
+
+# Corre como `webapps`, el rol compartido de las aplicaciones web del servidor.
+# No es una preferencia estética: PostgreSQL usa autenticación `peer` sobre el
+# socket Unix, así que identifica al cliente por el usuario del sistema. Con
+# cualquier otro usuario la conexión sería rechazada aunque todo lo demás
+# estuviera bien.
+User=webapps
+Group=webapps
+
+WorkingDirectory=/apps/recetas/current/api
+ExecStart=/usr/bin/dotnet /apps/recetas/current/api/Recetas.Api.dll
+SyslogIdentifier=recetas-api
+
+Restart=always
+RestartSec=5
+# .NET traduce SIGINT en apagado ordenado; SIGTERM lo trata como abrupto.
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+# Cadena de conexión (sin secretos) y secretos de la aplicación, separados por
+# sensibilidad para que el script de despliegue pueda leer la primera sin
+# acceder a los segundos.
+EnvironmentFile=/etc/recetas/db.env
+EnvironmentFile=/etc/recetas/api.env
+
+Environment=ASPNETCORE_ENVIRONMENT=Production
+# Solo loopback: el acceso desde fuera entra por el túnel de Cloudflare y nginx.
+# El 54009 sigue la convención de puertos altos del servidor, uno por aplicación
+# (54001-54008 ya estaban ocupados).
+Environment=ASPNETCORE_URLS=http://127.0.0.1:54009
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+Environment=DOTNET_NOLOGO=1
+
+# systemd crea /var/lib/recetas con el propietario correcto y lo deja escribible
+# pese a ProtectSystem=strict. Es donde ASP.NET Core persiste las claves de Data
+# Protection: sin un directorio escribible las regenera en cada arranque.
+StateDirectory=recetas
+Environment=RECETAS_STATE_DIR=/var/lib/recetas
+
+# Endurecimiento
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+
+# Excepciones necesarias al ProtectSystem=strict de arriba:
+#
+#   /run/postgresql  ahí vive el socket de PostgreSQL, única vía de acceso a la
+#                    base de datos.
+#   /apps/recetas/fotos  las fotos de las recetas (feature 004) se guardan en
+#                    disco, no en la base de datos. El directorio se declara ya
+#                    para que la 004 no tenga que tocar esta unidad; si aún no
+#                    existe, systemd lo ignora sin fallar.
+ReadWritePaths=/run/postgresql
+ReadWritePaths=-/apps/recetas/fotos
+
+[Install]
+WantedBy=multi-user.target

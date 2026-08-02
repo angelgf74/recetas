@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recetas</title>
+    <base href="/" />
+    <link rel="preload" id="webassembly" />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="Recetas.Web.styles.css" rel="stylesheet" />
+    <!--
+      Aquí NO va la etiqueta de mapa de importaciones que trae la plantilla de
+      Blazor. El SDK la rellenaría con el mapa de huellas, y al ser un script en
+      línea la política de seguridad de contenido la bloquea; sin la traducción,
+      el navegador pide los ficheros por un nombre que no existe y Blazor no
+      arranca. Ver el comentario de WasmFingerprintAssets en Recetas.Web.csproj.
+    -->
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        Se ha producido un error inesperado.
+        <a href="." class="reload">Recargar</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <!--
+      El marcador de huella lo sustituye el SDK al publicar, escribiendo el nombre
+      real en el atributo src. Eso NO es un script en línea, así que la política de
+      seguridad de contenido lo admite sin problema: lo que la infringía era el
+      importmap. Los módulos que el runtime importa dinámicamente (dotnet.js y
+      compañía) van sin huella, así que se resuelven por su nombre literal.
+    -->
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+</body>
+
+</html>
