@@ -1,0 +1,407 @@
+[
+  {
+    "nombre": "Croquetas de jamón",
+    "tipoDePlato": "Entrante",
+    "elaboracion": "Derrite la mantequilla en una sartén honda y añade la harina. Cocínala dos minutos sin dejar de remover para que pierda el sabor a crudo.\nIncorpora la leche caliente poco a poco, removiendo sin parar hasta que la bechamel espese y se despegue de las paredes.\nAñade el jamón muy picado, la nuez moscada y la sal. Mezcla bien.\nExtiende la masa en una fuente, tápala a piel con film y déjala enfriar al menos cuatro horas en la nevera.\nForma las croquetas, pásalas por harina, huevo batido y pan rallado.\nFríelas en aceite abundante y bien caliente hasta que estén doradas. Escúrrelas sobre papel.",
+    "ingredientes": [
+      { "nombre": "Jamón serrano", "cantidad": 150, "unidad": "Gramo" },
+      { "nombre": "Mantequilla", "cantidad": 60, "unidad": "Gramo" },
+      { "nombre": "Harina de trigo", "cantidad": 80, "unidad": "Gramo" },
+      { "nombre": "Leche", "cantidad": 700, "unidad": "Mililitro" },
+      { "nombre": "Nuez moscada", "cantidad": null, "unidad": "AlGusto" },
+      { "nombre": "Huevo", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Pan rallado", "cantidad": 200, "unidad": "Gramo" },
+      { "nombre": "Aceite de oliva", "cantidad": 500, "unidad": "Mililitro" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Ensaladilla rusa",
+    "tipoDePlato": "Entrante",
+    "elaboracion": "Cuece las patatas y las zanahorias enteras y con piel en agua con sal, unos 25 minutos, hasta que se atraviesen con facilidad.\nCuece los huevos 10 minutos y enfríalos en agua fría.\nPela y corta las patatas y las zanahorias en dados pequeños. Déjalas templar por completo.\nMezcla con los guisantes, el atún escurrido y las aceitunas picadas.\nAñade la mayonesa y remueve con suavidad para no deshacer la patata.\nDeja reposar en la nevera al menos dos horas. Decora con el huevo rallado antes de servir.",
+    "ingredientes": [
+      { "nombre": "Patata", "cantidad": 600, "unidad": "Gramo" },
+      { "nombre": "Zanahoria", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Huevo", "cantidad": 3, "unidad": "Unidad" },
+      { "nombre": "Guisantes", "cantidad": 150, "unidad": "Gramo" },
+      { "nombre": "Atún en conserva", "cantidad": 160, "unidad": "Gramo" },
+      { "nombre": "Aceituna verde", "cantidad": 50, "unidad": "Gramo" },
+      { "nombre": "Mayonesa", "cantidad": 250, "unidad": "Gramo" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Pimientos del piquillo rellenos de bacalao",
+    "tipoDePlato": "Entrante",
+    "elaboracion": "Desala el bacalao si es salado: 24 horas en agua fría, cambiándola tres veces.\nPocha la cebolla muy picada a fuego suave hasta que esté transparente.\nAñade el bacalao desmigado y cocina cinco minutos.\nIncorpora la harina, cocínala un minuto y añade la leche poco a poco hasta obtener una bechamel espesa. Deja enfriar.\nRellena los pimientos con cuidado de no romperlos.\nTritura unos pocos pimientos con la nata y un poco de caldo para hacer la salsa. Calienta los pimientos rellenos en ella cinco minutos.",
+    "ingredientes": [
+      { "nombre": "Pimiento del piquillo", "cantidad": 12, "unidad": "Unidad" },
+      { "nombre": "Bacalao", "cantidad": 300, "unidad": "Gramo" },
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Harina de trigo", "cantidad": 30, "unidad": "Gramo" },
+      { "nombre": "Leche", "cantidad": 300, "unidad": "Mililitro" },
+      { "nombre": "Nata líquida", "cantidad": 100, "unidad": "Mililitro" },
+      { "nombre": "Aceite de oliva", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Hummus de garbanzos",
+    "tipoDePlato": "Entrante",
+    "elaboracion": "Escurre y enjuaga los garbanzos cocidos. Si quieres un hummus muy fino, quítales la piel.\nTritura los garbanzos con el tahini, el zumo de limón, el ajo y una pizca de sal.\nAñade agua fría poco a poco mientras trituras, hasta lograr una crema suave y aireada.\nRectifica de sal y limón.\nSirve en un plato hondo haciendo un surco con la cuchara, riega con aceite de oliva y espolvorea el pimentón.",
+    "ingredientes": [
+      { "nombre": "Garbanzo cocido", "cantidad": 400, "unidad": "Gramo" },
+      { "nombre": "Tahini", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Limón", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 1, "unidad": "Diente" },
+      { "nombre": "Aceite de oliva", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Pimentón dulce", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+
+  {
+    "nombre": "Gazpacho andaluz",
+    "tipoDePlato": "PrimerPlato",
+    "elaboracion": "Lava los tomates y trocéalos. Pela el pepino y quita las semillas al pimiento.\nPon todas las verduras en el vaso de la batidora con el ajo y el pan remojado en agua.\nTritura a máxima potencia varios minutos, hasta que no queden trozos.\nAñade el aceite en hilo mientras bates, para que emulsione y quede cremoso.\nIncorpora el vinagre y la sal, y vuelve a triturar.\nPasa por un colador fino si lo quieres muy suave. Enfría al menos tres horas antes de servir.",
+    "ingredientes": [
+      { "nombre": "Tomate maduro", "cantidad": 1, "unidad": "Kilogramo" },
+      { "nombre": "Pepino", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Pimiento verde", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 1, "unidad": "Diente" },
+      { "nombre": "Pan del día anterior", "cantidad": 50, "unidad": "Gramo" },
+      { "nombre": "Aceite de oliva", "cantidad": 80, "unidad": "Mililitro" },
+      { "nombre": "Vinagre de vino", "cantidad": 2, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Sopa de ajo castellana",
+    "tipoDePlato": "PrimerPlato",
+    "elaboracion": "Lamina los ajos y dóralos a fuego suave en el aceite, sin que se quemen o amargarán.\nRetira los ajos, baja el fuego y añade el pimentón removiendo fuera del calor para que no se queme.\nIncorpora el pan en rebanadas finas y dale unas vueltas para que se impregne.\nVuelve a poner los ajos, añade el caldo caliente y deja hervir diez minutos.\nSala al gusto y reparte en cazuelas de barro.\nCasca un huevo en cada cazuela y déjalo cuajar dos minutos con el calor de la sopa, o gratina un minuto en el horno.",
+    "ingredientes": [
+      { "nombre": "Ajo", "cantidad": 6, "unidad": "Diente" },
+      { "nombre": "Pan del día anterior", "cantidad": 150, "unidad": "Gramo" },
+      { "nombre": "Pimentón dulce", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Caldo de carne", "cantidad": 1, "unidad": "Litro" },
+      { "nombre": "Huevo", "cantidad": 4, "unidad": "Unidad" },
+      { "nombre": "Aceite de oliva", "cantidad": 4, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Crema de calabaza",
+    "tipoDePlato": "PrimerPlato",
+    "elaboracion": "Pela la calabaza, la patata y la zanahoria, y córtalas en trozos regulares.\nPocha la cebolla y el puerro en aceite a fuego suave, unos diez minutos, sin que cojan color.\nAñade el resto de verduras y rehoga cinco minutos más.\nCubre con el caldo y cuece 25 minutos, hasta que todo esté muy tierno.\nTritura hasta obtener una crema fina. Añade la nata y rectifica de sal.\nSirve con un hilo de aceite y pimienta recién molida.",
+    "ingredientes": [
+      { "nombre": "Calabaza", "cantidad": 800, "unidad": "Gramo" },
+      { "nombre": "Patata", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Zanahoria", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Puerro", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Caldo de verduras", "cantidad": 800, "unidad": "Mililitro" },
+      { "nombre": "Nata líquida", "cantidad": 100, "unidad": "Mililitro" },
+      { "nombre": "Aceite de oliva", "cantidad": 2, "unidad": "Cucharada" },
+      { "nombre": "Pimienta negra", "cantidad": null, "unidad": "AlGusto" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Lentejas estofadas",
+    "tipoDePlato": "PrimerPlato",
+    "elaboracion": "Pon las lentejas en una olla con agua fría que las cubra tres dedos.\nAñade la zanahoria y la patata en trozos, la cebolla entera con el clavo pinchado, el ajo y la hoja de laurel.\nIncorpora el chorizo entero y lleva a ebullición. Retira la espuma que suba.\nBaja el fuego y cuece 40 minutos a fuego lento, con la olla medio tapada.\nHaz un sofrito aparte con el pimentón y dos cucharadas del caldo, y añádelo a la olla.\nSala al final, nunca al principio, o las lentejas se endurecen. Deja reposar diez minutos antes de servir.",
+    "ingredientes": [
+      { "nombre": "Lenteja pardina", "cantidad": 400, "unidad": "Gramo" },
+      { "nombre": "Chorizo", "cantidad": 150, "unidad": "Gramo" },
+      { "nombre": "Patata", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Zanahoria", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 2, "unidad": "Diente" },
+      { "nombre": "Laurel", "cantidad": 1, "unidad": "Hoja" },
+      { "nombre": "Pimentón dulce", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+
+  {
+    "nombre": "Pollo al ajillo",
+    "tipoDePlato": "PlatoPrincipal",
+    "elaboracion": "Trocea el pollo en piezas pequeñas y sálalo generosamente media hora antes.\nCalienta el aceite en una cazuela ancha y dora los ajos con piel, ligeramente aplastados. Retíralos.\nSube el fuego y dora el pollo por todos los lados sin moverlo demasiado, hasta que esté bien tostado.\nDevuelve los ajos, añade el vino blanco y deja evaporar el alcohol dos minutos.\nBaja el fuego, tapa y cocina 20 minutos hasta que el pollo esté tierno.\nEspolvorea el perejil picado justo antes de servir.",
+    "ingredientes": [
+      { "nombre": "Pollo", "cantidad": 1200, "unidad": "Gramo" },
+      { "nombre": "Ajo", "cantidad": 10, "unidad": "Diente" },
+      { "nombre": "Vino blanco", "cantidad": 150, "unidad": "Mililitro" },
+      { "nombre": "Perejil", "cantidad": 2, "unidad": "Rama" },
+      { "nombre": "Aceite de oliva", "cantidad": 100, "unidad": "Mililitro" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Merluza en salsa verde",
+    "tipoDePlato": "PlatoPrincipal",
+    "elaboracion": "Salpimienta los lomos de merluza y enharínalos ligeramente.\nEn una cazuela baja, dora el ajo picado en el aceite a fuego suave.\nAñade la harina, cocínala un minuto y vierte el caldo caliente y el vino, removiendo.\nColoca la merluza con la piel hacia abajo y cocina cinco minutos moviendo la cazuela en círculos: ese vaivén es lo que liga la salsa.\nDa la vuelta al pescado, añade los guisantes y las almejas, y cocina hasta que las almejas se abran.\nEspolvorea el perejil y sirve enseguida.",
+    "ingredientes": [
+      { "nombre": "Merluza", "cantidad": 800, "unidad": "Gramo" },
+      { "nombre": "Almeja", "cantidad": 300, "unidad": "Gramo" },
+      { "nombre": "Guisantes", "cantidad": 100, "unidad": "Gramo" },
+      { "nombre": "Ajo", "cantidad": 3, "unidad": "Diente" },
+      { "nombre": "Harina de trigo", "cantidad": 1, "unidad": "Cucharada" },
+      { "nombre": "Caldo de pescado", "cantidad": 300, "unidad": "Mililitro" },
+      { "nombre": "Vino blanco", "cantidad": 100, "unidad": "Mililitro" },
+      { "nombre": "Perejil", "cantidad": 3, "unidad": "Rama" },
+      { "nombre": "Aceite de oliva", "cantidad": 4, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Albóndigas en salsa",
+    "tipoDePlato": "PlatoPrincipal",
+    "elaboracion": "Mezcla la carne picada con el huevo, el pan rallado, el ajo y el perejil picados, sal y pimienta.\nDeja reposar la masa media hora en la nevera para que coja cuerpo.\nForma bolas del tamaño de una nuez, enharínalas y fríelas hasta dorarlas por fuera. No hace falta que se hagan por dentro.\nEn la misma cazuela, pocha la cebolla y la zanahoria muy picadas.\nAñade el vino, deja evaporar, y vierte el caldo. Tritura la salsa si la quieres fina.\nDevuelve las albóndigas a la salsa y cuece a fuego lento 20 minutos.",
+    "ingredientes": [
+      { "nombre": "Carne picada mixta", "cantidad": 600, "unidad": "Gramo" },
+      { "nombre": "Huevo", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Pan rallado", "cantidad": 4, "unidad": "Cucharada" },
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Zanahoria", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 2, "unidad": "Diente" },
+      { "nombre": "Perejil", "cantidad": 2, "unidad": "Rama" },
+      { "nombre": "Vino blanco", "cantidad": 100, "unidad": "Mililitro" },
+      { "nombre": "Caldo de carne", "cantidad": 400, "unidad": "Mililitro" },
+      { "nombre": "Harina de trigo", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Arroz con pollo",
+    "tipoDePlato": "PlatoPrincipal",
+    "elaboracion": "Salpimienta el pollo troceado y dóralo en la paellera con el aceite, a fuego fuerte. Retíralo.\nBaja el fuego y sofríe el pimiento y la cebolla picados hasta que estén blandos.\nAñade el tomate rallado y el ajo, y cocina hasta que el sofrito pierda el agua y oscurezca.\nIncorpora el pimentón, remueve rápido y añade el arroz. Nácaralo un minuto.\nVierte el caldo caliente, el doble de volumen que de arroz, y añade el azafrán y el pollo.\nCuece 10 minutos a fuego fuerte y 8 más a fuego suave, sin remover. Deja reposar cinco minutos tapado.",
+    "ingredientes": [
+      { "nombre": "Arroz redondo", "cantidad": 400, "unidad": "Gramo" },
+      { "nombre": "Pollo", "cantidad": 800, "unidad": "Gramo" },
+      { "nombre": "Pimiento rojo", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Tomate maduro", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 2, "unidad": "Diente" },
+      { "nombre": "Pimentón dulce", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Azafrán", "cantidad": null, "unidad": "AlGusto" },
+      { "nombre": "Caldo de pollo", "cantidad": 1, "unidad": "Litro" },
+      { "nombre": "Aceite de oliva", "cantidad": 4, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+
+  {
+    "nombre": "Patatas panadera",
+    "tipoDePlato": "Guarnicion",
+    "elaboracion": "Precalienta el horno a 190 grados.\nPela las patatas y córtalas en rodajas de medio centímetro, todas del mismo grosor para que se hagan a la vez.\nCorta la cebolla en juliana fina y el pimiento en tiras.\nMezcla todo en una fuente de horno con el aceite, la sal y las hojas de laurel. Reparte en una capa no muy alta.\nRiega con el vino blanco y hornea 45 minutos, removiendo con cuidado a la media hora.\nEstán listas cuando los bordes se doran y la patata cede al pincharla.",
+    "ingredientes": [
+      { "nombre": "Patata", "cantidad": 1, "unidad": "Kilogramo" },
+      { "nombre": "Cebolla", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Pimiento verde", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Vino blanco", "cantidad": 100, "unidad": "Mililitro" },
+      { "nombre": "Laurel", "cantidad": 2, "unidad": "Hoja" },
+      { "nombre": "Aceite de oliva", "cantidad": 80, "unidad": "Mililitro" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Pisto manchego",
+    "tipoDePlato": "Guarnicion",
+    "elaboracion": "Corta todas las verduras en dados del mismo tamaño, aproximadamente de un centímetro.\nPocha la cebolla en el aceite a fuego suave diez minutos.\nAñade los pimientos y cocina otros diez minutos.\nIncorpora el calabacín y la berenjena, y cocina 15 minutos más removiendo de vez en cuando.\nAñade el tomate rallado y una pizca de azúcar para corregir la acidez.\nCocina a fuego muy suave 30 minutos, hasta que el pisto pierda el agua y quede meloso.",
+    "ingredientes": [
+      { "nombre": "Calabacín", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Berenjena", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Pimiento rojo", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Pimiento verde", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Tomate maduro", "cantidad": 4, "unidad": "Unidad" },
+      { "nombre": "Azúcar", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Aceite de oliva", "cantidad": 60, "unidad": "Mililitro" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Judías verdes con jamón",
+    "tipoDePlato": "Guarnicion",
+    "elaboracion": "Quita las puntas y los hilos de las judías y trocéalas en dos o tres.\nCuécelas en abundante agua con sal, destapadas, entre 10 y 15 minutos: destapadas conservan el color verde.\nEscúrrelas y pásalas por agua muy fría para cortar la cocción.\nDora el ajo laminado en el aceite y añade el jamón en tacos. Saltea un minuto, no más, o quedará seco.\nIncorpora las judías escurridas y saltea todo dos minutos a fuego fuerte.\nRectifica de sal con cuidado: el jamón ya aporta bastante.",
+    "ingredientes": [
+      { "nombre": "Judía verde", "cantidad": 700, "unidad": "Gramo" },
+      { "nombre": "Jamón serrano", "cantidad": 120, "unidad": "Gramo" },
+      { "nombre": "Ajo", "cantidad": 2, "unidad": "Diente" },
+      { "nombre": "Aceite de oliva", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Puré de patata casero",
+    "tipoDePlato": "Guarnicion",
+    "elaboracion": "Cuece las patatas peladas y troceadas en agua con sal, 20 minutos, hasta que se deshagan al pincharlas.\nEscúrrelas bien y déjalas evaporar un minuto en la olla caliente: el exceso de agua es lo que estropea un puré.\nPásalas por un pasapurés, nunca por batidora, o la patata se vuelve elástica.\nAñade la mantequilla en dados y remueve hasta que se integre.\nIncorpora la leche caliente poco a poco hasta la textura que te guste.\nSalpimienta y añade una pizca de nuez moscada.",
+    "ingredientes": [
+      { "nombre": "Patata", "cantidad": 800, "unidad": "Gramo" },
+      { "nombre": "Mantequilla", "cantidad": 50, "unidad": "Gramo" },
+      { "nombre": "Leche", "cantidad": 150, "unidad": "Mililitro" },
+      { "nombre": "Nuez moscada", "cantidad": 1, "unidad": "Pizca" },
+      { "nombre": "Pimienta negra", "cantidad": null, "unidad": "AlGusto" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+
+  {
+    "nombre": "Flan de huevo",
+    "tipoDePlato": "Postre",
+    "elaboracion": "Prepara el caramelo: calienta 100 gramos de azúcar en un cazo con unas gotas de agua hasta que tome color ámbar. Repártelo en los moldes y deja enfriar.\nCalienta la leche con la cáscara de limón y la canela sin que llegue a hervir. Déjala infusionar 15 minutos y cuélala.\nBate los huevos con el azúcar restante, sin montar: solo hasta integrar.\nAñade la leche templada en hilo, removiendo despacio para no hacer espuma.\nLlena los moldes y hornea al baño maría a 160 grados durante 40 minutos.\nEstá listo cuando cuaja pero tiembla ligeramente en el centro. Enfría al menos seis horas antes de desmoldar.",
+    "ingredientes": [
+      { "nombre": "Huevo", "cantidad": 4, "unidad": "Unidad" },
+      { "nombre": "Leche", "cantidad": 500, "unidad": "Mililitro" },
+      { "nombre": "Azúcar", "cantidad": 200, "unidad": "Gramo" },
+      { "nombre": "Limón", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Canela en rama", "cantidad": 1, "unidad": "Rama" }
+    ]
+  },
+  {
+    "nombre": "Arroz con leche",
+    "tipoDePlato": "Postre",
+    "elaboracion": "Lava el arroz bajo el grifo y escúrrelo.\nCalienta la leche con la cáscara de limón y la canela en rama a fuego suave.\nAñade el arroz y cuece 45 minutos a fuego muy lento, removiendo a menudo para que no se pegue.\nCuando el arroz esté tierno y la leche haya espesado, añade el azúcar y cuece diez minutos más.\nRetira la canela y la cáscara, y añade la mantequilla removiendo: da brillo y untuosidad.\nReparte en cuencos y espolvorea canela molida. Se toma frío.",
+    "ingredientes": [
+      { "nombre": "Arroz redondo", "cantidad": 150, "unidad": "Gramo" },
+      { "nombre": "Leche", "cantidad": 1, "unidad": "Litro" },
+      { "nombre": "Azúcar", "cantidad": 120, "unidad": "Gramo" },
+      { "nombre": "Canela en rama", "cantidad": 1, "unidad": "Rama" },
+      { "nombre": "Canela molida", "cantidad": null, "unidad": "AlGusto" },
+      { "nombre": "Limón", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Mantequilla", "cantidad": 20, "unidad": "Gramo" }
+    ]
+  },
+  {
+    "nombre": "Tarta de queso al horno",
+    "tipoDePlato": "Postre",
+    "elaboracion": "Precalienta el horno a 200 grados y forra un molde con papel de hornear, dejando que sobresalga por los bordes.\nBate el queso crema con el azúcar hasta que no queden grumos.\nAñade los huevos de uno en uno, integrando bien cada uno antes del siguiente.\nIncorpora la nata y la harina tamizada, y mezcla con suavidad: batir de más mete aire y la tarta se agrieta.\nVierte en el molde y hornea 45 minutos. El centro debe quedar temblón.\nDeja enfriar a temperatura ambiente y luego cuatro horas en la nevera.",
+    "ingredientes": [
+      { "nombre": "Queso crema", "cantidad": 600, "unidad": "Gramo" },
+      { "nombre": "Huevo", "cantidad": 4, "unidad": "Unidad" },
+      { "nombre": "Azúcar", "cantidad": 200, "unidad": "Gramo" },
+      { "nombre": "Nata líquida", "cantidad": 250, "unidad": "Mililitro" },
+      { "nombre": "Harina de trigo", "cantidad": 20, "unidad": "Gramo" }
+    ]
+  },
+  {
+    "nombre": "Torrijas",
+    "tipoDePlato": "Postre",
+    "elaboracion": "Calienta la leche con el azúcar, la cáscara de limón y la canela en rama. Deja infusionar 20 minutos y cuela.\nCorta el pan en rebanadas de dos dedos de grosor.\nEmpapa cada rebanada en la leche sin que se deshaga: unos segundos por cada lado bastan.\nDeja escurrir sobre una rejilla diez minutos.\nPásalas por huevo batido y fríelas en aceite caliente hasta dorarlas por ambos lados.\nEscúrrelas sobre papel y rebózalas en azúcar con canela mientras siguen templadas.",
+    "ingredientes": [
+      { "nombre": "Pan de torrijas", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Leche", "cantidad": 750, "unidad": "Mililitro" },
+      { "nombre": "Huevo", "cantidad": 3, "unidad": "Unidad" },
+      { "nombre": "Azúcar", "cantidad": 150, "unidad": "Gramo" },
+      { "nombre": "Canela en rama", "cantidad": 1, "unidad": "Rama" },
+      { "nombre": "Canela molida", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Limón", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Aceite de oliva", "cantidad": 400, "unidad": "Mililitro" }
+    ]
+  },
+
+  {
+    "nombre": "Horchata de chufa",
+    "tipoDePlato": "Bebida",
+    "elaboracion": "Lava las chufas varias veces y déjalas en remojo en agua fría 12 horas, cambiando el agua un par de veces.\nEscúrrelas y tritúralas con la mitad del agua hasta obtener una pasta.\nAñade el resto del agua, la cáscara de limón y la canela, y deja reposar en la nevera dos horas.\nCuela con un paño fino, apretando bien para extraer todo el líquido.\nAñade el azúcar y remueve hasta disolverlo por completo.\nSirve muy fría. Se conserva dos días como mucho, porque no lleva conservantes.",
+    "ingredientes": [
+      { "nombre": "Chufa", "cantidad": 250, "unidad": "Gramo" },
+      { "nombre": "Agua", "cantidad": 1, "unidad": "Litro" },
+      { "nombre": "Azúcar", "cantidad": 120, "unidad": "Gramo" },
+      { "nombre": "Limón", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Canela en rama", "cantidad": 1, "unidad": "Rama" }
+    ]
+  },
+  {
+    "nombre": "Limonada casera",
+    "tipoDePlato": "Bebida",
+    "elaboracion": "Exprime los limones y cuela el zumo para retirar las pepitas.\nPrepara un almíbar ligero calentando el azúcar con un vaso de agua hasta que se disuelva. Déjalo enfriar.\nMezcla el zumo, el almíbar y el resto del agua bien fría.\nPrueba y ajusta: más almíbar si está ácida, más agua si está fuerte.\nAñade las hojas de hierbabuena ligeramente golpeadas con la mano, no picadas, para que perfumen sin amargar.\nSirve con mucho hielo.",
+    "ingredientes": [
+      { "nombre": "Limón", "cantidad": 6, "unidad": "Unidad" },
+      { "nombre": "Agua", "cantidad": 1, "unidad": "Litro" },
+      { "nombre": "Azúcar", "cantidad": 120, "unidad": "Gramo" },
+      { "nombre": "Hierbabuena", "cantidad": 8, "unidad": "Hoja" },
+      { "nombre": "Hielo", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Chocolate a la taza",
+    "tipoDePlato": "Bebida",
+    "elaboracion": "Trocea el chocolate lo más fino que puedas para que funda sin grumos.\nDisuelve la maicena en medio vaso de leche fría, removiendo hasta que no queden grumos.\nCalienta el resto de la leche con el azúcar y la canela a fuego medio.\nAñade el chocolate y remueve sin parar hasta que se funda por completo.\nIncorpora la leche con la maicena en hilo, sin dejar de remover.\nCocina cinco minutos más a fuego suave hasta que espese. No debe hervir a borbotones.",
+    "ingredientes": [
+      { "nombre": "Chocolate negro", "cantidad": 200, "unidad": "Gramo" },
+      { "nombre": "Leche", "cantidad": 750, "unidad": "Mililitro" },
+      { "nombre": "Maicena", "cantidad": 2, "unidad": "Cucharada" },
+      { "nombre": "Azúcar", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Canela molida", "cantidad": 1, "unidad": "Pizca" }
+    ]
+  },
+  {
+    "nombre": "Batido de plátano y fresa",
+    "tipoDePlato": "Bebida",
+    "elaboracion": "Pela los plátanos y lava las fresas, quitándoles el rabito.\nTroceados y bien fríos, ponlos en el vaso de la batidora.\nAñade la leche, el yogur y la miel.\nTritura a máxima potencia un minuto, hasta que quede completamente liso.\nPrueba y añade más miel solo si la fruta no estaba madura.\nSirve inmediatamente: el plátano se oxida y pierde color en pocos minutos.",
+    "ingredientes": [
+      { "nombre": "Plátano", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Fresa", "cantidad": 250, "unidad": "Gramo" },
+      { "nombre": "Leche", "cantidad": 300, "unidad": "Mililitro" },
+      { "nombre": "Yogur natural", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Miel", "cantidad": 1, "unidad": "Cucharada" }
+    ]
+  },
+
+  {
+    "nombre": "Alioli",
+    "tipoDePlato": "Salsa",
+    "elaboracion": "Todos los ingredientes deben estar a la misma temperatura, o la salsa se cortará.\nPon el huevo, el ajo y la sal en un vaso estrecho, justo del ancho de la batidora.\nAñade el aceite encima, sin remover.\nIntroduce la batidora hasta el fondo y bate sin moverla hasta que la base emulsione y blanquee.\nCuando veas que ha ligado, sube la batidora muy despacio para integrar el resto del aceite.\nAñade unas gotas de limón al final y rectifica de sal.",
+    "ingredientes": [
+      { "nombre": "Huevo", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 2, "unidad": "Diente" },
+      { "nombre": "Aceite de girasol", "cantidad": 250, "unidad": "Mililitro" },
+      { "nombre": "Limón", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Salsa brava",
+    "tipoDePlato": "Salsa",
+    "elaboracion": "Pocha la cebolla y el ajo picados en el aceite a fuego suave, diez minutos.\nAñade la harina y cocínala un minuto removiendo.\nIncorpora los dos pimentones fuera del fuego, para que no se quemen y amarguen.\nVuelve al fuego, añade el caldo y el vinagre, y remueve hasta que espese.\nCocina 15 minutos a fuego lento.\nTritura hasta obtener una salsa fina y rectifica de sal y picante.",
+    "ingredientes": [
+      { "nombre": "Cebolla", "cantidad": 1, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 2, "unidad": "Diente" },
+      { "nombre": "Pimentón dulce", "cantidad": 1, "unidad": "Cucharada" },
+      { "nombre": "Pimentón picante", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Harina de trigo", "cantidad": 1, "unidad": "Cucharada" },
+      { "nombre": "Caldo de pollo", "cantidad": 400, "unidad": "Mililitro" },
+      { "nombre": "Vinagre de vino", "cantidad": 1, "unidad": "Cucharada" },
+      { "nombre": "Aceite de oliva", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Bechamel",
+    "tipoDePlato": "Salsa",
+    "elaboracion": "Calienta la leche en un cazo aparte: añadirla caliente es lo que evita los grumos.\nDerrite la mantequilla a fuego medio sin que llegue a dorarse.\nAñade la harina de golpe y cocínala dos minutos removiendo, hasta que huela a galleta.\nIncorpora un tercio de la leche caliente y remueve enérgicamente hasta que se integre.\nAñade el resto en dos veces, esperando a que ligue entre una y otra.\nCocina diez minutos a fuego suave sin dejar de remover. Salpimienta y añade nuez moscada.",
+    "ingredientes": [
+      { "nombre": "Leche", "cantidad": 500, "unidad": "Mililitro" },
+      { "nombre": "Mantequilla", "cantidad": 50, "unidad": "Gramo" },
+      { "nombre": "Harina de trigo", "cantidad": 50, "unidad": "Gramo" },
+      { "nombre": "Nuez moscada", "cantidad": 1, "unidad": "Pizca" },
+      { "nombre": "Pimienta negra", "cantidad": null, "unidad": "AlGusto" },
+      { "nombre": "Sal", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  },
+  {
+    "nombre": "Mojo picón canario",
+    "tipoDePlato": "Salsa",
+    "elaboracion": "Pon las pimientas secas en remojo en agua caliente 30 minutos y retira las semillas.\nMaja el ajo con la sal gorda en un mortero hasta obtener una pasta.\nAñade el comino y el pimentón, y sigue majando.\nIncorpora la pulpa de las pimientas y trabájala hasta integrarla.\nAñade el vinagre y luego el aceite en hilo, removiendo sin parar para que emulsione.\nRectifica de sal y vinagre. Mejora de un día para otro.",
+    "ingredientes": [
+      { "nombre": "Pimienta palmera seca", "cantidad": 2, "unidad": "Unidad" },
+      { "nombre": "Ajo", "cantidad": 4, "unidad": "Diente" },
+      { "nombre": "Comino", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Pimentón picante", "cantidad": 1, "unidad": "Cucharadita" },
+      { "nombre": "Vinagre de vino", "cantidad": 3, "unidad": "Cucharada" },
+      { "nombre": "Aceite de oliva", "cantidad": 150, "unidad": "Mililitro" },
+      { "nombre": "Sal gorda", "cantidad": null, "unidad": "AlGusto" }
+    ]
+  }
+]
