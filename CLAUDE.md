@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Features 001 a 005 terminadas.** Hay solución `Recetas.slnx` con las capas hexagonales, PostgreSQL, alta de usuarios en dos pasos con verificación por correo, inicio de sesión con JWT, la web Blazor con sus cuatro pantallas, el recetario, las fotos y la publicación. Siguiente: la 006 (búsqueda).
+**Features 001 a 006 terminadas: la API está completa.** Solo queda la 007, que es construir la interfaz web sobre lo que ya existe.
 
-Endpoints actuales: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud y alta).
+Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud y alta).
+
+**Búsqueda:** hay columnas `nombre_para_busqueda` en `recetas` e `ingredientes`, con el texto en minúsculas y sin acentos. Se rellenan con `TextoParaBusqueda.Normalizar`, y **el texto guardado y el de la consulta deben pasar por esa misma función**: si divergen, las búsquedas no encuentran nada y no falla nada. No se usa la extensión `unaccent` porque instalarla exige privilegios que el despliegue no tiene.
 
 **La web solo tiene las cuatro pantallas de la 002** (portada, alta, contraseña, login). Todo lo demás es API: construir la interfaz es la 007, por decisión explícita del usuario.
 

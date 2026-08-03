@@ -25,6 +25,17 @@ public sealed class ConfiguracionDeReceta : IEntityTypeConfiguration<Receta>
             .HasMaxLength(Receta.LongitudMaximaDelNombre)
             .IsRequired();
 
+        // Columna de apoyo para la búsqueda: minúsculas y sin acentos. Existe
+        // porque la extensión `unaccent` de PostgreSQL exigiría privilegios que
+        // el despliegue no tiene.
+        constructor.Property(receta => receta.NombreParaBusqueda)
+            .HasColumnName("nombre_para_busqueda")
+            .HasMaxLength(Receta.LongitudMaximaDelNombre)
+            .IsRequired();
+
+        constructor.HasIndex(receta => receta.NombreParaBusqueda)
+            .HasDatabaseName("ix_recetas_nombre_para_busqueda");
+
         // Los enumerados se guardan como texto, no como número: así reordenar el
         // enumerado en el código no reescribe el significado de lo ya guardado.
         constructor.Property(receta => receta.TipoDePlato)

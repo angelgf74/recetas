@@ -95,6 +95,28 @@ public sealed class GestionDeRecetas(
         CancellationToken cancelacion = default) =>
         recetas.ListarPorAutorAsync(usuarioId, cancelacion);
 
+    /// <summary>Tope de resultados de una búsqueda.</summary>
+    /// <remarks>
+    /// Devolver una lista sin límite es un riesgo real: una búsqueda sin criterios
+    /// traería todo lo visible. Recorrer páginas todavía no le hace falta a nadie,
+    /// así que se acota y se avisa del recorte, que es la mitad barata del
+    /// problema. La paginación entra cuando este tope moleste.
+    /// </remarks>
+    public const int MaximoDeResultados = 50;
+
+    public async Task<(IReadOnlyList<Receta> Resultados, bool HayMas)> BuscarAsync(
+        Guid usuarioId,
+        CriteriosDeBusqueda criterios,
+        CancellationToken cancelacion = default)
+    {
+        // El repositorio devuelve uno más que el tope justo para poder decirlo.
+        var encontradas = await recetas.BuscarAsync(usuarioId, criterios, MaximoDeResultados, cancelacion);
+
+        var hayMas = encontradas.Count > MaximoDeResultados;
+
+        return (encontradas.Take(MaximoDeResultados).ToList(), hayMas);
+    }
+
     public async Task<ResultadoDeReceta> ActualizarAsync(
         Guid usuarioId,
         Guid recetaId,

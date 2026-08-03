@@ -26,6 +26,17 @@ public sealed class ConfiguracionDeIngrediente : IEntityTypeConfiguration<Ingred
         constructor.HasIndex(ingrediente => ingrediente.Nombre)
             .IsUnique()
             .HasDatabaseName("ix_ingredientes_nombre");
+
+        // Sin acentos, para que "pimenton" encuentre "pimentón". NO es único: dos
+        // ingredientes distintos pueden normalizar igual ("anís" y "anis"), y
+        // exigir unicidad aquí impediría dar de alta el segundo.
+        constructor.Property(ingrediente => ingrediente.NombreParaBusqueda)
+            .HasColumnName("nombre_para_busqueda")
+            .HasMaxLength(NombreDeIngrediente.LongitudMaxima)
+            .IsRequired();
+
+        constructor.HasIndex(ingrediente => ingrediente.NombreParaBusqueda)
+            .HasDatabaseName("ix_ingredientes_nombre_para_busqueda");
     }
 }
 

@@ -3,7 +3,13 @@ using Recetas.Dominio.Recetas;
 
 namespace Recetas.Aplicacion.Tests.Dobles;
 
-public sealed class RepositorioDeRecetasEnMemoria : IRepositorioDeRecetas
+/// <param name="catalogo">
+/// Catálogo para resolver los nombres de ingrediente al buscar. El dominio solo
+/// guarda el identificador en la línea; en el repositorio real la relación la
+/// resuelve EF, y aquí hay que dársela.
+/// </param>
+public sealed class RepositorioDeRecetasEnMemoria(RepositorioDeIngredientesEnMemoria? catalogo = null)
+    : IRepositorioDeRecetas
 {
     private readonly List<Receta> _recetas = [];
 
@@ -17,6 +23,48 @@ public sealed class RepositorioDeRecetasEnMemoria : IRepositorioDeRecetas
         CancellationToken cancelacion = default) =>
         Task.FromResult<IReadOnlyCollection<Receta>>(
             _recetas.Where(receta => receta.AutorId == autorId).ToList());
+
+    /// <summary>
+    /// Reproduce el filtro de visibilidad y los criterios del repositorio real.
+    /// </summary>
+    /// <remarks>
+    /// Que sea un doble no lo exime de la regla que importa: no devolver recetas
+    /// privadas ajenas. Si aquí se relajara, los tests de aplicación pasarían con
+    /// una implementación real insegura.
+    /// </remarks>
+    public Task<IReadOnlyCollection<Receta>> BuscarAsync(
+        Guid usuarioId,
+        CriteriosDeBusqueda criterios,
+        int maximo,
+        CancellationToken cancelacion = default)
+    {
+        var visibles = _recetas.Where(receta => receta.PuedeVerla(usuarioId));
+
+        if (criterios.Nombre is { Length: > 0 } nombre)
+        {
+            visibles = visibles.Where(receta => receta.NombreParaBusqueda.Contains(nombre));
+        }
+
+        if (criterios.TipoDePlato is { } tipo)
+        {
+            visibles = visibles.Where(receta => receta.TipoDePlato == tipo);
+        }
+
+        // Todos los ingredientes, no cualquiera de ellos.
+        foreach (var ingrediente in criterios.Ingredientes)
+        {
+            var buscado = ingrediente;
+
+            visibles = visibles.Where(receta => receta.Ingredientes
+                .Any(linea => catalogo?.NombreDeBusquedaDe(linea.IngredienteId)?.Contains(buscado) == true));
+        }
+
+        return Task.FromResult<IReadOnlyCollection<Receta>>(
+            visibles
+                .OrderByDescending(receta => receta.FechaDeModificacion)
+                .Take(maximo + 1)
+                .ToList());
+    }
 
     public Task AnadirAsync(Receta receta, CancellationToken cancelacion = default)
     {
@@ -42,6 +90,10 @@ public sealed class RepositorioDeIngredientesEnMemoria : IRepositorioDeIngredien
     private readonly Dictionary<NombreDeIngrediente, Ingrediente> _catalogo = [];
 
     public int Total => _catalogo.Count;
+
+    /// <summary>Nombre normalizado de un ingrediente por su identificador.</summary>
+    public string? NombreDeBusquedaDe(Guid ingredienteId) =>
+        _catalogo.Values.FirstOrDefault(ingrediente => ingrediente.Id == ingredienteId)?.NombreParaBusqueda;
 
     public Task<IReadOnlyCollection<Ingrediente>> BuscarPorNombresAsync(
         IReadOnlyCollection<NombreDeIngrediente> nombres,

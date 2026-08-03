@@ -18,6 +18,7 @@ public sealed class Ingrediente
     {
         Id = id;
         Nombre = nombre;
+        NombreParaBusqueda = TextoParaBusqueda.Normalizar(nombre.Valor);
     }
 
     /// <summary>Constructor para EF Core.</summary>
@@ -26,6 +27,12 @@ public sealed class Ingrediente
     public Guid Id { get; private set; }
 
     public NombreDeIngrediente Nombre { get; private set; }
+
+    /// <summary>
+    /// El nombre sin acentos, para que buscar "pimenton" encuentre "pimentón".
+    /// <see cref="Nombre"/> conserva los acentos porque es lo que se muestra.
+    /// </summary>
+    public string NombreParaBusqueda { get; private set; } = string.Empty;
 
     public static Ingrediente Crear(NombreDeIngrediente nombre)
     {

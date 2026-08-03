@@ -13,9 +13,10 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 5. **[005 · Publicar y despublicar](../features/005-publicar-y-despublicar/spec.md)** — transición de visibilidad y lectura de recetas ajenas publicadas. Incluyó la limpieza de metadatos EXIF de las fotos, que era su requisito previo: publicar sin quitarlos habría expuesto la ubicación de los usuarios.
 
+6. **[006 · Búsqueda multicriterio](../features/006-busqueda-multicriterio/spec.md)** — por nombre, ingredientes y tipo de plato, combinables, insensible a mayúsculas y acentos. Alcanza las recetas propias y las publicadas por otros, nunca las privadas ajenas.
+
 ## Siguiente 🔜
 
-6. **006 · Búsqueda multicriterio** — por nombre, ingredientes y tipo de plato, combinables; respetando la visibilidad de cada receta.
 7. **007 · Web completa** — el resto del cliente Blazor sobre el esqueleto que dejó la 002: recetario propio, ficha de receta, edición, fotos, publicación y búsqueda.
 
 _El orden no es caprichoso: **005 depende de que existan recetas (003)**, y **006 solo tiene sentido cuando hay algo público que buscar (005)**. Las reglas de visibilidad se prueban en cuanto nacen, no al final._

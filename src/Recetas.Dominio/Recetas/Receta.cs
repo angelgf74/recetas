@@ -22,6 +22,7 @@ public sealed class Receta
         Id = id;
         AutorId = autorId;
         Nombre = nombre;
+        NombreParaBusqueda = TextoParaBusqueda.Normalizar(nombre);
         TipoDePlato = tipoDePlato;
         Elaboracion = elaboracion;
         Visibilidad = Visibilidad.Privada;
@@ -42,6 +43,13 @@ public sealed class Receta
     public Guid AutorId { get; private set; }
 
     public string Nombre { get; private set; }
+
+    /// <summary>
+    /// El nombre en minúsculas y sin acentos. Es contra esta columna contra la que
+    /// busca la feature 006; <see cref="Nombre"/> conserva la forma que escribió
+    /// el usuario y es la que se muestra.
+    /// </summary>
+    public string NombreParaBusqueda { get; private set; } = string.Empty;
 
     public TipoDePlato TipoDePlato { get; private set; }
 
@@ -150,6 +158,9 @@ public sealed class Receta
         // Ni el autor ni la visibilidad se tocan: no son datos que la edición
         // pueda cambiar, y por eso ni siquiera aparecen como parámetros.
         Nombre = ValidarNombre(nombre);
+        // Se recalcula aquí también: si solo se hiciera al crear, renombrar una
+        // receta la dejaría encontrable por su nombre antiguo y no por el nuevo.
+        NombreParaBusqueda = TextoParaBusqueda.Normalizar(Nombre);
         TipoDePlato = tipoDePlato;
         Elaboracion = ValidarElaboracion(elaboracion);
         FechaDeModificacion = ahora;

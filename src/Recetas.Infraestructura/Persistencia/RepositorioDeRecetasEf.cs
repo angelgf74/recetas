@@ -28,6 +28,52 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
             .OrderByDescending(receta => receta.FechaDeModificacion)
             .ToListAsync(cancelacion);
 
+    public async Task<IReadOnlyCollection<Receta>> BuscarAsync(
+        Guid usuarioId,
+        CriteriosDeBusqueda criterios,
+        int maximo,
+        CancellationToken cancelacion = default)
+    {
+        // El filtro de visibilidad es LO PRIMERO y va en la consulta.
+        //
+        // Se podría cargar todo y descartar después en memoria, y funcionaría
+        // igual mientras el código fuera correcto. Pero entonces existiría un
+        // momento en el que las recetas privadas de otros están cargadas y solo
+        // una condición las separa de la respuesta. Aquí no llegan a salir de la
+        // base de datos.
+        var consulta = contexto.Recetas
+            .Where(receta => receta.AutorId == usuarioId || receta.Visibilidad == Visibilidad.Publica);
+
+        if (criterios.Nombre is { Length: > 0 } nombre)
+        {
+            // Contra la columna normalizada, que ya está en minúsculas y sin
+            // acentos, igual que el texto de la consulta.
+            consulta = consulta.Where(receta => receta.NombreParaBusqueda.Contains(nombre));
+        }
+
+        if (criterios.TipoDePlato is { } tipo)
+        {
+            consulta = consulta.Where(receta => receta.TipoDePlato == tipo);
+        }
+
+        // Un Where por ingrediente, no un Contains sobre la lista: así se exige
+        // que estén TODOS. Un único Any con una lista significaría "cualquiera de
+        // ellos", que es lo contrario de lo que se busca al afinar.
+        foreach (var ingrediente in criterios.Ingredientes)
+        {
+            var buscado = ingrediente;
+
+            consulta = consulta.Where(receta => receta.Ingredientes
+                .Any(linea => linea.Ingrediente!.NombreParaBusqueda.Contains(buscado)));
+        }
+
+        return await consulta
+            .OrderByDescending(receta => receta.FechaDeModificacion)
+            // Uno más que el tope: si vuelve, es que hay recorte.
+            .Take(maximo + 1)
+            .ToListAsync(cancelacion);
+    }
+
     public async Task AnadirAsync(Receta receta, CancellationToken cancelacion = default)
     {
         await contexto.Recetas.AddAsync(receta, cancelacion);

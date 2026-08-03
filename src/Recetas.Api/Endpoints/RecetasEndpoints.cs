@@ -24,6 +24,10 @@ public static class RecetasEndpoints
 
         grupo.MapPost("/", CrearAsync);
         grupo.MapGet("/", ListarAsync);
+
+        // Antes que "/{id:guid}" no hace falta por el restrictor de ruta, pero se
+        // declara aquí junto al listado porque son las dos consultas de conjunto.
+        grupo.MapGet("/busqueda", BuscarAsync);
         grupo.MapGet("/{id:guid}", ObtenerAsync);
         grupo.MapPut("/{id:guid}", ActualizarAsync);
         grupo.MapDelete("/{id:guid}", BorrarAsync);
@@ -91,12 +95,44 @@ public static class RecetasEndpoints
 
         var recetas = await gestion.ListarMiasAsync(usuarioId, cancelacion);
 
-        return Results.Ok(recetas.Select(receta => new ResumenDeReceta(
-            receta.Id,
-            receta.Nombre,
-            receta.TipoDePlato.ToString(),
-            receta.Visibilidad.ToString(),
-            receta.FechaDeModificacion)));
+        return Results.Ok(recetas.Select(receta => AResumen(receta, usuarioId)));
+    }
+
+    private static async Task<IResult> BuscarAsync(
+        ClaimsPrincipal usuario,
+        GestionDeRecetas gestion,
+        HttpRequest peticion,
+        CancellationToken cancelacion,
+        string? nombre = null,
+        string? tipo = null)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        TipoDePlato? tipoDePlato = null;
+
+        if (!string.IsNullOrWhiteSpace(tipo))
+        {
+            if (!Enum.TryParse<TipoDePlato>(tipo, ignoreCase: true, out var valor) || !Enum.IsDefined(valor))
+            {
+                return Results.BadRequest(new RespuestaDeError("Ese tipo de plato no existe."));
+            }
+
+            tipoDePlato = valor;
+        }
+
+        // `ingrediente` se repite en la consulta: ?ingrediente=tomate&ingrediente=albahaca
+        var ingredientes = peticion.Query["ingrediente"].Where(valor => valor is not null).ToList()!;
+
+        var criterios = CriteriosDeBusqueda.Crear(nombre, ingredientes!, tipoDePlato);
+
+        var (resultados, hayMas) = await gestion.BuscarAsync(usuarioId, criterios, cancelacion);
+
+        return Results.Ok(new RespuestaDeBusqueda(
+            resultados.Select(receta => AResumen(receta, usuarioId)).ToList(),
+            hayMas));
     }
 
     private static async Task<IResult> ObtenerAsync(
@@ -190,6 +226,15 @@ public static class RecetasEndpoints
         datos = new DatosDeReceta(peticion.Nombre, tipo, peticion.Elaboracion, lineas);
         return true;
     }
+
+    private static ResumenDeReceta AResumen(DominioReceta receta, Guid usuarioId) =>
+        new(
+            receta.Id,
+            receta.Nombre,
+            receta.TipoDePlato.ToString(),
+            receta.Visibilidad.ToString(),
+            receta.FechaDeModificacion,
+            receta.EsDe(usuarioId));
 
     private static RespuestaDeReceta ARespuesta(DominioReceta receta) =>
         new(

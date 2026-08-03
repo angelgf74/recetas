@@ -72,4 +72,23 @@ public sealed record ResumenDeReceta(
     string Nombre,
     string TipoDePlato,
     string Visibilidad,
-    DateTimeOffset FechaDeModificacion);
+    DateTimeOffset FechaDeModificacion,
+    /// <summary>
+    /// Si la receta es del usuario que pregunta. La búsqueda mezcla las propias
+    /// con las publicadas por otros, y la interfaz necesita distinguirlas para
+    /// saber si puede ofrecer editar.
+    /// <para>
+    /// Se dice si es tuya, pero nunca de quién es la ajena: eso no aporta nada y
+    /// expondría datos de otro usuario.
+    /// </para>
+    /// </summary>
+    bool EsMia);
+
+/// <param name="Resultados">Recetas encontradas, ya acotadas al tope.</param>
+/// <param name="HayMas">
+/// Si se han recortado resultados. Permite avisar al usuario de que afine la
+/// búsqueda en lugar de dejarle creer que eso es todo lo que hay.
+/// </param>
+public sealed record RespuestaDeBusqueda(
+    IReadOnlyCollection<ResumenDeReceta> Resultados,
+    bool HayMas);
