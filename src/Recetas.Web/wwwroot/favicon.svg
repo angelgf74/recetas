@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Recetas">
+  <!--
+    Icono de Recetas: una olla vista de frente.
+
+    Diseñado para 16 px, que es el tamaño en el que de verdad se usa un favicon:
+    ahí no cabe detalle, solo una silueta rotunda y dos colores muy contrastados.
+
+    Se llegó aquí descartando dos intentos con una sartén vista desde arriba. Un
+    círculo con mango —con aro interior o sin él, con el mango recto o en
+    diagonal— es exactamente la silueta de una lupa, y el icono acababa diciendo
+    "buscar" en lugar de "recetas". La olla de frente no se parece a ningún otro
+    glifo habitual.
+
+    Los colores son los tokens de la aplicación: el acento terracota de fondo y
+    el color de superficie para la figura.
+  -->
+  <rect width="64" height="64" rx="14" fill="#b4541f"/>
+
+  <!-- Pomo de la tapa. -->
+  <circle cx="32" cy="14" r="4" fill="#fdfcfa"/>
+
+  <!-- Tapa: más ancha que el cuerpo, para que se lea como tapa y no como borde. -->
+  <rect x="11" y="19" width="42" height="7" rx="3.5" fill="#fdfcfa"/>
+
+  <!-- Asas, a los lados del cuerpo. -->
+  <rect x="6" y="31" width="9" height="7" rx="3.5" fill="#fdfcfa"/>
+  <rect x="49" y="31" width="9" height="7" rx="3.5" fill="#fdfcfa"/>
+
+  <!-- Cuerpo. -->
+  <rect x="14" y="29" width="36" height="23" rx="6" fill="#fdfcfa"/>
+</svg>

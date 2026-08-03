@@ -9,7 +9,14 @@
     <link rel="preload" id="webassembly" />
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <!--
+      El SVG primero: escala sin perder nitidez y pesa menos que cualquier PNG.
+      El PNG queda de respaldo para los navegadores que no admiten favicon en SVG,
+      que lo ignoran cuando entienden el primero.
+    -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
     <link href="Recetas.Web.styles.css" rel="stylesheet" />
     <!--
       Aquí NO va la etiqueta de mapa de importaciones que trae la plantilla de
