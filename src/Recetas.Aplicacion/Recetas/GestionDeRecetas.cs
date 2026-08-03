@@ -81,8 +81,11 @@ public sealed class GestionDeRecetas(
     {
         var receta = await recetas.BuscarPorIdAsync(recetaId, cancelacion);
 
-        // Que no exista y que sea de otro comparten salida a propósito.
-        return receta is null || !receta.EsDe(usuarioId)
+        // PuedeVerla, no EsDe: leer vale también si la receta está publicada.
+        // Editar, borrar y publicar siguen exigiendo autoría, más abajo.
+        //
+        // Que no exista y que no se pueda ver comparten salida a propósito.
+        return receta is null || !receta.PuedeVerla(usuarioId)
             ? (ResultadoDeReceta.NoEncontrada, null)
             : (ResultadoDeReceta.Correcto, receta);
     }
@@ -120,6 +123,41 @@ public sealed class GestionDeRecetas(
         catch (ArgumentException)
         {
             return ResultadoDeReceta.DatosNoValidos;
+        }
+
+        await recetas.GuardarCambiosAsync(cancelacion);
+
+        return ResultadoDeReceta.Correcto;
+    }
+
+    /// <summary>
+    /// Cambia la visibilidad de una receta propia.
+    /// </summary>
+    /// <remarks>
+    /// Exige autoría (<c>EsDe</c>), no solo poder verla: si aceptara
+    /// <c>PuedeVerla</c>, cualquier usuario podría despublicar las recetas
+    /// públicas de los demás.
+    /// </remarks>
+    public async Task<ResultadoDeReceta> CambiarVisibilidadAsync(
+        Guid usuarioId,
+        Guid recetaId,
+        bool publicar,
+        CancellationToken cancelacion = default)
+    {
+        var receta = await recetas.BuscarPorIdAsync(recetaId, cancelacion);
+
+        if (receta is null || !receta.EsDe(usuarioId))
+        {
+            return ResultadoDeReceta.NoEncontrada;
+        }
+
+        if (publicar)
+        {
+            receta.Publicar(reloj.Ahora);
+        }
+        else
+        {
+            receta.Despublicar(reloj.Ahora);
         }
 
         await recetas.GuardarCambiosAsync(cancelacion);

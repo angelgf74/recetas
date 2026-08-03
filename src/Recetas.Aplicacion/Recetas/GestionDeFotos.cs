@@ -31,6 +31,7 @@ public sealed record FotoDescargada(Stream Contenido, TipoDeImagen Tipo);
 public sealed class GestionDeFotos(
     IRepositorioDeRecetas recetas,
     IAlmacenDeFotos almacen,
+    ILimpiadorDeImagenes limpiador,
     IReloj reloj)
 {
     public async Task<(ResultadoDeFoto Resultado, Foto? Foto)> SubirAsync(
@@ -70,7 +71,21 @@ public sealed class GestionDeFotos(
             return (ResultadoDeFoto.NoEsUnaImagen, null);
         }
 
-        var foto = receta.AnadirFoto(tipo, enMemoria.Length, reloj.Ahora);
+        // Se limpian los metadatos ANTES de que los bytes lleguen al disco. Los
+        // móviles incrustan la ubicación GPS en el EXIF, y publicar una receta con
+        // la foto intacta expondría la dirección de quien la cocinó.
+        enMemoria.Position = 0;
+        using var limpia = await limpiador.LimpiarAsync(enMemoria, tipo, cancelacion);
+
+        if (limpia is null)
+        {
+            // Cabecera de imagen válida pero contenido que no se puede decodificar.
+            return (ResultadoDeFoto.NoEsUnaImagen, null);
+        }
+
+        // El tamaño que se registra es el del archivo que realmente se guarda, no
+        // el que subió el cliente: al recodificar cambia.
+        var foto = receta.AnadirFoto(tipo, limpia.Length, reloj.Ahora);
 
         // La fila primero y el archivo después.
         //
@@ -81,8 +96,8 @@ public sealed class GestionDeFotos(
 
         try
         {
-            enMemoria.Position = 0;
-            await almacen.GuardarAsync(foto.Id, tipo, enMemoria, cancelacion);
+            limpia.Position = 0;
+            await almacen.GuardarAsync(foto.Id, tipo, limpia, cancelacion);
         }
         catch (Exception)
         {
@@ -104,7 +119,10 @@ public sealed class GestionDeFotos(
     {
         var receta = await recetas.BuscarPorIdAsync(recetaId, cancelacion);
 
-        if (receta is null || !receta.EsDe(usuarioId))
+        // PuedeVerla: las fotos heredan la visibilidad de su receta, así que las
+        // de una receta publicada las puede descargar cualquier usuario registrado.
+        // Subir y borrar, más abajo, siguen exigiendo autoría.
+        if (receta is null || !receta.PuedeVerla(usuarioId))
         {
             return (ResultadoDeFoto.NoEncontrada, null);
         }

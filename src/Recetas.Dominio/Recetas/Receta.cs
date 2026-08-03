@@ -99,6 +99,52 @@ public sealed class Receta
     /// </remarks>
     public bool EsDe(Guid usuarioId) => AutorId == usuarioId;
 
+    /// <summary>
+    /// Si ese usuario puede <b>leer</b> la receta: porque es suya, o porque está
+    /// publicada.
+    /// </summary>
+    /// <remarks>
+    /// Deliberadamente distinta de <see cref="EsDe"/>, y con un nombre que no se
+    /// le parece. Editar, borrar, publicar y gestionar las fotos siguen exigiendo
+    /// autoría; usar esta comprobación donde tocaba la otra permitiría a cualquiera
+    /// modificar las recetas públicas de los demás.
+    /// <para>
+    /// "Pública" nunca significa anónima: quien pregunta ya está autenticado. No
+    /// hay lectura sin cuenta en ningún caso.
+    /// </para>
+    /// </remarks>
+    public bool PuedeVerla(Guid usuarioId) => EsDe(usuarioId) || Visibilidad == Visibilidad.Publica;
+
+    /// <summary>
+    /// Hace la receta visible para el resto de usuarios registrados.
+    /// Idempotente: publicar algo ya público no es un error.
+    /// </summary>
+    public void Publicar(DateTimeOffset ahora)
+    {
+        if (Visibilidad == Visibilidad.Publica)
+        {
+            return;
+        }
+
+        Visibilidad = Visibilidad.Publica;
+        FechaDeModificacion = ahora;
+    }
+
+    /// <summary>
+    /// La devuelve a privada. Idempotente, por el mismo motivo que
+    /// <see cref="Publicar"/>: el usuario pide un estado, no una transición.
+    /// </summary>
+    public void Despublicar(DateTimeOffset ahora)
+    {
+        if (Visibilidad == Visibilidad.Privada)
+        {
+            return;
+        }
+
+        Visibilidad = Visibilidad.Privada;
+        FechaDeModificacion = ahora;
+    }
+
     public void Actualizar(string nombre, TipoDePlato tipoDePlato, string elaboracion, DateTimeOffset ahora)
     {
         // Ni el autor ni la visibilidad se tocan: no son datos que la edición

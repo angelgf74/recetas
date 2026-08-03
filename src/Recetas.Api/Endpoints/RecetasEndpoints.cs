@@ -27,6 +27,33 @@ public static class RecetasEndpoints
         grupo.MapGet("/{id:guid}", ObtenerAsync);
         grupo.MapPut("/{id:guid}", ActualizarAsync);
         grupo.MapDelete("/{id:guid}", BorrarAsync);
+
+        // Publicar es un endpoint propio y no un campo del PUT: si la visibilidad
+        // viajara en el cuerpo de la edición, cualquier cliente que reenviara la
+        // receta entera podría publicarla sin querer. Compartir tiene que ser un
+        // acto deliberado, que es lo que pide mission.md.
+        grupo.MapPost("/{id:guid}/publicacion", (Guid id, ClaimsPrincipal usuario, GestionDeRecetas gestion,
+            CancellationToken cancelacion) => CambiarVisibilidadAsync(id, usuario, gestion, true, cancelacion));
+
+        grupo.MapDelete("/{id:guid}/publicacion", (Guid id, ClaimsPrincipal usuario, GestionDeRecetas gestion,
+            CancellationToken cancelacion) => CambiarVisibilidadAsync(id, usuario, gestion, false, cancelacion));
+    }
+
+    private static async Task<IResult> CambiarVisibilidadAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        GestionDeRecetas gestion,
+        bool publicar,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var resultado = await gestion.CambiarVisibilidadAsync(usuarioId, id, publicar, cancelacion);
+
+        return resultado is ResultadoDeReceta.Correcto ? Results.NoContent() : NoEncontrada();
     }
 
     private static async Task<IResult> CrearAsync(

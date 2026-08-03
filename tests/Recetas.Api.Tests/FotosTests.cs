@@ -15,11 +15,11 @@ public class FotosTests(ApiConPostgresFixture api) : IClassFixture<ApiConPostgre
 {
     private const string Contrasena = "una-contrasena-larga";
 
-    private static byte[] Jpeg() =>
-        [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01, 0x02, 0x03];
+    // Imágenes reales, no cabeceras inventadas: desde la feature 005 el servidor
+    // decodifica lo que sube para limpiarle los metadatos.
+    private static byte[] Jpeg() => ImagenDePrueba.Jpeg();
 
-    private static byte[] Png() =>
-        [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x01, 0x02];
+    private static byte[] Png() => ImagenDePrueba.Png();
 
     // ---------------------------------------------------------------- Ciclo
 
@@ -43,7 +43,15 @@ public class FotosTests(ApiConPostgresFixture api) : IClassFixture<ApiConPostgre
         Assert.Equal(HttpStatusCode.OK, descarga.StatusCode);
         Assert.Equal("image/jpeg", descarga.Content.Headers.ContentType?.MediaType);
         Assert.Equal("nosniff", descarga.Headers.GetValues("X-Content-Type-Options").Single());
-        Assert.Equal(Jpeg(), await descarga.Content.ReadAsByteArrayAsync());
+
+        // Los bytes NO coinciden con los subidos, y debe ser así: el servidor
+        // recodifica la imagen para quitarle los metadatos (feature 005). Lo que
+        // se comprueba es que lo servido sigue siendo una imagen válida y con las
+        // mismas dimensiones.
+        var descargados = await descarga.Content.ReadAsByteArrayAsync();
+        using var imagen = SixLabors.ImageSharp.Image.Load(descargados);
+        Assert.Equal(8, imagen.Width);
+        Assert.Equal(8, imagen.Height);
 
         // La ficha de la receta la incluye.
         var receta = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");

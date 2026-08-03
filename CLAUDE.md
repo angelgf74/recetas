@@ -4,11 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Features 001 a 004 terminadas.** Hay solución `Recetas.slnx` con las capas hexagonales, PostgreSQL, alta de usuarios en dos pasos con verificación por correo, inicio de sesión con JWT, la web Blazor con sus tres pantallas, el recetario privado y las fotos. Siguiente: la 005 (publicar).
+**Features 001 a 005 terminadas.** Hay solución `Recetas.slnx` con las capas hexagonales, PostgreSQL, alta de usuarios en dos pasos con verificación por correo, inicio de sesión con JWT, la web Blazor con sus cuatro pantallas, el recetario, las fotos y la publicación. Siguiente: la 006 (búsqueda).
 
-Endpoints actuales: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET|PUT|DELETE /recetas/{id}`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud y alta).
+Endpoints actuales: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud y alta).
 
-**Antes de la 005:** las fotos conservan sus metadatos EXIF con ubicación GPS. Publicar sin limpiarlos filtraría la dirección de los usuarios. Es requisito, no mejora.
+**La web solo tiene las cuatro pantallas de la 002** (portada, alta, contraseña, login). Todo lo demás es API: construir la interfaz es la 007, por decisión explícita del usuario.
+
+## Permisos: dos preguntas distintas
+
+- `Receta.EsDe(usuarioId)` — **solo el autor**. Gobierna editar, borrar, publicar, y subir o borrar fotos.
+- `Receta.PuedeVerla(usuarioId)` — autor **o** receta publicada. Solo para leer la receta y descargar sus fotos.
+
+Confundirlas permitiría a cualquiera modificar recetas públicas ajenas. Los nombres son distintos a propósito.
+
+**ImageSharp está fijado en la 3.1**: la 4.0 exige clave de licencia en tiempo de compilación y el proyecto no compila sin ella. Actualizar rompe el build, no solo la licencia.
 
 ## Dos trampas de EF que ya han mordido
 

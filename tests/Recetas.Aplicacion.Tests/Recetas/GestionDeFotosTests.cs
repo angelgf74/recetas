@@ -16,7 +16,7 @@ public class GestionDeFotosTests
     private readonly Guid _ana = Guid.NewGuid();
     private readonly Guid _bruno = Guid.NewGuid();
 
-    private GestionDeFotos Fotos => new(_recetas, _almacen, _reloj);
+    private GestionDeFotos Fotos => new(_recetas, _almacen, new LimpiadorQueNoTocaNada(), _reloj);
 
     private GestionDeRecetas RecetasDe =>
         new(_recetas, new ResolverIngredientes(_ingredientes), _almacen, _reloj);
