@@ -12,6 +12,10 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
             // la ficha dispararía una consulta por ingrediente.
             .Include(receta => receta.Ingredientes)
             .ThenInclude(linea => linea.Ingrediente)
+            // Las fotos también: son pocas por receta y la ficha siempre las
+            // necesita, igual que el borrado, que debe conocerlas para borrar sus
+            // archivos del disco.
+            .Include(receta => receta.Fotos)
             .FirstOrDefaultAsync(receta => receta.Id == id, cancelacion);
 
     public async Task<IReadOnlyCollection<Receta>> ListarPorAutorAsync(

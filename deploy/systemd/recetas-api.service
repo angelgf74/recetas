@@ -39,6 +39,10 @@ Environment=ASPNETCORE_URLS=http://127.0.0.1:54009
 Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
 Environment=DOTNET_NOLOGO=1
 
+# Carpeta de las fotos (feature 004). Declarada aquí y no en api.env porque no es
+# un secreto, y así queda a la vista junto al ReadWritePaths que la hace escribible.
+Environment=Fotos__Directorio=/apps/recetas/fotos
+
 # systemd crea /var/lib/recetas con el propietario correcto y lo deja escribible
 # pese a ProtectSystem=strict. Es donde ASP.NET Core persiste las claves de Data
 # Protection: sin un directorio escribible las regenera en cada arranque.
@@ -62,12 +66,12 @@ LockPersonality=true
 #
 #   /run/postgresql  ahí vive el socket de PostgreSQL, única vía de acceso a la
 #                    base de datos.
-#   /apps/recetas/fotos  las fotos de las recetas (feature 004) se guardan en
-#                    disco, no en la base de datos. El directorio se declara ya
-#                    para que la 004 no tenga que tocar esta unidad; si aún no
-#                    existe, systemd lo ignora sin fallar.
+#   /apps/recetas/fotos  las fotos de las recetas se guardan en disco, no en la
+#                    base de datos (límite duro de la constitución). Sin esta
+#                    excepción, ProtectSystem=strict haría que subir una foto
+#                    fallara con un error de permisos.
 ReadWritePaths=/run/postgresql
-ReadWritePaths=-/apps/recetas/fotos
+ReadWritePaths=/apps/recetas/fotos
 
 [Install]
 WantedBy=multi-user.target

@@ -9,10 +9,13 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 3. **[003 · Recetas privadas](../features/003-recetas-privadas/spec.md)** — crear, editar, ver y borrar recetas propias, con ingredientes como entidad de catálogo compartido. Toda receta nace privada y un usuario no alcanza las de otro.
 
+4. **[004 · Fotos](../features/004-fotos/spec.md)** — subir, servir y borrar imágenes desde el disco del servidor, por endpoint autenticado. El binario nunca entra en PostgreSQL.
+
 ## Siguiente 🔜
 
-4. **004 · Fotos** — subir y servir imágenes de receta desde el disco del servidor.
 5. **005 · Publicar y despublicar** — la transición de visibilidad y la lectura de recetas ajenas publicadas por parte de otros usuarios registrados.
+
+   > ⚠ **Requisito previo, no mejora opcional:** limpiar los metadatos EXIF de las fotos. Hoy conservan la ubicación GPS que incrusta el móvil, así que publicar una receta expondría las coordenadas de la casa de quien la hizo. Detalle en [`features/004-fotos/spec.md`](../features/004-fotos/spec.md).
 6. **006 · Búsqueda multicriterio** — por nombre, ingredientes y tipo de plato, combinables; respetando la visibilidad de cada receta.
 7. **007 · Web completa** — el resto del cliente Blazor sobre el esqueleto que dejó la 002: recetario propio, ficha de receta, edición, fotos, publicación y búsqueda.
 

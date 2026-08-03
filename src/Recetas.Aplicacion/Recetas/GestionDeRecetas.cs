@@ -40,6 +40,7 @@ public enum ResultadoDeReceta
 public sealed class GestionDeRecetas(
     IRepositorioDeRecetas recetas,
     ResolverIngredientes resolverIngredientes,
+    IAlmacenDeFotos almacenDeFotos,
     IReloj reloj)
 {
     public async Task<(ResultadoDeReceta Resultado, Receta? Receta)> CrearAsync(
@@ -136,6 +137,20 @@ public sealed class GestionDeRecetas(
         if (receta is null || !receta.EsDe(usuarioId))
         {
             return ResultadoDeReceta.NoEncontrada;
+        }
+
+        // Los archivos primero, las filas después.
+        //
+        // La cascada de la base de datos borra las filas de las fotos, pero no
+        // toca el disco: hacerlo al revés dejaría archivos que ninguna fila
+        // menciona, invisibles y ocupando espacio para siempre. En este orden, un
+        // fallo deja la receta intacta y la operación se puede repetir.
+        //
+        // Que un archivo concreto ya no esté no aborta el borrado: el almacén
+        // trata "ya no existe" como éxito, porque el objetivo es que deje de estar.
+        foreach (var foto in receta.Fotos)
+        {
+            await almacenDeFotos.BorrarAsync(foto.Id, foto.Tipo, cancelacion);
         }
 
         await recetas.BorrarAsync(receta, cancelacion);

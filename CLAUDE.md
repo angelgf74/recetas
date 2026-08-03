@@ -4,11 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Features 001, 002 y 003 terminadas.** Hay solución `Recetas.slnx` con las capas hexagonales, PostgreSQL, alta de usuarios en dos pasos con verificación por correo, inicio de sesión con JWT, la web Blazor con sus tres pantallas y el recetario privado por API. Siguiente: la 004 (fotos).
+**Features 001 a 004 terminadas.** Hay solución `Recetas.slnx` con las capas hexagonales, PostgreSQL, alta de usuarios en dos pasos con verificación por correo, inicio de sesión con JWT, la web Blazor con sus tres pantallas, el recetario privado y las fotos. Siguiente: la 005 (publicar).
 
-Endpoints actuales: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, y `GET|POST /recetas` + `GET|PUT|DELETE /recetas/{id}` (todos protegidos).
+Endpoints actuales: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET|PUT|DELETE /recetas/{id}`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud y alta).
 
-**Trampa de EF con objetos valor:** dentro de una consulta LINQ **nunca** se accede a `.Valor` de un objeto valor convertido (`ingrediente.Nombre.Valor`). Compila, pero revienta en ejecución con "The LINQ expression could not be translated" y llega al cliente como un `500`. Se compara el objeto completo y EF aplica el conversor a los parámetros.
+**Antes de la 005:** las fotos conservan sus metadatos EXIF con ubicación GPS. Publicar sin limpiarlos filtraría la dirección de los usuarios. Es requisito, no mejora.
+
+## Dos trampas de EF que ya han mordido
+
+- **Nunca acceder a `.Valor` de un objeto valor convertido dentro de una consulta LINQ** (`ingrediente.Nombre.Valor`). Compila y revienta en ejecución con "The LINQ expression could not be translated", que llega al cliente como un `500`. Se compara el objeto completo y EF aplica el conversor a los parámetros.
+- **Las entidades con clave `Guid` generada por el dominio necesitan `ValueGeneratedNever()`** si se cuelgan de un padre ya rastreado. Si no, EF ve la clave rellena, deduce que la fila existe y emite `UPDATE` en lugar de `INSERT`; el error es un `DbUpdateConcurrencyException` de "0 filas afectadas" que no menciona la causa. A las que se añaden con `Add()` no les pasa, porque EF marca el grafo entero como nuevo.
 
 La `constitution/` es la fuente de verdad: leerla antes de proponer nada. `spec/features/NNN-nombre-feature/` **no es una feature real**: es el molde a copiar.
 

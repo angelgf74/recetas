@@ -62,5 +62,17 @@ public sealed class ConfiguracionDeReceta : IEntityTypeConfiguration<Receta>
             .WithOne()
             .HasForeignKey(linea => linea.RecetaId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        constructor.Metadata
+            .FindNavigation(nameof(Receta.Fotos))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        // Cascada: borrar la receta borra las filas de sus fotos. Los archivos del
+        // disco NO caen por aquí; de eso se encarga el caso de uso, que los borra
+        // antes de tocar la base de datos.
+        constructor.HasMany(receta => receta.Fotos)
+            .WithOne()
+            .HasForeignKey(foto => foto.RecetaId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

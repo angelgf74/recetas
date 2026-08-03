@@ -25,6 +25,10 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
     /// <summary>Correos que la API ha intentado enviar. Es donde se lee el enlace del alta.</summary>
     public EnviadorDeCorreoEspia Correo { get; } = new();
 
+    /// <summary>Carpeta temporal donde esta instancia guarda las fotos.</summary>
+    public string DirectorioDeFotos { get; } =
+        Path.Combine(Path.GetTempPath(), $"recetas-fotos-{Guid.NewGuid():N}");
+
     /// <summary>Permite a un test bajar el límite de registros para comprobar el 429.</summary>
     protected virtual int MaximoDeRegistrosPorVentana => 1000;
 
@@ -49,6 +53,19 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
     {
         await _postgres.DisposeAsync();
         await base.DisposeAsync();
+
+        // Se limpian los archivos escritos durante los tests. Si falla, no se
+        // propaga: dejar basura en el directorio temporal no debe tumbar la suite.
+        try
+        {
+            if (Directory.Exists(DirectorioDeFotos))
+            {
+                Directory.Delete(DirectorioDeFotos, recursive: true);
+            }
+        }
+        catch (IOException)
+        {
+        }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder constructor)
@@ -61,6 +78,10 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
             "clave-de-pruebas-suficientemente-larga-para-hmac-sha256");
 
         constructor.UseSetting("Correo:BaseDeLaWeb", "https://recetas.test");
+
+        // Carpeta de fotos propia y efímera por fixture: los tests escriben
+        // archivos de verdad y no deben pisarse entre sí ni ensuciar el repositorio.
+        constructor.UseSetting("Fotos:Directorio", DirectorioDeFotos);
         constructor.UseSetting("Limites:RegistrosPorVentana", MaximoDeRegistrosPorVentana.ToString());
         constructor.UseSetting(
             "Limites:IniciosDeSesionPorVentana",

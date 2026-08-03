@@ -8,13 +8,14 @@ public class GestionDeRecetasTests
 {
     private readonly RepositorioDeRecetasEnMemoria _recetas = new();
     private readonly RepositorioDeIngredientesEnMemoria _ingredientes = new();
+    private readonly AlmacenDeFotosEnMemoria _fotos = new();
     private readonly RelojFalso _reloj = new(new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero));
 
     private readonly Guid _ana = Guid.NewGuid();
     private readonly Guid _bruno = Guid.NewGuid();
 
     private GestionDeRecetas Gestion =>
-        new(_recetas, new ResolverIngredientes(_ingredientes), _reloj);
+        new(_recetas, new ResolverIngredientes(_ingredientes), _fotos, _reloj);
 
     private static DatosDeReceta Datos(
         string nombre = "Tortilla de patatas",

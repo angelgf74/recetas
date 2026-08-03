@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Recetas.Dominio.Puertos;
 using Recetas.Infraestructura.Correo;
+using Recetas.Infraestructura.Fotos;
 using Recetas.Infraestructura.Persistencia;
 using Recetas.Infraestructura.Seguridad;
 using Recetas.Infraestructura.Tiempo;
@@ -36,6 +37,9 @@ public static class InyeccionDeDependencias
         servicios.AddSingleton<IHasheadorDeContrasenas, HasheadorPbkdf2>();
         servicios.AddSingleton<IGeneradorDeTokens, GeneradorDeTokensAleatorios>();
         servicios.AddScoped<IEmisorDeAcceso, EmisorDeAccesoJwt>();
+
+        servicios.Configure<OpcionesDeFotos>(configuracion.GetSection(OpcionesDeFotos.Seccion));
+        servicios.AddSingleton<IAlmacenDeFotos, AlmacenDeFotosEnDisco>();
 
         AnadirOpcionesDeJwt(servicios, configuracion);
         AnadirCorreo(servicios, configuracion);

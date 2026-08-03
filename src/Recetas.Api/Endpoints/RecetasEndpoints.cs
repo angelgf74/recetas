@@ -179,6 +179,10 @@ public static class RecetasEndpoints
                     linea.Cantidad,
                     linea.Unidad.ToString()))
                 .OrderBy(linea => linea.Nombre, StringComparer.Ordinal)
+                .ToList(),
+            receta.Fotos
+                .OrderBy(foto => foto.FechaDeSubida)
+                .Select(foto => new FotoRespuesta(foto.Id, foto.Tipo.ToString(), foto.TamanoEnBytes))
                 .ToList());
 
     private static IResult NoEncontrada() =>

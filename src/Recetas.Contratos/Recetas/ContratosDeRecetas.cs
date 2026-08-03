@@ -43,7 +43,12 @@ public sealed class PeticionDeReceta
 /// <param name="Unidad">Unidad de medida.</param>
 public sealed record LineaDeIngredienteRespuesta(string Nombre, decimal? Cantidad, string Unidad);
 
-/// <summary>Receta completa, con sus ingredientes.</summary>
+/// <param name="Id">Identificador de la foto; con él se compone la URL de descarga.</param>
+/// <param name="Tipo">Formato: <c>Jpeg</c>, <c>Png</c> o <c>Webp</c>.</param>
+/// <param name="TamanoEnBytes">Tamaño del archivo.</param>
+public sealed record FotoRespuesta(Guid Id, string Tipo, long TamanoEnBytes);
+
+/// <summary>Receta completa, con sus ingredientes y sus fotos.</summary>
 public sealed record RespuestaDeReceta(
     Guid Id,
     string Nombre,
@@ -52,7 +57,8 @@ public sealed record RespuestaDeReceta(
     string Visibilidad,
     DateTimeOffset FechaDeCreacion,
     DateTimeOffset FechaDeModificacion,
-    IReadOnlyCollection<LineaDeIngredienteRespuesta> Ingredientes);
+    IReadOnlyCollection<LineaDeIngredienteRespuesta> Ingredientes,
+    IReadOnlyCollection<FotoRespuesta> Fotos);
 
 /// <summary>
 /// Receta en un listado: sin ingredientes ni elaboración.

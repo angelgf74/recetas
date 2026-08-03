@@ -174,6 +174,18 @@ acaban en spam, y el usuario nunca recibe el enlace.
 - Comprobar el límite diario del plan contratado: agotarlo deja el registro
   inutilizable.
 
+### 8. Copia de seguridad: son DOS piezas
+
+El volcado de PostgreSQL **no incluye las fotos**: los binarios viven en
+`/apps/recetas/fotos` y la base de datos solo guarda la referencia. Una copia que
+cubra solo la base de datos restauraría las recetas con las imágenes rotas.
+
+```bash
+# Ambas cosas, no solo la primera.
+sudo -u webapps pg_dump recetas > recetas.sql
+tar -czf recetas-fotos.tar.gz -C /apps/recetas fotos
+```
+
 ## Comprobación
 
 ```bash

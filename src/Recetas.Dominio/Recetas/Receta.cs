@@ -9,6 +9,7 @@ public sealed class Receta
     public const int LongitudMaximaDeLaElaboracion = 20_000;
 
     private readonly List<IngredienteDeReceta> _ingredientes = [];
+    private readonly List<Foto> _fotos = [];
 
     private Receta(
         Guid id,
@@ -61,6 +62,12 @@ public sealed class Receta
     public DateTimeOffset FechaDeModificacion { get; private set; }
 
     public IReadOnlyCollection<IngredienteDeReceta> Ingredientes => _ingredientes;
+
+    /// <summary>
+    /// Fotos de la receta. No tienen permisos propios: heredan los de la receta,
+    /// y por eso viven dentro de ella y no como entidad suelta.
+    /// </summary>
+    public IReadOnlyCollection<Foto> Fotos => _fotos;
 
     public static Receta Crear(
         Guid autorId,
@@ -128,6 +135,35 @@ public sealed class Receta
 
         _ingredientes.Clear();
         _ingredientes.AddRange(nuevas);
+    }
+
+    public Foto AnadirFoto(TipoDeImagen tipo, long tamanoEnBytes, DateTimeOffset ahora)
+    {
+        var foto = Foto.Crear(Id, tipo, tamanoEnBytes, ahora);
+        _fotos.Add(foto);
+        FechaDeModificacion = ahora;
+
+        return foto;
+    }
+
+    /// <summary>
+    /// Quita una foto de la receta. Devuelve la foto quitada, o <c>null</c> si no
+    /// pertenecía a esta receta: quien llama necesita conocer su tipo para poder
+    /// borrar también el archivo del almacén.
+    /// </summary>
+    public Foto? QuitarFoto(Guid fotoId, DateTimeOffset ahora)
+    {
+        var foto = _fotos.FirstOrDefault(f => f.Id == fotoId);
+
+        if (foto is null)
+        {
+            return null;
+        }
+
+        _fotos.Remove(foto);
+        FechaDeModificacion = ahora;
+
+        return foto;
     }
 
     private static string ValidarNombre(string nombre)
