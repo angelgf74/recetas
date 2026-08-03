@@ -7,9 +7,10 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 1. **[001 · Esqueleto y persistencia](../features/001-esqueleto-y-persistencia/spec.md)** — solución .NET con las capas hexagonales, PostgreSQL conectado, migración inicial y `GET /salud` recorriendo el camino completo. La regla de dependencias queda vigilada por tests.
 2. **[002 · Cuentas de usuario](../features/002-cuentas-de-usuario/spec.md)** — alta en dos pasos con verificación por correo, inicio de sesión con JWT, límites de frecuencia y esqueleto de la web Blazor con sus tres pantallas. Queda pendiente de puesta en producción configurar SPF/DKIM y los secretos en el servidor.
 
+3. **[003 · Recetas privadas](../features/003-recetas-privadas/spec.md)** — crear, editar, ver y borrar recetas propias, con ingredientes como entidad de catálogo compartido. Toda receta nace privada y un usuario no alcanza las de otro.
+
 ## Siguiente 🔜
 
-3. **003 · Recetas privadas** — crear, editar, ver y borrar recetas propias, con `TipoPlato`. Toda receta nace privada; la publicación aún no existe.
 4. **004 · Fotos** — subir y servir imágenes de receta desde el disco del servidor.
 5. **005 · Publicar y despublicar** — la transición de visibilidad y la lectura de recetas ajenas publicadas por parte de otros usuarios registrados.
 6. **006 · Búsqueda multicriterio** — por nombre, ingredientes y tipo de plato, combinables; respetando la visibilidad de cada receta.

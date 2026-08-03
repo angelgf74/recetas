@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Features 001 y 002 terminadas.** Hay solución `Recetas.slnx` con las capas hexagonales, PostgreSQL, alta de usuarios en dos pasos con verificación por correo, inicio de sesión con JWT y la web Blazor con sus tres pantallas. Siguiente: la 003 (recetas privadas).
+**Features 001, 002 y 003 terminadas.** Hay solución `Recetas.slnx` con las capas hexagonales, PostgreSQL, alta de usuarios en dos pasos con verificación por correo, inicio de sesión con JWT, la web Blazor con sus tres pantallas y el recetario privado por API. Siguiente: la 004 (fotos).
 
-Endpoints actuales: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo` (protegido).
+Endpoints actuales: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, y `GET|POST /recetas` + `GET|PUT|DELETE /recetas/{id}` (todos protegidos).
+
+**Trampa de EF con objetos valor:** dentro de una consulta LINQ **nunca** se accede a `.Valor` de un objeto valor convertido (`ingrediente.Nombre.Valor`). Compila, pero revienta en ejecución con "The LINQ expression could not be translated" y llega al cliente como un `500`. Se compara el objeto completo y EF aplica el conversor a los parámetros.
 
 La `constitution/` es la fuente de verdad: leerla antes de proponer nada. `spec/features/NNN-nombre-feature/` **no es una feature real**: es el molde a copiar.
 

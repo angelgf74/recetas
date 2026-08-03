@@ -28,6 +28,14 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
     /// <summary>Permite a un test bajar el límite de registros para comprobar el 429.</summary>
     protected virtual int MaximoDeRegistrosPorVentana => 1000;
 
+    /// <summary>
+    /// Los tests comparten origen, así que todos caen en el mismo cubo del
+    /// limitador. Con el valor de producción (10 por ventana), una clase con una
+    /// docena de inicios de sesión empieza a recibir 429 a mitad, y el síntoma es
+    /// un token nulo mucho más adelante, sin mencionar el límite por ningún lado.
+    /// </summary>
+    protected virtual int MaximoDeIniciosDeSesionPorVentana => 1000;
+
     public async Task InitializeAsync()
     {
         await _postgres.StartAsync();
@@ -54,6 +62,9 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         constructor.UseSetting("Correo:BaseDeLaWeb", "https://recetas.test");
         constructor.UseSetting("Limites:RegistrosPorVentana", MaximoDeRegistrosPorVentana.ToString());
+        constructor.UseSetting(
+            "Limites:IniciosDeSesionPorVentana",
+            MaximoDeIniciosDeSesionPorVentana.ToString());
 
         constructor.ConfigureTestServices(servicios =>
         {

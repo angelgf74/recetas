@@ -99,9 +99,11 @@ public class CompletarRegistroTests
         Assert.Equal(ResultadoDeCompletarRegistro.Completado, reintento);
     }
 
-    private static Recetas.Dominio.Usuarios.Contrasena CrearContrasena(string valor)
+    // global:: es necesario: existe un espacio de nombres Recetas.Aplicacion.Recetas
+    // que, desde aquí, tapa la raíz `Recetas` en la resolución de nombres.
+    private static global::Recetas.Dominio.Usuarios.Contrasena CrearContrasena(string valor)
     {
-        Assert.True(Recetas.Dominio.Usuarios.Contrasena.TryCrear(valor, out var contrasena));
+        Assert.True(global::Recetas.Dominio.Usuarios.Contrasena.TryCrear(valor, out var contrasena));
         return contrasena;
     }
 
