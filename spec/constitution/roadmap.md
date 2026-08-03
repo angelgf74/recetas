@@ -15,9 +15,11 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 6. **[006 · Búsqueda multicriterio](../features/006-busqueda-multicriterio/spec.md)** — por nombre, ingredientes y tipo de plato, combinables, insensible a mayúsculas y acentos. Alcanza las recetas propias y las publicadas por otros, nunca las privadas ajenas.
 
+7. **[007 · Web completa](../features/007-web-completa/spec.md)** — el resto del cliente Blazor sobre el esqueleto que dejó la 002: recetario propio, ficha, edición, fotos, publicación y búsqueda, con sesión persistente y rutas protegidas.
+
 ## Siguiente 🔜
 
-7. **007 · Web completa** — el resto del cliente Blazor sobre el esqueleto que dejó la 002: recetario propio, ficha de receta, edición, fotos, publicación y búsqueda.
+_Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
 
 _El orden no es caprichoso: **005 depende de que existan recetas (003)**, y **006 solo tiene sentido cuando hay algo público que buscar (005)**. Las reglas de visibilidad se prueban en cuanto nacen, no al final._
 

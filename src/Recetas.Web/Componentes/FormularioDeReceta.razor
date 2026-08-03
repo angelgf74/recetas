@@ -1,0 +1,216 @@
+@using System.ComponentModel.DataAnnotations
+@using Recetas.Contratos.Recetas
+@using Recetas.Web.Servicios
+
+@*
+    El mismo formulario para crear y para editar. Los campos, la validación y el
+    manejo de errores son idénticos: duplicarlos garantizaría que un arreglo se
+    aplicara solo a una de las dos pantallas.
+*@
+
+@if (_resultado is { Correcta: false })
+{
+    <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
+}
+
+<EditForm Model="_formulario" OnValidSubmit="EnviarAsync" FormName="receta">
+    <DataAnnotationsValidator />
+
+    <div class="campo">
+        <label for="nombre">Nombre</label>
+        <InputText id="nombre" @bind-Value="_formulario.Nombre" disabled="@_enviando" />
+        <ValidationMessage For="() => _formulario.Nombre" />
+    </div>
+
+    <div class="campo">
+        <label for="tipo">Tipo de plato</label>
+        <InputSelect id="tipo" @bind-Value="_formulario.TipoDePlato" disabled="@_enviando">
+            @foreach (var tipo in TiposDePlato)
+            {
+                <option value="@tipo.Valor">@tipo.Etiqueta</option>
+            }
+        </InputSelect>
+    </div>
+
+    <fieldset class="ingredientes">
+        <legend>Ingredientes</legend>
+
+        @for (var indice = 0; indice < _formulario.Ingredientes.Count; indice++)
+        {
+            var linea = _formulario.Ingredientes[indice];
+            var numero = indice;
+
+            <div class="ingrediente">
+                <input type="text" placeholder="Ingrediente" aria-label="Nombre del ingrediente"
+                       @bind="linea.Nombre" disabled="@_enviando" />
+
+                <input type="number" step="0.001" min="0" placeholder="Cant."
+                       aria-label="Cantidad" @bind="linea.Cantidad"
+                       disabled="@(_enviando || linea.Unidad == "AlGusto")" />
+
+                <select aria-label="Unidad" @bind="linea.Unidad" disabled="@_enviando">
+                    @foreach (var unidad in Unidades)
+                    {
+                        <option value="@unidad.Valor">@unidad.Etiqueta</option>
+                    }
+                </select>
+
+                <button type="button" class="boton-icono" aria-label="Quitar ingrediente"
+                        @onclick="() => QuitarIngrediente(numero)"
+                        disabled="@(_enviando || _formulario.Ingredientes.Count == 1)">
+                    ×
+                </button>
+            </div>
+        }
+
+        <button type="button" class="boton boton-secundario" @onclick="AnadirIngrediente" disabled="@_enviando">
+            Añadir ingrediente
+        </button>
+    </fieldset>
+
+    <div class="campo">
+        <label for="elaboracion">Elaboración</label>
+        <InputTextArea id="elaboracion" rows="10" @bind-Value="_formulario.Elaboracion" disabled="@_enviando" />
+        <ValidationMessage For="() => _formulario.Elaboracion" />
+        <p class="ayuda">Un paso por línea.</p>
+    </div>
+
+    <button type="submit" class="boton" disabled="@_enviando">
+        @(_enviando ? "Guardando…" : TextoDeGuardar)
+    </button>
+</EditForm>
+
+@code {
+    /// <summary>Receta a editar. Si es <c>null</c>, el formulario crea una nueva.</summary>
+    [Parameter]
+    public RespuestaDeReceta? Receta { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback<PeticionDeReceta> AlGuardar { get; set; }
+
+    [Parameter]
+    public string TextoDeGuardar { get; set; } = "Guardar";
+
+    /// <summary>Resultado de la última llamada, para pintar el error sin perder lo escrito.</summary>
+    [Parameter]
+    public ResultadoDeLlamada? Resultado { get; set; }
+
+    private static readonly (string Valor, string Etiqueta)[] TiposDePlato =
+    [
+        ("Entrante", "Entrante"),
+        ("PrimerPlato", "Primer plato"),
+        ("PlatoPrincipal", "Plato principal"),
+        ("Guarnicion", "Guarnición"),
+        ("Postre", "Postre"),
+        ("Bebida", "Bebida"),
+        ("Salsa", "Salsa")
+    ];
+
+    private static readonly (string Valor, string Etiqueta)[] Unidades =
+    [
+        ("Unidad", "unidad(es)"),
+        ("Gramo", "g"),
+        ("Kilogramo", "kg"),
+        ("Mililitro", "ml"),
+        ("Litro", "l"),
+        ("Cucharada", "cucharada(s)"),
+        ("Cucharadita", "cucharadita(s)"),
+        ("Taza", "taza(s)"),
+        ("Pizca", "pizca(s)"),
+        ("Diente", "diente(s)"),
+        ("Rama", "rama(s)"),
+        ("Hoja", "hoja(s)"),
+        ("AlGusto", "al gusto")
+    ];
+
+    private readonly Formulario _formulario = new();
+    private ResultadoDeLlamada? _resultado;
+    private bool _enviando;
+
+    protected override void OnParametersSet()
+    {
+        _resultado = Resultado;
+        _enviando = false;
+
+        if (Receta is null || _formulario.Cargado)
+        {
+            return;
+        }
+
+        // Carga inicial en modo edición. Se hace una sola vez: repetirla en cada
+        // repintado descartaría lo que el usuario estuviera escribiendo.
+        _formulario.Nombre = Receta.Nombre;
+        _formulario.TipoDePlato = Receta.TipoDePlato;
+        _formulario.Elaboracion = Receta.Elaboracion;
+        _formulario.Ingredientes = Receta.Ingredientes
+            .Select(linea => new LineaEditable
+            {
+                Nombre = linea.Nombre,
+                Cantidad = linea.Cantidad,
+                Unidad = linea.Unidad
+            })
+            .ToList();
+        _formulario.Cargado = true;
+    }
+
+    private void AnadirIngrediente() => _formulario.Ingredientes.Add(new LineaEditable());
+
+    private void QuitarIngrediente(int indice)
+    {
+        // Nunca se queda sin ninguna: la API exige al menos un ingrediente y es
+        // mejor impedirlo aquí que dejar enviar algo que se sabe que va a fallar.
+        if (_formulario.Ingredientes.Count > 1)
+        {
+            _formulario.Ingredientes.RemoveAt(indice);
+        }
+    }
+
+    private async Task EnviarAsync()
+    {
+        _enviando = true;
+        _resultado = null;
+
+        var peticion = new PeticionDeReceta
+        {
+            Nombre = _formulario.Nombre,
+            TipoDePlato = _formulario.TipoDePlato,
+            Elaboracion = _formulario.Elaboracion,
+            Ingredientes = _formulario.Ingredientes
+                .Where(linea => !string.IsNullOrWhiteSpace(linea.Nombre))
+                .Select(linea => new LineaDeIngredientePeticion(
+                    linea.Nombre,
+                    linea.Unidad == "AlGusto" ? null : linea.Cantidad,
+                    linea.Unidad))
+                .ToList()
+        };
+
+        // El formulario NO se limpia: si el guardado falla, lo escrito sigue ahí.
+        await AlGuardar.InvokeAsync(peticion);
+
+        _enviando = false;
+    }
+
+    private sealed class Formulario
+    {
+        public bool Cargado { get; set; }
+
+        [Required(ErrorMessage = "La receta necesita un nombre.")]
+        [MaxLength(120)]
+        public string Nombre { get; set; } = string.Empty;
+
+        public string TipoDePlato { get; set; } = "PlatoPrincipal";
+
+        [Required(ErrorMessage = "Cuenta cómo se hace.")]
+        [MaxLength(20_000)]
+        public string Elaboracion { get; set; } = string.Empty;
+
+        public List<LineaEditable> Ingredientes { get; set; } = [new()];
+    }
+
+    private sealed class LineaEditable
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public decimal? Cantidad { get; set; } = 1;
+        public string Unidad { get; set; } = "Unidad";
+    }
+}

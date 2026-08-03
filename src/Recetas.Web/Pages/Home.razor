@@ -1,20 +1,45 @@
 @page "/"
+@using Recetas.Web.Servicios
+@inject EstadoDeSesion Sesion
+@inject NavigationManager Navegacion
 
 <PageTitle>Recetas</PageTitle>
 
-<h1>Recetas</h1>
+@if (_comprobando)
+{
+    <p class="ayuda">Cargando…</p>
+}
+else
+{
+    <h1>Recetas</h1>
 
-<p>
-    Tu recetario: guarda tus recetas, decide cuáles compartes y encuéntralas
-    cuando las necesites.
-</p>
+    <p>
+        Tu recetario: guarda tus recetas, decide cuáles compartes y encuéntralas
+        cuando las necesites.
+    </p>
 
-<p class="ayuda">
-    Hace falta cuenta para consultar cualquier receta. El recetario en sí llega
-    con la siguiente feature; por ahora solo están el alta y el inicio de sesión.
-</p>
+    <p class="ayuda">
+        Hace falta cuenta para consultar cualquier receta.
+    </p>
 
-<div class="acciones">
-    <a class="boton" href="/registro">Crear cuenta</a>
-    <a class="enlace-secundario" href="/sesion">Ya tengo cuenta</a>
-</div>
+    <div class="acciones-portada">
+        <a class="boton" href="/registro">Crear cuenta</a>
+        <a class="enlace-secundario" href="/sesion">Ya tengo cuenta</a>
+    </div>
+}
+
+@code {
+    private bool _comprobando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Con sesión abierta, la portada no aporta nada: se va directo al recetario.
+        if (await Sesion.ObtenerTokenAsync() is { Length: > 0 })
+        {
+            Navegacion.NavigateTo("/recetas", replace: true);
+            return;
+        }
+
+        _comprobando = false;
+    }
+}

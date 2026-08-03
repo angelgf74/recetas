@@ -1,0 +1,67 @@
+@page "/recetas"
+@using Recetas.Contratos.Recetas
+@using Recetas.Web.Componentes
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+
+<PageTitle>Mi recetario · Recetas</PageTitle>
+
+<RutaProtegida>
+    <div class="cabecera-de-pagina">
+        <h1>Mi recetario</h1>
+        <a class="boton" href="/recetas/nueva">Nueva receta</a>
+    </div>
+
+    @if (_cargando)
+    {
+        <p class="ayuda">Cargando…</p>
+    }
+    else if (_resultado is { Correcta: false })
+    {
+        <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
+    }
+    else if (_recetas is { Count: 0 })
+    {
+        @* Un recetario vacío explica qué hacer, en lugar de dejar una lista en blanco. *@
+        <div class="vacio">
+            <p>Todavía no has guardado ninguna receta.</p>
+            <p class="ayuda">
+                Empieza por esa que haces de memoria: cuando la busques dentro de seis meses,
+                lo agradecerás.
+            </p>
+            <a class="boton" href="/recetas/nueva">Crear la primera</a>
+        </div>
+    }
+    else
+    {
+        <ul class="lista-de-recetas">
+            @foreach (var receta in _recetas!)
+            {
+                <li>
+                    <a href="@($"/recetas/{receta.Id}")">
+                        <span class="nombre">@receta.Nombre</span>
+                        <span class="meta">
+                            @Etiquetas.DeTipo(receta.TipoDePlato)
+                            @if (receta.Visibilidad == "Publica")
+                            {
+                                <span class="marca marca-publica">Publicada</span>
+                            }
+                        </span>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</RutaProtegida>
+
+@code {
+    private List<ResumenDeReceta>? _recetas;
+    private ResultadoDeLlamada? _resultado;
+    private bool _cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        (_resultado, _recetas) = await Api.ListarRecetasAsync();
+        _cargando = false;
+    }
+}

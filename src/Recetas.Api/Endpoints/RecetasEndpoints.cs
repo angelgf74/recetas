@@ -79,7 +79,7 @@ public static class RecetasEndpoints
         var (resultado, receta) = await gestion.CrearAsync(autorId, datos, cancelacion);
 
         return resultado is ResultadoDeReceta.Correcto && receta is not null
-            ? Results.Created($"/recetas/{receta.Id}", ARespuesta(receta))
+            ? Results.Created($"/recetas/{receta.Id}", ARespuesta(receta, autorId))
             : DatosNoValidos();
     }
 
@@ -149,7 +149,7 @@ public static class RecetasEndpoints
         var (resultado, receta) = await gestion.ObtenerAsync(usuarioId, id, cancelacion);
 
         return resultado is ResultadoDeReceta.Correcto && receta is not null
-            ? Results.Ok(ARespuesta(receta))
+            ? Results.Ok(ARespuesta(receta, usuarioId))
             : NoEncontrada();
     }
 
@@ -236,7 +236,7 @@ public static class RecetasEndpoints
             receta.FechaDeModificacion,
             receta.EsDe(usuarioId));
 
-    private static RespuestaDeReceta ARespuesta(DominioReceta receta) =>
+    private static RespuestaDeReceta ARespuesta(DominioReceta receta, Guid usuarioId) =>
         new(
             receta.Id,
             receta.Nombre,
@@ -255,7 +255,8 @@ public static class RecetasEndpoints
             receta.Fotos
                 .OrderBy(foto => foto.FechaDeSubida)
                 .Select(foto => new FotoRespuesta(foto.Id, foto.Tipo.ToString(), foto.TamanoEnBytes))
-                .ToList());
+                .ToList(),
+            receta.EsDe(usuarioId));
 
     private static IResult NoEncontrada() =>
         Results.Json(new RespuestaDeError(MensajeDeNoEncontrada), statusCode: StatusCodes.Status404NotFound);

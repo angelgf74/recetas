@@ -1,0 +1,46 @@
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+
+@*
+    Pinta una foto que solo se sirve con autenticación.
+
+    Una etiqueta <img src="..."> no manda la cabecera Authorization y el endpoint
+    la exige, así que la imagen se descarga con el cliente autenticado y se pinta
+    como URL `data:`. Ver el comentario de ClienteDeApi.DescargarFotoAsync para el
+    porqué de `data:` y no `blob:`.
+*@
+
+@if (_datos is not null)
+{
+    <img class="foto" src="@_datos" alt="Foto de la receta" />
+}
+else if (_fallo)
+{
+    <div class="foto foto-rota" role="img" aria-label="La foto no se ha podido cargar">
+        <span>No se ha podido cargar</span>
+    </div>
+}
+else
+{
+    <div class="foto foto-cargando" aria-hidden="true"></div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid RecetaId { get; set; }
+
+    [Parameter, EditorRequired]
+    public Guid FotoId { get; set; }
+
+    private string? _datos;
+    private bool _fallo;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _datos = null;
+        _fallo = false;
+
+        _datos = await Api.DescargarFotoAsync(RecetaId, FotoId);
+        _fallo = _datos is null;
+    }
+}

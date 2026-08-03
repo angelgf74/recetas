@@ -1,0 +1,57 @@
+@*
+    Confirmación en línea para acciones que no se pueden deshacer.
+
+    No se usa el confirm() del navegador: bloquea el hilo, no se puede estilar y
+    en móvil aparece como una alerta del sistema, ajena a la aplicación.
+*@
+
+@if (!_preguntando)
+{
+    <button type="button" class="boton boton-peligro" @onclick="() => _preguntando = true">
+        @Texto
+    </button>
+}
+else
+{
+    <div class="confirmacion" role="alertdialog" aria-label="@Pregunta">
+        <p>@Pregunta</p>
+        <div class="confirmacion-botones">
+            <button type="button" class="boton boton-peligro" @onclick="ConfirmarAsync" disabled="@_ocupado">
+                @(_ocupado ? "…" : "Sí, " + Texto.ToLowerInvariant())
+            </button>
+            <button type="button" class="boton boton-secundario" @onclick="() => _preguntando = false"
+                    disabled="@_ocupado">
+                Cancelar
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Texto { get; set; } = "Borrar";
+
+    [Parameter, EditorRequired]
+    public string Pregunta { get; set; } = "¿Seguro? No se puede deshacer.";
+
+    [Parameter, EditorRequired]
+    public EventCallback AlConfirmar { get; set; }
+
+    private bool _preguntando;
+    private bool _ocupado;
+
+    private async Task ConfirmarAsync()
+    {
+        _ocupado = true;
+
+        try
+        {
+            await AlConfirmar.InvokeAsync();
+        }
+        finally
+        {
+            _ocupado = false;
+            _preguntando = false;
+        }
+    }
+}

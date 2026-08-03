@@ -1,0 +1,47 @@
+@using Recetas.Web.Servicios
+@inject EstadoDeSesion Sesion
+@inject NavigationManager Navegacion
+
+@*
+    Envuelve las páginas que exigen sesión. Sin ella, lleva al inicio de sesión
+    en lugar de dejar que cada llamada devuelva un 401 y la pantalla se llene de
+    errores sueltos.
+
+    No es una medida de seguridad: la autorización real está en el servidor. Esto
+    solo evita ofrecer algo que va a fallar.
+*@
+
+@if (_comprobando)
+{
+    <p class="ayuda">Cargando…</p>
+}
+else if (_haySesion)
+{
+    @ChildContent
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool _comprobando = true;
+    private bool _haySesion;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // La lectura de localStorage es asíncrona, así que hasta que termina no
+        // se sabe si hay sesión: pintar el contenido antes provocaría un parpadeo
+        // y una llamada a la API sin token.
+        var token = await Sesion.ObtenerTokenAsync();
+        _haySesion = !string.IsNullOrEmpty(token);
+        _comprobando = false;
+
+        if (!_haySesion)
+        {
+            var destino = Uri.EscapeDataString(
+                Navegacion.ToBaseRelativePath(Navegacion.Uri));
+
+            Navegacion.NavigateTo($"/sesion?volverA={destino}");
+        }
+    }
+}

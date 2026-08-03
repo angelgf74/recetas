@@ -1,9 +1,49 @@
 @inherits LayoutComponentBase
+@using Recetas.Web.Servicios
+@implements IDisposable
+@inject EstadoDeSesion Sesion
+@inject NavigationManager Navegacion
 
 <header class="cabecera">
     <a class="marca" href="/">Recetas</a>
+
+    @if (_haySesion)
+    {
+        <nav class="navegacion">
+            <a href="/recetas">Mi recetario</a>
+            <a href="/buscar">Buscar</a>
+            <button type="button" class="enlace" @onclick="CerrarSesionAsync">Salir</button>
+        </nav>
+    }
 </header>
 
 <main class="contenido">
     @Body
 </main>
+
+@code {
+    private bool _haySesion;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // El estado avisa de sus cambios para que la cabecera se repinte al entrar
+        // o al salir sin necesidad de recargar la página.
+        Sesion.Cambio += AlCambiarLaSesion;
+
+        _haySesion = await Sesion.ObtenerTokenAsync() is { Length: > 0 };
+    }
+
+    private async void AlCambiarLaSesion()
+    {
+        _haySesion = await Sesion.ObtenerTokenAsync() is { Length: > 0 };
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CerrarSesionAsync()
+    {
+        await Sesion.CerrarAsync();
+        Navegacion.NavigateTo("/");
+    }
+
+    public void Dispose() => Sesion.Cambio -= AlCambiarLaSesion;
+}

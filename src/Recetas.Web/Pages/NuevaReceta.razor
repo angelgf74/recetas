@@ -1,0 +1,35 @@
+@page "/recetas/nueva"
+@using Recetas.Contratos.Recetas
+@using Recetas.Web.Componentes
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+@inject NavigationManager Navegacion
+
+<PageTitle>Nueva receta · Recetas</PageTitle>
+
+<RutaProtegida>
+    <h1>Nueva receta</h1>
+
+    <FormularioDeReceta AlGuardar="GuardarAsync"
+                        TextoDeGuardar="Crear receta"
+                        Resultado="_resultado" />
+
+    <p class="ayuda"><a href="/recetas">Cancelar y volver</a></p>
+</RutaProtegida>
+
+@code {
+    private ResultadoDeLlamada? _resultado;
+
+    private async Task GuardarAsync(PeticionDeReceta peticion)
+    {
+        var (resultado, id) = await Api.CrearRecetaAsync(peticion);
+        _resultado = resultado;
+
+        if (resultado.Correcta)
+        {
+            // A la ficha recién creada, no de vuelta al listado: lo natural tras
+            // guardar es ver el resultado.
+            Navegacion.NavigateTo($"/recetas/{id}");
+        }
+    }
+}

@@ -11,8 +11,19 @@ constructor.RootComponents.Add<HeadOutlet>("head::after");
 // para poder apuntar a producción sin recompilar.
 var baseDeLaApi = constructor.Configuration["Api:Base"] ?? "http://localhost:5199/";
 
-constructor.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(baseDeLaApi) });
+constructor.Services.AddScoped<EstadoDeSesion>();
+constructor.Services.AddScoped<ManejadorDeAutenticacion>();
+
+// El HttpClient pasa por el manejador que añade la cabecera Authorization y
+// centraliza el 401. Ninguna página construye peticiones a mano.
+constructor.Services.AddScoped(proveedor =>
+{
+    var manejador = proveedor.GetRequiredService<ManejadorDeAutenticacion>();
+    manejador.InnerHandler = new HttpClientHandler();
+
+    return new HttpClient(manejador) { BaseAddress = new Uri(baseDeLaApi) };
+});
+
 constructor.Services.AddScoped<ClienteDeApi>();
-constructor.Services.AddScoped<AlmacenDeSesion>();
 
 await constructor.Build().RunAsync();

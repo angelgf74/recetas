@@ -1,0 +1,65 @@
+@page "/recetas/{Id:guid}/editar"
+@using Recetas.Contratos.Recetas
+@using Recetas.Web.Componentes
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+@inject NavigationManager Navegacion
+
+<PageTitle>Editar receta · Recetas</PageTitle>
+
+<RutaProtegida>
+    @if (_cargando)
+    {
+        <p class="ayuda">Cargando…</p>
+    }
+    else if (_receta is null)
+    {
+        <div class="aviso aviso-error" role="alert">
+            @(_resultado?.Mensaje ?? "No se ha encontrado esa receta.")
+        </div>
+        <p><a href="/recetas">Volver a mi recetario</a></p>
+    }
+    else if (!_receta.EsMia)
+    {
+        @* La API ya lo impediría; esto evita ofrecer algo que va a fallar. *@
+        <div class="aviso aviso-error" role="alert">Esta receta no es tuya, no puedes editarla.</div>
+        <p><a href="@($"/recetas/{Id}")">Volver a la receta</a></p>
+    }
+    else
+    {
+        <h1>Editar receta</h1>
+
+        <FormularioDeReceta Receta="_receta"
+                            AlGuardar="GuardarAsync"
+                            TextoDeGuardar="Guardar cambios"
+                            Resultado="_resultado" />
+
+        <p class="ayuda"><a href="@($"/recetas/{Id}")">Cancelar y volver</a></p>
+    }
+</RutaProtegida>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private RespuestaDeReceta? _receta;
+    private ResultadoDeLlamada? _resultado;
+    private bool _cargando = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _cargando = true;
+        (_resultado, _receta) = await Api.ObtenerRecetaAsync(Id);
+        _cargando = false;
+    }
+
+    private async Task GuardarAsync(PeticionDeReceta peticion)
+    {
+        _resultado = await Api.ActualizarRecetaAsync(Id, peticion);
+
+        if (_resultado.Correcta)
+        {
+            Navegacion.NavigateTo($"/recetas/{Id}");
+        }
+    }
+}

@@ -2,61 +2,67 @@
 @using System.ComponentModel.DataAnnotations
 @using Recetas.Web.Servicios
 @inject ClienteDeApi Api
-@inject AlmacenDeSesion Sesion
+@inject EstadoDeSesion Sesion
+@inject NavigationManager Navegacion
 
 <PageTitle>Iniciar sesión · Recetas</PageTitle>
 
 <h1>Iniciar sesión</h1>
 
-@if (_iniciada)
+@if (Caducada)
 {
-    <div class="aviso aviso-exito" role="status">
-        Sesión iniciada correctamente.
+    <div class="aviso aviso-error" role="alert">
+        Tu sesión ha caducado. Vuelve a entrar.
     </div>
-    <p class="ayuda">
-        Las pantallas del recetario todavía no existen: crear, ver y compartir recetas
-        funciona ya, pero solo a través de la API. La interfaz llega con la feature 007.
-    </p>
 }
-else
+
+@if (_resultado is { Correcta: false })
 {
-    @if (_resultado is { Correcta: false })
-    {
-        <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
-    }
-
-    <EditForm Model="_formulario" OnValidSubmit="EnviarAsync" FormName="iniciar-sesion">
-        <DataAnnotationsValidator />
-
-        <div class="campo">
-            <label for="correo">Correo electrónico</label>
-            <InputText id="correo" @bind-Value="_formulario.Correo" type="email"
-                       autocomplete="email" inputmode="email" disabled="@_enviando" />
-            <ValidationMessage For="() => _formulario.Correo" />
-        </div>
-
-        <div class="campo">
-            <label for="contrasena">Contraseña</label>
-            <InputText id="contrasena" @bind-Value="_formulario.Contrasena" type="password"
-                       autocomplete="current-password" disabled="@_enviando" />
-            <ValidationMessage For="() => _formulario.Contrasena" />
-        </div>
-
-        <button type="submit" class="boton" disabled="@_enviando">
-            @(_enviando ? "Entrando…" : "Entrar")
-        </button>
-    </EditForm>
-
-    <p class="ayuda">
-        ¿Todavía no tienes cuenta? <a href="/registro">Crear una</a>
-    </p>
+    <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
 }
+
+<EditForm Model="_formulario" OnValidSubmit="EnviarAsync" FormName="iniciar-sesion">
+    <DataAnnotationsValidator />
+
+    <div class="campo">
+        <label for="correo">Correo electrónico</label>
+        <InputText id="correo" @bind-Value="_formulario.Correo" type="email"
+                   autocomplete="email" inputmode="email" disabled="@_enviando" />
+        <ValidationMessage For="() => _formulario.Correo" />
+    </div>
+
+    <div class="campo">
+        <label for="contrasena">Contraseña</label>
+        <InputText id="contrasena" @bind-Value="_formulario.Contrasena" type="password"
+                   autocomplete="current-password" disabled="@_enviando" />
+        <ValidationMessage For="() => _formulario.Contrasena" />
+    </div>
+
+    <button type="submit" class="boton" disabled="@_enviando">
+        @(_enviando ? "Entrando…" : "Entrar")
+    </button>
+</EditForm>
+
+<p class="ayuda">
+    ¿Todavía no tienes cuenta? <a href="/registro">Crear una</a>
+</p>
 
 @code {
+    /// <summary>Ruta a la que volver tras entrar, si se llegó aquí por una página protegida.</summary>
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "volverA")]
+    public string? VolverA { get; set; }
+
+    /// <summary>Lo pone el manejador de autenticación cuando el token deja de valer.</summary>
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "caducada")]
+    public string? CaducadaCruda { get; set; }
+
+    private bool Caducada => CaducadaCruda == "1";
+
     private readonly Formulario _formulario = new();
     private ResultadoDeLlamada? _resultado;
     private bool _enviando;
-    private bool _iniciada;
 
     private async Task EnviarAsync()
     {
@@ -68,8 +74,11 @@ else
 
         if (resultado.Correcta && acceso is not null)
         {
-            await Sesion.GuardarAsync(acceso.Token);
-            _iniciada = true;
+            await Sesion.AbrirAsync(acceso.Token);
+
+            // Se vuelve a donde el usuario quería ir, o al recetario. Nunca se
+            // queda en esta pantalla: era el callejón sin salida de la 002.
+            Navegacion.NavigateTo(string.IsNullOrWhiteSpace(VolverA) ? "/recetas" : "/" + VolverA);
         }
 
         _enviando = false;

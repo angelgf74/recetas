@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Features 001 a 006 terminadas: la API está completa.** Solo queda la 007, que es construir la interfaz web sobre lo que ya existe.
+**Las siete features del plan están terminadas.** El producto se usa entero desde el navegador. Lo siguiente sale del backlog de `roadmap.md`.
+
+**Web:** portada, alta en dos pasos, login, recetario, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
 
 Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud y alta).
 

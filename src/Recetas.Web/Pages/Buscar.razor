@@ -1,0 +1,115 @@
+@page "/buscar"
+@using Recetas.Contratos.Recetas
+@using Recetas.Web.Componentes
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+
+<PageTitle>Buscar · Recetas</PageTitle>
+
+<RutaProtegida>
+    <h1>Buscar recetas</h1>
+    <p class="ayuda">Busca en tu recetario y en lo que han compartido otros.</p>
+
+    <form class="buscador" @onsubmit="BuscarAsync" @onsubmit:preventDefault>
+        <div class="campo">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" type="search" @bind="_nombre" placeholder="tortilla, gazpacho…" />
+        </div>
+
+        <div class="campo">
+            <label for="ingredientes">Ingredientes</label>
+            <input id="ingredientes" type="search" @bind="_ingredientes"
+                   placeholder="tomate, albahaca" />
+            <p class="ayuda">Separados por comas. Se buscan recetas que lleven <strong>todos</strong>.</p>
+        </div>
+
+        <div class="campo">
+            <label for="tipo">Tipo de plato</label>
+            <select id="tipo" @bind="_tipo">
+                <option value="">Cualquiera</option>
+                <option value="Entrante">Entrante</option>
+                <option value="PrimerPlato">Primer plato</option>
+                <option value="PlatoPrincipal">Plato principal</option>
+                <option value="Guarnicion">Guarnición</option>
+                <option value="Postre">Postre</option>
+                <option value="Bebida">Bebida</option>
+                <option value="Salsa">Salsa</option>
+            </select>
+        </div>
+
+        <button type="submit" class="boton" disabled="@_buscando">
+            @(_buscando ? "Buscando…" : "Buscar")
+        </button>
+    </form>
+
+    @if (_resultado is { Correcta: false })
+    {
+        <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
+    }
+    else if (_busqueda is not null)
+    {
+        @if (_busqueda.Resultados.Count == 0)
+        {
+            @* Sin resultados se dice, en lugar de dejar la pantalla en blanco. *@
+            <div class="vacio">
+                <p>No hay ninguna receta que cumpla eso.</p>
+                <p class="ayuda">Prueba con menos criterios o con otro ingrediente.</p>
+            </div>
+        }
+        else
+        {
+            <p class="ayuda" role="status">
+                @_busqueda.Resultados.Count @(_busqueda.Resultados.Count == 1 ? "receta" : "recetas").
+                @if (_busqueda.HayMas)
+                {
+                    <strong>Hay más: afina la búsqueda para verlas.</strong>
+                }
+            </p>
+
+            <ul class="lista-de-recetas">
+                @foreach (var receta in _busqueda.Resultados)
+                {
+                    <li>
+                        <a href="@($"/recetas/{receta.Id}")">
+                            <span class="nombre">@receta.Nombre</span>
+                            <span class="meta">
+                                @Etiquetas.DeTipo(receta.TipoDePlato)
+                                @if (!receta.EsMia)
+                                {
+                                    <span class="marca">De otra persona</span>
+                                }
+                                else if (receta.Visibilidad == "Publica")
+                                {
+                                    <span class="marca marca-publica">Publicada</span>
+                                }
+                            </span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</RutaProtegida>
+
+@code {
+    private string _nombre = string.Empty;
+    private string _ingredientes = string.Empty;
+    private string _tipo = string.Empty;
+
+    private RespuestaDeBusqueda? _busqueda;
+    private ResultadoDeLlamada? _resultado;
+    private bool _buscando;
+
+    private async Task BuscarAsync()
+    {
+        _buscando = true;
+        _resultado = null;
+
+        var lista = _ingredientes
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        (_resultado, _busqueda) = await Api.BuscarAsync(_nombre, lista, _tipo);
+
+        _buscando = false;
+    }
+}

@@ -1,0 +1,225 @@
+@page "/recetas/{Id:guid}"
+@using Recetas.Contratos.Recetas
+@using Recetas.Web.Componentes
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+@inject NavigationManager Navegacion
+
+<PageTitle>@(_receta?.Nombre ?? "Receta") · Recetas</PageTitle>
+
+<RutaProtegida>
+    @if (_cargando)
+    {
+        <p class="ayuda">Cargando…</p>
+    }
+    else if (_receta is null)
+    {
+        <div class="aviso aviso-error" role="alert">
+            @(_resultado?.Mensaje ?? "No se ha encontrado esa receta.")
+        </div>
+        <p><a href="/recetas">Volver a mi recetario</a></p>
+    }
+    else
+    {
+        <article class="receta">
+            <header>
+                <h1>@_receta.Nombre</h1>
+                <p class="meta">
+                    @Etiquetas.DeTipo(_receta.TipoDePlato)
+                    @if (_receta.Visibilidad == "Publica")
+                    {
+                        <span class="marca marca-publica">Publicada</span>
+                    }
+                    else if (EsMia)
+                    {
+                        <span class="marca">Privada</span>
+                    }
+                </p>
+            </header>
+
+            @if (_aviso is not null)
+            {
+                <div class="aviso @(_aviso.Correcta ? "aviso-exito" : "aviso-error")" role="alert">
+                    @_aviso.Mensaje
+                </div>
+            }
+
+            @if (_receta.Fotos.Count > 0)
+            {
+                <section class="fotos">
+                    @foreach (var foto in _receta.Fotos)
+                    {
+                        <figure>
+                            <FotoDeReceta RecetaId="_receta.Id" FotoId="foto.Id" />
+                            @if (EsMia)
+                            {
+                                <figcaption>
+                                    <Confirmacion Texto="Borrar foto"
+                                                  Pregunta="¿Borrar esta foto? No se puede deshacer."
+                                                  AlConfirmar="() => BorrarFotoAsync(foto.Id)" />
+                                </figcaption>
+                            }
+                        </figure>
+                    }
+                </section>
+            }
+
+            <section>
+                <h2>Ingredientes</h2>
+                <ul class="ingredientes-lista">
+                    @foreach (var linea in _receta.Ingredientes)
+                    {
+                        <li>
+                            <span class="cantidad">
+                                @Etiquetas.DeCantidad(linea.Cantidad) @Etiquetas.DeUnidad(linea.Unidad, linea.Cantidad)
+                            </span>
+                            <span class="ingrediente-nombre">@linea.Nombre</span>
+                        </li>
+                    }
+                </ul>
+            </section>
+
+            <section>
+                <h2>Elaboración</h2>
+                @* Un párrafo por línea: la API guarda la elaboración como texto y
+                   partir en pasos es decisión de presentación. *@
+                @foreach (var paso in _receta.Elaboracion.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    <p class="paso">@paso.Trim()</p>
+                }
+            </section>
+
+            @if (EsMia)
+            {
+                <section class="acciones">
+                    <h2>Acciones</h2>
+
+                    <a class="boton boton-secundario" href="@($"/recetas/{Id}/editar")">Editar</a>
+
+                    <label class="boton boton-secundario subir-foto">
+                        @(_subiendoFoto ? "Subiendo…" : "Añadir foto")
+                        <InputFile OnChange="SubirFotoAsync" accept="image/*" disabled="@_subiendoFoto" />
+                    </label>
+
+                    @if (_receta.Visibilidad == "Publica")
+                    {
+                        <button type="button" class="boton boton-secundario" @onclick="DespublicarAsync">
+                            Dejar de compartir
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="boton boton-secundario" @onclick="PublicarAsync">
+                            Compartir
+                        </button>
+                    }
+
+                    <Confirmacion Texto="Borrar receta"
+                                  Pregunta="¿Borrar esta receta y sus fotos? No se puede deshacer."
+                                  AlConfirmar="BorrarRecetaAsync" />
+                </section>
+            }
+            else
+            {
+                @* Receta ajena publicada: se lee, no se toca. La autorización real
+                   está en el servidor; esto solo evita ofrecer lo que va a fallar. *@
+                <p class="ayuda">Esta receta la ha compartido otra persona.</p>
+            }
+        </article>
+    }
+</RutaProtegida>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private RespuestaDeReceta? _receta;
+    private ResultadoDeLlamada? _resultado;
+    private ResultadoDeLlamada? _aviso;
+    private bool _cargando = true;
+    private bool _subiendoFoto;
+
+    /// <summary>Lo dice la propia respuesta: una sola llamada para pintar la ficha.</summary>
+    private bool EsMia => _receta?.EsMia == true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _cargando = true;
+        _aviso = null;
+
+        (_resultado, _receta) = await Api.ObtenerRecetaAsync(Id);
+
+        _cargando = false;
+    }
+
+    private async Task RecargarAsync() => (_resultado, _receta) = await Api.ObtenerRecetaAsync(Id);
+
+    private async Task PublicarAsync()
+    {
+        _aviso = await Api.PublicarAsync(Id);
+
+        if (_aviso.Correcta)
+        {
+            _aviso = ResultadoDeLlamada.Correcto("Receta compartida: ya pueden verla otros usuarios.");
+            await RecargarAsync();
+        }
+    }
+
+    private async Task DespublicarAsync()
+    {
+        _aviso = await Api.DespublicarAsync(Id);
+
+        if (_aviso.Correcta)
+        {
+            _aviso = ResultadoDeLlamada.Correcto("Receta retirada: vuelve a ser solo tuya.");
+            await RecargarAsync();
+        }
+    }
+
+    private async Task SubirFotoAsync(InputFileChangeEventArgs argumentos)
+    {
+        _subiendoFoto = true;
+        _aviso = null;
+
+        var archivo = argumentos.File;
+
+        // El tope debe ir por encima del de la API (8 MB) para que sea el servidor
+        // quien decida; aquí solo se evita cargar en memoria algo desmesurado.
+        await using var contenido = archivo.OpenReadStream(maxAllowedSize: 12 * 1024 * 1024);
+
+        _aviso = await Api.SubirFotoAsync(Id, contenido);
+
+        if (_aviso.Correcta)
+        {
+            _aviso = ResultadoDeLlamada.Correcto("Foto añadida.");
+            await RecargarAsync();
+        }
+
+        _subiendoFoto = false;
+    }
+
+    private async Task BorrarFotoAsync(Guid fotoId)
+    {
+        _aviso = await Api.BorrarFotoAsync(Id, fotoId);
+
+        if (_aviso.Correcta)
+        {
+            _aviso = null;
+            await RecargarAsync();
+        }
+    }
+
+    private async Task BorrarRecetaAsync()
+    {
+        var resultado = await Api.BorrarRecetaAsync(Id);
+
+        if (resultado.Correcta)
+        {
+            Navegacion.NavigateTo("/recetas");
+        }
+        else
+        {
+            _aviso = resultado;
+        }
+    }
+}

@@ -58,7 +58,18 @@ public sealed record RespuestaDeReceta(
     DateTimeOffset FechaDeCreacion,
     DateTimeOffset FechaDeModificacion,
     IReadOnlyCollection<LineaDeIngredienteRespuesta> Ingredientes,
-    IReadOnlyCollection<FotoRespuesta> Fotos);
+    IReadOnlyCollection<FotoRespuesta> Fotos,
+    /// <summary>
+    /// Si la receta es del usuario que pregunta, igual que en el resumen.
+    /// <para>
+    /// Desde la 005 la ficha también sirve recetas ajenas publicadas, así que el
+    /// cliente necesita saberlo para decidir qué acciones ofrece. Sin este campo
+    /// habría que deducirlo pidiendo además el recetario propio y buscando la
+    /// receta dentro: dos llamadas para pintar una pantalla, que es la señal de
+    /// que faltaba un dato en la respuesta.
+    /// </para>
+    /// </summary>
+    bool EsMia);
 
 /// <summary>
 /// Receta en un listado: sin ingredientes ni elaboración.

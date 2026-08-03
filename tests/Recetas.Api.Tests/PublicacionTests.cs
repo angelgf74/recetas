@@ -37,6 +37,24 @@ public class PublicacionTests(ApiConPostgresFixture api) : IClassFixture<ApiConP
     }
 
     [Fact]
+    public async Task LaFicha_DiceSiLaRecetaEsTuya()
+    {
+        var ana = await ClienteAutenticadoAsync();
+        var bruno = await ClienteAutenticadoAsync();
+        var recetaId = await CrearRecetaAsync(ana);
+        await ana.PostAsync($"/recetas/{recetaId}/publicacion", null);
+
+        // Lo necesita la web para decidir si ofrece editar, borrar y publicar.
+        // Sin este campo habría que pedir además el recetario propio y buscar la
+        // receta dentro: dos llamadas para pintar una pantalla.
+        var paraAna = await ana.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        var paraBruno = await bruno.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+
+        Assert.True(paraAna!.EsMia);
+        Assert.False(paraBruno!.EsMia);
+    }
+
+    [Fact]
     public async Task Despublicar_LaVuelveAOcultar()
     {
         var ana = await ClienteAutenticadoAsync();

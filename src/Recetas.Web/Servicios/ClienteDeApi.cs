@@ -1,21 +1,28 @@
 using System.Net;
 using System.Net.Http.Json;
+using Recetas.Contratos.Recetas;
 using Recetas.Contratos.Registro;
 using Recetas.Contratos.Sesiones;
 
 namespace Recetas.Web.Servicios;
 
 /// <summary>
-/// Envoltorio de las llamadas a la API. Traduce respuestas HTTP a resultados
-/// que las páginas puedan mostrar, sin que cada una repita el manejo de errores.
+/// Envoltorio de las llamadas a la API. Traduce respuestas HTTP a resultados que
+/// las páginas puedan mostrar, sin que cada una repita el manejo de errores.
 /// </summary>
 public sealed class ClienteDeApi(HttpClient http)
 {
+    private const string MensajeDeRedCaida =
+        "No se ha podido contactar con el servidor. Comprueba tu conexión.";
+
+    // ------------------------------------------------------------- Cuentas
+
     public Task<ResultadoDeLlamada> SolicitarAltaAsync(string correo) =>
-        EnviarAsync("registro/solicitudes", new PeticionDeSolicitudDeRegistro { Correo = correo });
+        EnviarAsync(HttpMethod.Post, "registro/solicitudes",
+            new PeticionDeSolicitudDeRegistro { Correo = correo });
 
     public Task<ResultadoDeLlamada> CompletarAltaAsync(string token, string contrasena) =>
-        EnviarAsync("registro/completar",
+        EnviarAsync(HttpMethod.Post, "registro/completar",
             new PeticionDeCompletarRegistro { Token = token, Contrasena = contrasena });
 
     public async Task<(ResultadoDeLlamada Resultado, RespuestaDeInicioDeSesion? Acceso)> IniciarSesionAsync(
@@ -27,13 +34,13 @@ public sealed class ClienteDeApi(HttpClient http)
             var respuesta = await http.PostAsJsonAsync("sesiones",
                 new PeticionDeInicioDeSesion { Correo = correo, Contrasena = contrasena });
 
-            if (respuesta.IsSuccessStatusCode)
+            if (!respuesta.IsSuccessStatusCode)
             {
-                var acceso = await respuesta.Content.ReadFromJsonAsync<RespuestaDeInicioDeSesion>();
-                return (ResultadoDeLlamada.Correcto(), acceso);
+                return (await TraducirErrorAsync(respuesta), null);
             }
 
-            return (await TraducirErrorAsync(respuesta), null);
+            return (ResultadoDeLlamada.Correcto(),
+                await respuesta.Content.ReadFromJsonAsync<RespuestaDeInicioDeSesion>());
         }
         catch (HttpRequestException)
         {
@@ -41,15 +48,186 @@ public sealed class ClienteDeApi(HttpClient http)
         }
     }
 
-    private async Task<ResultadoDeLlamada> EnviarAsync<TPeticion>(string ruta, TPeticion peticion)
+    // ------------------------------------------------------------- Recetas
+
+    public Task<(ResultadoDeLlamada Resultado, List<ResumenDeReceta>? Recetas)> ListarRecetasAsync() =>
+        LeerAsync<List<ResumenDeReceta>>("recetas");
+
+    public Task<(ResultadoDeLlamada Resultado, RespuestaDeReceta? Receta)> ObtenerRecetaAsync(Guid id) =>
+        LeerAsync<RespuestaDeReceta>($"recetas/{id}");
+
+    public async Task<(ResultadoDeLlamada Resultado, Guid Id)> CrearRecetaAsync(PeticionDeReceta peticion)
     {
         try
         {
-            var respuesta = await http.PostAsJsonAsync(ruta, peticion);
+            var respuesta = await http.PostAsJsonAsync("recetas", peticion);
+
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                return (await TraducirErrorAsync(respuesta), Guid.Empty);
+            }
+
+            var creada = await respuesta.Content.ReadFromJsonAsync<RespuestaDeReceta>();
+            return (ResultadoDeLlamada.Correcto(), creada?.Id ?? Guid.Empty);
+        }
+        catch (HttpRequestException)
+        {
+            return (ResultadoDeLlamada.Fallido(MensajeDeRedCaida), Guid.Empty);
+        }
+    }
+
+    public Task<ResultadoDeLlamada> ActualizarRecetaAsync(Guid id, PeticionDeReceta peticion) =>
+        EnviarAsync(HttpMethod.Put, $"recetas/{id}", peticion);
+
+    public Task<ResultadoDeLlamada> BorrarRecetaAsync(Guid id) =>
+        EnviarAsync(HttpMethod.Delete, $"recetas/{id}");
+
+    // --------------------------------------------------------- Publicación
+
+    public Task<ResultadoDeLlamada> PublicarAsync(Guid id) =>
+        EnviarAsync(HttpMethod.Post, $"recetas/{id}/publicacion");
+
+    public Task<ResultadoDeLlamada> DespublicarAsync(Guid id) =>
+        EnviarAsync(HttpMethod.Delete, $"recetas/{id}/publicacion");
+
+    // --------------------------------------------------------------- Fotos
+
+    public async Task<ResultadoDeLlamada> SubirFotoAsync(Guid recetaId, Stream contenido)
+    {
+        try
+        {
+            using var cuerpo = new StreamContent(contenido);
+            var respuesta = await http.PostAsync($"recetas/{recetaId}/fotos", cuerpo);
+
+            return respuesta.IsSuccessStatusCode
+                ? ResultadoDeLlamada.Correcto()
+                : await TraducirErrorAsync(respuesta);
+        }
+        catch (HttpRequestException)
+        {
+            return ResultadoDeLlamada.Fallido(MensajeDeRedCaida);
+        }
+    }
+
+    /// <summary>
+    /// Descarga una foto y la devuelve como URL <c>data:</c>, lista para el
+    /// atributo <c>src</c> de una imagen.
+    /// </summary>
+    /// <remarks>
+    /// Una etiqueta <c>&lt;img&gt;</c> no manda la cabecera <c>Authorization</c>,
+    /// y el endpoint la exige, así que la imagen hay que traerla con este cliente.
+    /// <para>
+    /// Se devuelve como <c>data:</c> y no como URL de objeto (<c>blob:</c>) porque
+    /// la política de seguridad de contenido del sitio permite la primera y no la
+    /// segunda; cambiarla exigiría tocar nginx en el servidor. El precio es el
+    /// 33 % que engorda base64.
+    /// </para>
+    /// </remarks>
+    public async Task<string?> DescargarFotoAsync(Guid recetaId, Guid fotoId)
+    {
+        try
+        {
+            var respuesta = await http.GetAsync($"recetas/{recetaId}/fotos/{fotoId}");
+
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            var bytes = await respuesta.Content.ReadAsByteArrayAsync();
+            var tipo = respuesta.Content.Headers.ContentType?.MediaType ?? "image/jpeg";
+
+            return $"data:{tipo};base64,{Convert.ToBase64String(bytes)}";
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+    }
+
+    public Task<ResultadoDeLlamada> BorrarFotoAsync(Guid recetaId, Guid fotoId) =>
+        EnviarAsync(HttpMethod.Delete, $"recetas/{recetaId}/fotos/{fotoId}");
+
+    // ------------------------------------------------------------ Búsqueda
+
+    public Task<(ResultadoDeLlamada Resultado, RespuestaDeBusqueda? Busqueda)> BuscarAsync(
+        string? nombre,
+        IEnumerable<string> ingredientes,
+        string? tipo)
+    {
+        var partes = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(nombre))
+        {
+            partes.Add($"nombre={Uri.EscapeDataString(nombre)}");
+        }
+
+        foreach (var ingrediente in ingredientes.Where(valor => !string.IsNullOrWhiteSpace(valor)))
+        {
+            partes.Add($"ingrediente={Uri.EscapeDataString(ingrediente)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(tipo))
+        {
+            partes.Add($"tipo={Uri.EscapeDataString(tipo)}");
+        }
+
+        var consulta = partes.Count > 0 ? "?" + string.Join("&", partes) : string.Empty;
+
+        return LeerAsync<RespuestaDeBusqueda>($"recetas/busqueda{consulta}");
+    }
+
+    // ----------------------------------------------------------- Utilidades
+
+    private async Task<(ResultadoDeLlamada Resultado, T? Datos)> LeerAsync<T>(string ruta)
+    {
+        try
+        {
+            var respuesta = await http.GetAsync(ruta);
+
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                return (await TraducirErrorAsync(respuesta), default);
+            }
+
+            return (ResultadoDeLlamada.Correcto(), await respuesta.Content.ReadFromJsonAsync<T>());
+        }
+        catch (HttpRequestException)
+        {
+            return (ResultadoDeLlamada.Fallido(MensajeDeRedCaida), default);
+        }
+    }
+
+    /// <summary>Petición sin cuerpo: borrados y cambios de estado.</summary>
+    private Task<ResultadoDeLlamada> EnviarAsync(HttpMethod metodo, string ruta) =>
+        EnviarAsync<object>(metodo, ruta, null);
+
+    private async Task<ResultadoDeLlamada> EnviarAsync<TPeticion>(
+        HttpMethod metodo,
+        string ruta,
+        TPeticion? contenido)
+    {
+        try
+        {
+            using var peticion = new HttpRequestMessage(metodo, ruta);
+
+            if (contenido is not null)
+            {
+                peticion.Content = JsonContent.Create(contenido);
+            }
+
+            var respuesta = await http.SendAsync(peticion);
 
             if (!respuesta.IsSuccessStatusCode)
             {
                 return await TraducirErrorAsync(respuesta);
+            }
+
+            // Las respuestas 204 no traen cuerpo; las 200 de esta API traen un
+            // mensaje que conviene mostrar.
+            if (respuesta.StatusCode == HttpStatusCode.NoContent)
+            {
+                return ResultadoDeLlamada.Correcto();
             }
 
             var cuerpo = await respuesta.Content.ReadFromJsonAsync<RespuestaDeError>();
@@ -59,6 +237,11 @@ public sealed class ClienteDeApi(HttpClient http)
         {
             return ResultadoDeLlamada.Fallido(MensajeDeRedCaida);
         }
+        catch (NotSupportedException)
+        {
+            // Cuerpo que no es JSON en un error inesperado.
+            return ResultadoDeLlamada.Fallido("Respuesta inesperada del servidor.");
+        }
     }
 
     private static async Task<ResultadoDeLlamada> TraducirErrorAsync(HttpResponseMessage respuesta)
@@ -66,6 +249,11 @@ public sealed class ClienteDeApi(HttpClient http)
         if (respuesta.StatusCode == HttpStatusCode.TooManyRequests)
         {
             return ResultadoDeLlamada.Fallido("Demasiados intentos. Espera unos minutos y vuelve a probar.");
+        }
+
+        if (respuesta.StatusCode == HttpStatusCode.RequestEntityTooLarge)
+        {
+            return ResultadoDeLlamada.Fallido("El archivo es demasiado grande.");
         }
 
         try
@@ -77,17 +265,18 @@ public sealed class ClienteDeApi(HttpClient http)
                 return ResultadoDeLlamada.Fallido(cuerpo.Mensaje);
             }
         }
-        catch (Exception) when (respuesta.StatusCode is HttpStatusCode.BadRequest)
+        catch (Exception)
         {
             // La validación automática de ASP.NET responde en otro formato.
-            return ResultadoDeLlamada.Fallido("Revisa los datos introducidos.");
         }
 
-        return ResultadoDeLlamada.Fallido("No se ha podido completar la operación. Inténtalo de nuevo.");
+        return respuesta.StatusCode switch
+        {
+            HttpStatusCode.NotFound => ResultadoDeLlamada.Fallido("No se ha encontrado."),
+            HttpStatusCode.BadRequest => ResultadoDeLlamada.Fallido("Revisa los datos introducidos."),
+            _ => ResultadoDeLlamada.Fallido("No se ha podido completar la operación. Inténtalo de nuevo.")
+        };
     }
-
-    private const string MensajeDeRedCaida =
-        "No se ha podido contactar con el servidor. Comprueba tu conexión.";
 }
 
 /// <param name="Correcta">Si la operación salió bien.</param>
