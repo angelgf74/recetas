@@ -5,6 +5,8 @@
 
 <PageTitle>Crear cuenta · Recetas</PageTitle>
 
+<div class="pagina-estrecha">
+
 <h1>Crear cuenta</h1>
 
 @if (_resultado is { Correcta: true })
@@ -42,6 +44,8 @@ else
         ¿Ya tienes cuenta? <a href="/sesion">Iniciar sesión</a>
     </p>
 }
+
+</div>
 
 @code {
     private readonly Formulario _formulario = new();

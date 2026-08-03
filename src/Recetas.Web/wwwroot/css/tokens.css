@@ -44,5 +44,18 @@
     /* Área táctil mínima cómoda con las manos ocupadas. */
     --altura-tactil: 3rem;
 
+    /*
+     * Dos anchuras, no una.
+     *
+     * La estrecha se fijó en la feature 002, cuando las únicas pantallas eran
+     * formularios de alta e inicio de sesión: ahí una columna corta se lee mejor
+     * y evita campos de texto absurdamente largos.
+     *
+     * Con el recetario, la ficha y la tabla de ingredientes esa misma anchura se
+     * quedó corta y en pantalla grande parecía la versión de móvil estirada. El
+     * contenido general usa ahora la ancha; las pantallas de cuenta siguen con la
+     * estrecha mediante `.pagina-estrecha`.
+     */
+    --ancho-contenido: 46rem;
     --ancho-formulario: 26rem;
 }

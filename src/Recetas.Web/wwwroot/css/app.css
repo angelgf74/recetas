@@ -469,7 +469,13 @@ a {
 
 .ingrediente {
     display: grid;
-    grid-template-columns: 1fr 4.5rem 1fr auto;
+    /*
+     * El nombre manda: es lo más largo ("aceite de oliva virgen extra") y lo que
+     * más se lee. La cantidad necesita caber entera —"500" con su coma decimal si
+     * la hay—, y antes se quedaba en 4,5 rem y truncaba el valor a la vista.
+     * minmax(0, …) evita que el contenido ensanche la columna y desborde la fila.
+     */
+    grid-template-columns: minmax(0, 2.2fr) 6rem minmax(0, 1.4fr) auto;
     gap: var(--espacio-2);
     margin-bottom: var(--espacio-3);
 }
@@ -505,4 +511,13 @@ a {
     background-color: var(--color-superficie);
     border: 1px solid var(--color-borde);
     border-radius: var(--radio);
+}
+
+/* Pantallas de cuenta -------------------------------------------------------
+   Alta, contraseña e inicio de sesión siguen en columna estrecha: son cuatro
+   campos y estirarlos a lo ancho de la pantalla solo empeoraría la lectura. */
+
+.pagina-estrecha {
+    max-width: var(--ancho-formulario);
+    margin-inline: auto;
 }

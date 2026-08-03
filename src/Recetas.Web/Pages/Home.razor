@@ -5,6 +5,8 @@
 
 <PageTitle>Recetas</PageTitle>
 
+<div class="pagina-estrecha">
+
 @if (_comprobando)
 {
     <p class="ayuda">Cargando…</p>
@@ -27,6 +29,8 @@ else
         <a class="enlace-secundario" href="/sesion">Ya tengo cuenta</a>
     </div>
 }
+
+</div>
 
 @code {
     private bool _comprobando = true;
