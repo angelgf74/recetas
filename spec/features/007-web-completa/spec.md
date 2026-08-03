@@ -65,7 +65,7 @@ necesita tres llamadas para pintarse, es que faltaba un endpoint.
 ### Calidad
 
 - [x] `dotnet build` sin errores ni avisos y `dotnet test` en verde.
-- [ ] Las pantallas se usan en un ancho de móvil. _**No verificado.** El navegador de pruebas sigue devolviendo capturas de 1299 px pese a redimensionar; el CSS está escrito móvil primero, pero es una expectativa._
+- [x] Las pantallas se usan en un ancho de móvil. _Verificado a 390 px sobre producción: el listado y el formulario se ven completos, sin desbordamiento horizontal, y la fila de ingredientes se reorganiza como preveía la regla bajo 30 rem — el nombre ocupa una línea entera y cantidad, unidad y el botón de quitar se reparten la siguiente._
 - [x] La política de seguridad de contenido sigue sin `unsafe-inline`.
 
 ## Fuera de alcance
