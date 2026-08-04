@@ -33,13 +33,19 @@ que no se hablan. `dotnet build` no compila esto, y `gradlew` no compila aquello
 
 ## Apuntar a la API local
 
-La compilación de depuración apunta a `http://localhost:5199/`, y la de
-publicación a `https://recetas-api.angelgf.com.es/`. Lo fija `BASE_DE_LA_API` en
-`app/build.gradle.kts`.
+**Por defecto, incluso en depuración, la aplicación apunta a producción**
+(`https://recetas-api.angelgf.com.es/`).
 
-Para que `localhost` dentro del teléfono o del emulador sea el de tu equipo:
+Es deliberado. `installDebug` instala en **todos** los dispositivos conectados, y
+una compilación de depuración acaba en teléfonos reales. Si apuntara a `localhost`
+solo funcionaría con el cable puesto y la API encendida; en cuanto se desconecta,
+la aplicación solo sabe decir *"no se ha podido contactar con el servidor"*. Ya
+pasó una vez.
+
+Para desarrollar contra la API del equipo, hay que pedirlo:
 
 ```powershell
+.\gradlew.bat installDebug -PapiLocal
 adb reverse tcp:5199 tcp:5199
 ```
 
@@ -56,9 +62,11 @@ Hay que rehacerlo cada vez que se reconecta el dispositivo.
 & "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -avd NOMBRE_DEL_AVD
 adb wait-for-device
 adb reverse tcp:5199 tcp:5199
-.\gradlew.bat installDebug
+.\gradlew.bat installDebug -PapiLocal
 adb shell am start -n com.angelgf.recetas/.MainActivity
 ```
+
+Con varios dispositivos conectados, `adb` exige elegir uno: `adb -s emulator-5554 …`.
 
 Y la API local, escuchando y con la base de datos en pie:
 

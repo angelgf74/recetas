@@ -1,5 +1,16 @@
 // Sin `kotlin-android`: desde AGP 9 el soporte de Kotlin va integrado en el
 // complemento de Android, y aplicarlo aparte es un error.
+// ¿Se compila contra la API que corre en el equipo de desarrollo?
+//
+// Por defecto NO, ni siquiera en depuración. Una compilación de depuración acaba
+// instalada en teléfonos reales —`installDebug` instala en todos los dispositivos
+// conectados—, y si apunta a localhost solo funciona con el cable puesto y la API
+// encendida: en cuanto se desconecta, la aplicación solo sabe decir "no se ha
+// podido contactar con el servidor".
+//
+// Para desarrollar contra la API local: gradlew installDebug -PapiLocal
+val contraLaApiLocal = providers.gradleProperty("apiLocal").isPresent
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -25,15 +36,20 @@ android {
 
     buildTypes {
         debug {
-            // La API de desarrollo corre en el equipo del programador, y se llega a
-            // ella con `adb reverse tcp:5199 tcp:5199` (ver android/README.md).
+            // Producción salvo que se pida lo contrario con -PapiLocal. Ver arriba.
             //
+            // Con -PapiLocal se apunta a la API del equipo de desarrollo, a la que
+            // se llega con `adb reverse tcp:5199 tcp:5199` (ver android/README.md).
             // Se usa localhost y NO 10.0.2.2 —la dirección con la que el emulador
             // ve al anfitrión— porque 10.0.2.2 entra por la red y lo para el
             // cortafuegos de Windows, que abrir exige permisos de administrador.
             // `adb reverse` va por el canal de depuración, así que no toca nada, y
             // además funciona igual con un teléfono real conectado por cable.
-            buildConfigField("String", "BASE_DE_LA_API", "\"http://localhost:5199/\"")
+            buildConfigField(
+                "String",
+                "BASE_DE_LA_API",
+                if (contraLaApiLocal) "\"http://localhost:5199/\""
+                else "\"https://recetas-api.angelgf.com.es/\"")
 
             // BLOQUES DE PRUEBA DE GOOGLE, nunca los reales.
             //
