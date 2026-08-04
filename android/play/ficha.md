@@ -19,7 +19,7 @@ que impone Play; entre paréntesis, lo que ocupa cada texto.
 | Contiene anuncios | **Sí** — declarar que sí, porque AdMob está previsto |
 | Compras en la aplicación | No |
 | Política de privacidad | `https://recetas.angelgf.com.es/privacidad.html` |
-| Correo de contacto | `privacidad@angelgf.com.es` |
+| Correo de contacto | `angelgf@gmail.com` |
 | Sitio web | `https://recetas.angelgf.com.es` |
 
 ---
