@@ -55,6 +55,7 @@
                             {
                                 <figcaption>
                                     <Confirmacion Texto="Borrar foto"
+                                                  Icono="papelera"
                                                   Pregunta="¿Borrar esta foto? No se puede deshacer."
                                                   AlConfirmar="() => BorrarFotoAsync(foto.Id)" />
                                 </figcaption>
@@ -91,32 +92,50 @@
 
             @if (EsMia)
             {
+                @*
+                    Acciones como iconos. Cada botón lleva `title` para que al
+                    pasar el ratón se vea qué hace, y `aria-label` para que un
+                    lector de pantalla lo anuncie: sin texto visible, esas dos
+                    cosas son lo único que da significado al botón.
+                *@
                 <section class="acciones">
-                    <h2>Acciones</h2>
+                    <h2 class="solo-lectores">Acciones</h2>
 
-                    <a class="boton boton-secundario" href="@($"/recetas/{Id}/editar")">Editar</a>
+                    <div class="acciones-fila">
+                        <a class="boton-accion" href="@($"/recetas/{Id}/editar")"
+                           title="Editar receta" aria-label="Editar receta">
+                            <Icono Nombre="lapiz" />
+                        </a>
 
-                    <label class="boton boton-secundario subir-foto">
-                        @(_subiendoFoto ? "Subiendo…" : "Añadir foto")
-                        <InputFile OnChange="SubirFotoAsync" accept="image/*" disabled="@_subiendoFoto" />
-                    </label>
+                        <label class="boton-accion subir-foto"
+                               title="@(_subiendoFoto ? "Subiendo la foto…" : "Añadir foto")"
+                               aria-label="Añadir foto">
+                            <Icono Nombre="camara" />
+                            <InputFile OnChange="SubirFotoAsync" accept="image/*" disabled="@_subiendoFoto" />
+                        </label>
 
-                    @if (_receta.Visibilidad == "Publica")
-                    {
-                        <button type="button" class="boton boton-secundario" @onclick="DespublicarAsync">
-                            Dejar de compartir
-                        </button>
-                    }
-                    else
-                    {
-                        <button type="button" class="boton boton-secundario" @onclick="PublicarAsync">
-                            Compartir
-                        </button>
-                    }
+                        @if (_receta.Visibilidad == "Publica")
+                        {
+                            <button type="button" class="boton-accion boton-accion-activo"
+                                    title="Dejar de compartir" aria-label="Dejar de compartir"
+                                    @onclick="DespublicarAsync">
+                                <Icono Nombre="no-compartir" />
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="boton-accion"
+                                    title="Compartir receta" aria-label="Compartir receta"
+                                    @onclick="PublicarAsync">
+                                <Icono Nombre="compartir" />
+                            </button>
+                        }
 
-                    <Confirmacion Texto="Borrar receta"
-                                  Pregunta="¿Borrar esta receta y sus fotos? No se puede deshacer."
-                                  AlConfirmar="BorrarRecetaAsync" />
+                        <Confirmacion Texto="Borrar receta"
+                                      Icono="papelera"
+                                      Pregunta="¿Borrar esta receta y sus fotos? No se puede deshacer."
+                                      AlConfirmar="BorrarRecetaAsync" />
+                    </div>
                 </section>
             }
             else

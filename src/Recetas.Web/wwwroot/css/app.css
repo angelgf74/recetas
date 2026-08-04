@@ -392,9 +392,6 @@ a {
 /* Acciones ---------------------------------------------------------------- */
 
 .acciones {
-    display: flex;
-    flex-direction: column;
-    gap: var(--espacio-3);
     padding-top: var(--espacio-4);
     border-top: 1px solid var(--color-borde);
 }
@@ -520,4 +517,77 @@ a {
 .pagina-estrecha {
     max-width: var(--ancho-formulario);
     margin-inline: auto;
+}
+
+/* Botones de icono -----------------------------------------------------------
+   Sin texto visible, así que dependen del `title` y del `aria-label` que pone
+   quien los usa. El tamaño no baja de la altura táctil: un icono pequeño es
+   cómodo con ratón y desesperante con el dedo. */
+
+.acciones-fila {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-3);
+    align-items: flex-start;
+}
+
+.boton-accion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--altura-tactil);
+    height: var(--altura-tactil);
+    padding: 0;
+    color: var(--color-acento);
+    text-decoration: none;
+    background-color: var(--color-superficie);
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-pequeno);
+    cursor: pointer;
+}
+
+.boton-accion:hover:not(:disabled) {
+    color: var(--color-acento-oscuro);
+    border-color: var(--color-acento);
+}
+
+.boton-accion:focus-visible {
+    outline: 2px solid var(--color-acento);
+    outline-offset: 2px;
+}
+
+/* Estado activo: la receta ya está compartida, y pulsar deshace. Se marca con
+   color porque el icono tachado por sí solo se ve tarde. */
+.boton-accion-activo {
+    color: var(--color-exito);
+    background-color: var(--color-exito-fondo);
+    border-color: currentColor;
+}
+
+.boton-accion-peligro {
+    color: var(--color-error);
+}
+
+.boton-accion-peligro:hover:not(:disabled) {
+    color: #fff;
+    background-color: var(--color-error);
+    border-color: var(--color-error);
+}
+
+.boton-accion .icono {
+    pointer-events: none;
+}
+
+/* Texto solo para lectores de pantalla: mantiene la jerarquía de encabezados
+   sin ocupar espacio. No se usa display:none, que lo ocultaría también a ellos. */
+.solo-lectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }

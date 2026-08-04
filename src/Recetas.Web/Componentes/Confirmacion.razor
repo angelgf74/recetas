@@ -3,12 +3,24 @@
 
     No se usa el confirm() del navegador: bloquea el hilo, no se puede estilar y
     en móvil aparece como una alerta del sistema, ajena a la aplicación.
+
+    El disparador puede ser un icono, pero la confirmación en sí SIEMPRE lleva
+    palabras. Pedir que se confirme algo irreversible mostrando solo dos iconos
+    es pedir un accidente.
 *@
 
 @if (!_preguntando)
 {
-    <button type="button" class="boton boton-peligro" @onclick="() => _preguntando = true">
-        @Texto
+    <button type="button" class="@(Icono is null ? "boton boton-peligro" : "boton-accion boton-accion-peligro")"
+            title="@Texto" aria-label="@Texto" @onclick="() => _preguntando = true">
+        @if (Icono is null)
+        {
+            @Texto
+        }
+        else
+        {
+            <Icono Nombre="@Icono" />
+        }
     </button>
 }
 else
@@ -36,6 +48,14 @@ else
 
     [Parameter, EditorRequired]
     public EventCallback AlConfirmar { get; set; }
+
+    /// <summary>
+    /// Nombre del icono del disparador. Si es <c>null</c>, el botón muestra
+    /// <see cref="Texto"/>. En ambos casos ese texto se usa como etiqueta
+    /// accesible.
+    /// </summary>
+    [Parameter]
+    public string? Icono { get; set; }
 
     private bool _preguntando;
     private bool _ocupado;
