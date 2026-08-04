@@ -9,6 +9,19 @@
     <link rel="stylesheet" href="css/tokens.css" />
 
     <!--
+        Los `email_off` que rodean la dirección de contacto NO son decorativos.
+
+        Cloudflare trae activada la ofuscación de correos: detecta cualquier
+        dirección en el HTML y la sustituye por "[email protected]" más un script
+        que la reconstruye. Para un visitante con JavaScript es transparente, pero
+        un revisor de Google Play o un rastreador sin JavaScript se encuentra una
+        política de privacidad SIN dirección de contacto, que es justo lo que Play
+        exige que tenga.
+
+        `email_off` es el marcador de Cloudflare para excluir un fragmento. Se usa
+        aquí en lugar de desactivar la opción en el panel porque esto viaja con el
+        código y no depende de que nadie recuerde una casilla.
+
         Página estática, fuera de la aplicación Blazor.
 
         Google Play exige que la política de privacidad esté en una URL que se
@@ -104,7 +117,7 @@
         El responsable del tratamiento es el titular del dominio <code>angelgf.com.es</code>,
         que explota Recetas como proyecto personal. Para cualquier asunto relacionado con tus
         datos o para ejercer tus derechos:
-        <a href="mailto:angelgf@gmail.com">angelgf@gmail.com</a>.
+        <!--email_off--><a href="mailto:angelgf@gmail.com">angelgf@gmail.com</a><!--/email_off-->.
     </p>
 
     <p>
@@ -247,7 +260,7 @@
     <p>
         Puedes ejercer los derechos de acceso, rectificación, supresión, limitación, oposición y
         portabilidad escribiendo a
-        <a href="mailto:angelgf@gmail.com">angelgf@gmail.com</a>. La solicitud se
+        <!--email_off--><a href="mailto:angelgf@gmail.com">angelgf@gmail.com</a><!--/email_off-->. La solicitud se
         atiende sin coste y en el plazo que marca la ley.
     </p>
 
