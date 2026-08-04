@@ -93,7 +93,16 @@ public sealed record ResumenDeReceta(
     /// expondría datos de otro usuario.
     /// </para>
     /// </summary>
-    bool EsMia);
+    bool EsMia,
+    /// <summary>
+    /// Foto que representa a la receta en el listado, o <c>null</c> si no tiene
+    /// ninguna. Con este identificador se compone la URL de la miniatura.
+    /// </summary>
+    /// <remarks>
+    /// Va el identificador y no la lista entera de fotos: el listado pinta una
+    /// sola, y devolver todas obligaría a leerlas para no usarlas.
+    /// </remarks>
+    Guid? FotoDePortadaId);
 
 /// <param name="Resultados">Recetas encontradas, ya acotadas al tope.</param>
 /// <param name="HayMas">

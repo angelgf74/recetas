@@ -12,17 +12,20 @@
 
 @if (_datos is not null)
 {
-    <img class="foto" src="@_datos" alt="Foto de la receta" />
+    <img class="@Clase" src="@_datos" alt="Foto de la receta" />
 }
 else if (_fallo)
 {
-    <div class="foto foto-rota" role="img" aria-label="La foto no se ha podido cargar">
-        <span>No se ha podido cargar</span>
+    <div class="@Clase foto-rota" role="img" aria-label="La foto no se ha podido cargar">
+        @if (!Miniatura)
+        {
+            <span>No se ha podido cargar</span>
+        }
     </div>
 }
 else
 {
-    <div class="foto foto-cargando" aria-hidden="true"></div>
+    <div class="@Clase foto-cargando" aria-hidden="true"></div>
 }
 
 @code {
@@ -32,6 +35,19 @@ else
     [Parameter, EditorRequired]
     public Guid FotoId { get; set; }
 
+    /// <summary>
+    /// Pedir la versión reducida en lugar del archivo completo. Lo usan los
+    /// listados; la ficha sigue mostrando la foto entera.
+    /// </summary>
+    [Parameter]
+    public bool Miniatura { get; set; }
+
+    /// <summary>
+    /// El hueco de la miniatura se reserva aunque la imagen aún no esté, para que
+    /// la tarjeta no dé un salto al terminar de cargar.
+    /// </summary>
+    private string Clase => Miniatura ? "foto foto-miniatura" : "foto";
+
     private string? _datos;
     private bool _fallo;
 
@@ -40,7 +56,10 @@ else
         _datos = null;
         _fallo = false;
 
-        _datos = await Api.DescargarFotoAsync(RecetaId, FotoId);
+        _datos = Miniatura
+            ? await Api.DescargarMiniaturaAsync(RecetaId, FotoId)
+            : await Api.DescargarFotoAsync(RecetaId, FotoId);
+
         _fallo = _datos is null;
     }
 }

@@ -42,6 +42,7 @@ public static class InyeccionDeDependencias
         servicios.Configure<OpcionesDeFotos>(configuracion.GetSection(OpcionesDeFotos.Seccion));
         servicios.AddSingleton<IAlmacenDeFotos, AlmacenDeFotosEnDisco>();
         servicios.AddSingleton<ILimpiadorDeImagenes, LimpiadorDeImagenesConImageSharp>();
+        servicios.AddSingleton<IEscaladorDeImagenes, EscaladorDeImagenesConImageSharp>();
 
         AnadirOpcionesDeJwt(servicios, configuracion);
         AnadirCorreo(servicios, configuracion);

@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Las siete features del plan están terminadas, más la 008 (recuperar contraseña), primera salida del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
+**Las siete features del plan están terminadas, más la 008 (recuperar contraseña) y la 009 (fotos en los listados), salidas del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
 
-**Web:** portada, alta en dos pasos, login, recuperar contraseña en dos pasos, recetario, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
+**Web:** portada, alta en dos pasos, login, recuperar contraseña en dos pasos, recetario con miniaturas, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
 
-Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /contrasena/solicitudes`, `POST /contrasena/restablecer`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud, alta, recuperación de contraseña e inicio de sesión).
+Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /contrasena/solicitudes`, `POST /contrasena/restablecer`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos`, `GET|DELETE /recetas/{id}/fotos/{fotoId}` y `GET /recetas/{id}/fotos/{fotoId}/miniatura` (todos protegidos salvo salud, alta, recuperación de contraseña e inicio de sesión).
 
 **Búsqueda:** hay columnas `nombre_para_busqueda` en `recetas` e `ingredientes`, con el texto en minúsculas y sin acentos. Se rellenan con `TextoParaBusqueda.Normalizar`, y **el texto guardado y el de la consulta deben pasar por esa misma función**: si divergen, las búsquedas no encuentran nada y no falla nada. No se usa la extensión `unaccent` porque instalarla exige privilegios que el despliegue no tiene.
 
@@ -22,6 +22,8 @@ Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar
 - `Receta.PuedeVerla(usuarioId)` — autor **o** receta publicada. Solo para leer la receta y descargar sus fotos.
 
 Confundirlas permitiría a cualquiera modificar recetas públicas ajenas. Los nombres son distintos a propósito.
+
+**Miniaturas (009):** cada foto tiene una versión reducida en el mismo directorio, con sufijo `-min`. No lleva fila propia ni identificador: su ruta se deriva de la foto, y `Receta.FotoDePortada` —la más antigua— también es derivada, no un campo. Las fotos subidas antes de la 009 no tienen miniatura hasta que alguien la pide: se genera y se guarda en esa primera petición. **Esa generación perezosa va después de comprobar `PuedeVerla`**, o sería una puerta trasera a las fotos privadas ajenas.
 
 **ImageSharp está fijado en la 3.1**: la 4.0 exige clave de licencia en tiempo de compilación y el proyecto no compila sin ella. Actualizar rompe el build, no solo la licencia.
 

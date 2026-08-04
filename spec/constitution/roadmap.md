@@ -19,6 +19,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 8. **[008 · Recuperar contraseña](../features/008-recuperar-contrasena/spec.md)** — enlace de un solo uso por correo para volver a entrar, con la mecánica de la 002 pero caducando en una hora en vez de veinticuatro. Primera feature salida del backlog. Deja anotado que restablecer **no cierra las sesiones ya abiertas**: es consecuencia de los JWT sin estado de la 002.
 
+9. **[009 · Fotos en los listados](../features/009-fotos-en-los-listados/spec.md)** — el recetario y la búsqueda dejan de ser texto puro. Trae miniaturas generadas con ImageSharp, que es lo que hace viable pintar una foto por tarjeta: el archivo original llega a 8 MB y viaja en base64. Las fotos anteriores estrenan miniatura la primera vez que se piden, sin script de relleno.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -33,7 +35,8 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.
-- **Escalado de fotos** — generar miniaturas para no servir la imagen completa en los listados.
+- **Elegir la foto de portada** — hoy la receta se representa con la primera que se subió. Que el autor designe otra es un campo nuevo y un control en la ficha (sale de la 009).
+- **Visor de fotos** — abrir una foto a tamaño completo desde la ficha. Hace falta antes de poder pasar la ficha a miniaturas, porque un enlace normal no vale: el endpoint exige cabecera de autorización.
 - **Escalar cantidades** — ajustar los ingredientes al número de comensales.
 - **Importar receta desde URL** — roza el límite de "no es un catálogo editorial" de `mission.md`; valorar con cuidado.
 

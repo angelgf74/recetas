@@ -21,9 +21,11 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
     public async Task<IReadOnlyCollection<Receta>> ListarPorAutorAsync(
         Guid autorId,
         CancellationToken cancelacion = default) =>
-        // Sin Include: el listado no muestra ingredientes, y traerlos multiplicaría
-        // las filas leídas sin que nadie las use.
+        // Sin los ingredientes: el listado no los muestra, y traerlos multiplicaría
+        // las filas leídas sin que nadie las use. Las fotos sí, desde la 009: el
+        // listado pinta la portada, y sin ellas cargadas saldría siempre vacía.
         await contexto.Recetas
+            .Include(receta => receta.Fotos)
             .Where(receta => receta.AutorId == autorId)
             .OrderByDescending(receta => receta.FechaDeModificacion)
             .ToListAsync(cancelacion);
@@ -68,6 +70,9 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
         }
 
         return await consulta
+            // Igual que en el recetario: hacen falta para la portada del resultado.
+            // Va al final para no estorbar a los filtros de arriba.
+            .Include(receta => receta.Fotos)
             .OrderByDescending(receta => receta.FechaDeModificacion)
             // Uno más que el tope: si vuelve, es que hay recorte.
             .Take(maximo + 1)

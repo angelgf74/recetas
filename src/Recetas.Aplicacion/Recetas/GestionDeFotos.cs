@@ -32,6 +32,7 @@ public sealed class GestionDeFotos(
     IRepositorioDeRecetas recetas,
     IAlmacenDeFotos almacen,
     ILimpiadorDeImagenes limpiador,
+    IEscaladorDeImagenes escalador,
     IReloj reloj)
 {
     public async Task<(ResultadoDeFoto Resultado, Foto? Foto)> SubirAsync(
@@ -98,6 +99,12 @@ public sealed class GestionDeFotos(
         {
             limpia.Position = 0;
             await almacen.GuardarAsync(foto.Id, tipo, limpia, cancelacion);
+
+            // La miniatura sale de la imagen ya limpia, nunca del archivo que
+            // subió el cliente: es la copia que más se va a ver, y no debe
+            // heredar ni metadatos ni una orientación sin aplicar.
+            limpia.Position = 0;
+            await GuardarMiniaturaAsync(foto.Id, tipo, limpia, cancelacion);
         }
         catch (Exception)
         {
@@ -141,6 +148,94 @@ public sealed class GestionDeFotos(
         return contenido is null
             ? (ResultadoDeFoto.NoEncontrada, null)
             : (ResultadoDeFoto.Correcto, new FotoDescargada(contenido, foto.Tipo));
+    }
+
+    /// <summary>
+    /// Versión reducida de una foto, para los listados.
+    /// </summary>
+    /// <remarks>
+    /// Si la miniatura no está en disco, se genera aquí y se guarda. Es lo que
+    /// hace que las fotos subidas antes de la feature 009 acaben teniéndola sin
+    /// necesidad de un script de relleno: la primera petición la crea y las
+    /// siguientes ya la encuentran.
+    /// </remarks>
+    public async Task<(ResultadoDeFoto Resultado, FotoDescargada? Foto)> ObtenerMiniaturaAsync(
+        Guid usuarioId,
+        Guid recetaId,
+        Guid fotoId,
+        CancellationToken cancelacion = default)
+    {
+        var receta = await recetas.BuscarPorIdAsync(recetaId, cancelacion);
+
+        // Mismas reglas que la foto completa: una miniatura de una receta privada
+        // es tan privada como la foto de la que sale.
+        if (receta is null || !receta.PuedeVerla(usuarioId))
+        {
+            return (ResultadoDeFoto.NoEncontrada, null);
+        }
+
+        var foto = receta.Fotos.FirstOrDefault(f => f.Id == fotoId);
+
+        if (foto is null)
+        {
+            return (ResultadoDeFoto.NoEncontrada, null);
+        }
+
+        var miniatura = await almacen.AbrirMiniaturaAsync(foto.Id, foto.Tipo, cancelacion);
+
+        if (miniatura is not null)
+        {
+            return (ResultadoDeFoto.Correcto, new FotoDescargada(miniatura, foto.Tipo));
+        }
+
+        var original = await almacen.AbrirAsync(foto.Id, foto.Tipo, cancelacion);
+
+        // Sin original no hay nada que escalar. Se responde como la descarga
+        // completa en el mismo caso: como si la foto no existiera.
+        if (original is null)
+        {
+            return (ResultadoDeFoto.NoEncontrada, null);
+        }
+
+        await using (original)
+        {
+            var generada = await GuardarMiniaturaAsync(foto.Id, foto.Tipo, original, cancelacion);
+
+            if (generada is null)
+            {
+                // El original está en disco pero no se puede decodificar. No es
+                // recuperable desde aquí, y servir el archivo entero en su lugar
+                // sería justo lo que esta feature evita.
+                return (ResultadoDeFoto.NoEncontrada, null);
+            }
+
+            generada.Position = 0;
+            return (ResultadoDeFoto.Correcto, new FotoDescargada(generada, foto.Tipo));
+        }
+    }
+
+    /// <summary>
+    /// Escala y guarda la miniatura. Devuelve lo escalado, o <c>null</c> si la
+    /// imagen no se ha podido decodificar.
+    /// </summary>
+    private async Task<Stream?> GuardarMiniaturaAsync(
+        Guid fotoId,
+        TipoDeImagen tipo,
+        Stream imagen,
+        CancellationToken cancelacion)
+    {
+        var miniatura = await escalador.EscalarAsync(
+            imagen, tipo, IEscaladorDeImagenes.AnchoDeMiniatura, cancelacion);
+
+        if (miniatura is null)
+        {
+            return null;
+        }
+
+        miniatura.Position = 0;
+        await almacen.GuardarMiniaturaAsync(fotoId, tipo, miniatura, cancelacion);
+
+        return miniatura;
     }
 
     public async Task<ResultadoDeFoto> BorrarAsync(

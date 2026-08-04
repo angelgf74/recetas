@@ -77,6 +77,22 @@ public sealed class Receta
     /// </summary>
     public IReadOnlyCollection<Foto> Fotos => _fotos;
 
+    /// <summary>
+    /// Foto que representa a la receta en un listado: la primera que se subió, o
+    /// <c>null</c> si no hay ninguna.
+    /// </summary>
+    /// <remarks>
+    /// Derivada, no almacenada. Un campo con el identificador de la portada habría
+    /// que mantenerlo al borrar precisamente esa foto, y olvidarlo dejaría los
+    /// listados pidiendo una imagen que ya no existe.
+    /// <para>
+    /// Que el autor pueda elegir otra es otra feature; mientras tanto "la primera
+    /// que subiste" es la respuesta menos sorprendente.
+    /// </para>
+    /// </remarks>
+    public Foto? FotoDePortada =>
+        _fotos.OrderBy(foto => foto.FechaDeSubida).ThenBy(foto => foto.Id).FirstOrDefault();
+
     public static Receta Crear(
         Guid autorId,
         string nombre,

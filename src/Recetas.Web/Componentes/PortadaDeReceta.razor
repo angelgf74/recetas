@@ -1,0 +1,28 @@
+@*
+    Miniatura de una receta en un listado.
+
+    Envuelve a FotoDeReceta solo para resolver el caso de "no tiene fotos": el
+    hueco se pinta igualmente, con el icono de la aplicación. Si la tarjeta sin
+    foto se quedara sin nada, las de al lado quedarían desalineadas y la lista
+    parecería rota.
+*@
+
+@if (FotoId is { } id)
+{
+    <FotoDeReceta RecetaId="RecetaId" FotoId="id" Miniatura="true" />
+}
+else
+{
+    <span class="foto foto-miniatura foto-sin-portada" aria-hidden="true">
+        <Icono Nombre="olla" />
+    </span>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid RecetaId { get; set; }
+
+    /// <summary>Foto que representa a la receta, o <c>null</c> si no tiene ninguna.</summary>
+    [Parameter]
+    public Guid? FotoId { get; set; }
+}

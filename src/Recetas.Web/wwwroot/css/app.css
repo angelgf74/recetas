@@ -309,13 +309,21 @@ a {
 }
 
 .lista-de-recetas a {
-    display: block;
-    padding: var(--espacio-4);
+    display: flex;
+    gap: var(--espacio-4);
+    align-items: center;
+    padding: var(--espacio-3);
     color: inherit;
     text-decoration: none;
     background-color: var(--color-superficie);
     border: 1px solid var(--color-borde);
     border-radius: var(--radio);
+}
+
+/* Ocupa lo que sobra: sin esto, un nombre largo empujaría a la miniatura. */
+.lista-de-recetas .datos {
+    min-width: 0;
+    flex: 1;
 }
 
 .lista-de-recetas a:hover,
@@ -431,6 +439,42 @@ a {
     color: var(--color-texto-tenue);
     background-color: var(--color-superficie);
     border: 1px dashed var(--color-borde);
+}
+
+/*
+ * Miniatura de listado. Cuadrada y de tamaño fijo: las fotos de receta vienen
+ * en cualquier proporción, y dejar que cada una imponga la suya haría que las
+ * tarjetas tuvieran alturas distintas.
+ */
+.foto-miniatura {
+    flex: 0 0 auto;
+    width: 4.5rem;
+    height: 4.5rem;
+
+    /* Recorta para llenar el cuadro sin deformar la foto. El recorte es solo de
+       la miniatura; el archivo guardado conserva su proporción entera. */
+    object-fit: cover;
+
+    /* Anula el aspect-ratio de los estados de carga y error, que está pensado
+       para la foto grande de la ficha. */
+    aspect-ratio: auto;
+}
+
+/* Receta sin ninguna foto: el hueco se pinta igual para que la lista no se
+   descoloque, con el icono de la aplicación en tenue. */
+.foto-sin-portada {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-texto-tenue);
+    background-color: var(--color-fondo);
+    border: 1px dashed var(--color-borde);
+}
+
+/* El icono viene con el tamaño de los botones, que en este hueco se pierde. */
+.foto-sin-portada .icono {
+    width: 2rem;
+    height: 2rem;
 }
 
 .fotos figcaption {

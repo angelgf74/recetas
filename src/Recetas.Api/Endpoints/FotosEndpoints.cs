@@ -24,6 +24,7 @@ public static class FotosEndpoints
             .DisableAntiforgery();
 
         grupo.MapGet("/{fotoId:guid}", DescargarAsync);
+        grupo.MapGet("/{fotoId:guid}/miniatura", DescargarMiniaturaAsync);
         grupo.MapDelete("/{fotoId:guid}", BorrarAsync);
     }
 
@@ -84,6 +85,33 @@ public static class FotosEndpoints
 
         var (resultado, foto) = await gestion.ObtenerAsync(usuarioId, recetaId, fotoId, cancelacion);
 
+        return Servir(resultado, foto, respuesta);
+    }
+
+    /// <summary>
+    /// Versión reducida, para los listados. Mismo grupo y mismas reglas: una
+    /// miniatura es tan privada como la foto de la que sale.
+    /// </summary>
+    private static async Task<IResult> DescargarMiniaturaAsync(
+        Guid recetaId,
+        Guid fotoId,
+        ClaimsPrincipal usuario,
+        GestionDeFotos gestion,
+        HttpResponse respuesta,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var (resultado, foto) = await gestion.ObtenerMiniaturaAsync(usuarioId, recetaId, fotoId, cancelacion);
+
+        return Servir(resultado, foto, respuesta);
+    }
+
+    private static IResult Servir(ResultadoDeFoto resultado, FotoDescargada? foto, HttpResponse respuesta)
+    {
         if (resultado is not ResultadoDeFoto.Correcto || foto is null)
         {
             return NoEncontrada();

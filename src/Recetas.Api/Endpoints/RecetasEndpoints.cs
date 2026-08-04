@@ -234,7 +234,8 @@ public static class RecetasEndpoints
             receta.TipoDePlato.ToString(),
             receta.Visibilidad.ToString(),
             receta.FechaDeModificacion,
-            receta.EsDe(usuarioId));
+            receta.EsDe(usuarioId),
+            receta.FotoDePortada?.Id);
 
     private static RespuestaDeReceta ARespuesta(DominioReceta receta, Guid usuarioId) =>
         new(

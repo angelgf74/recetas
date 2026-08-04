@@ -39,13 +39,16 @@
             {
                 <li>
                     <a href="@($"/recetas/{receta.Id}")">
-                        <span class="nombre">@receta.Nombre</span>
-                        <span class="meta">
-                            @Etiquetas.DeTipo(receta.TipoDePlato)
-                            @if (receta.Visibilidad == "Publica")
-                            {
-                                <span class="marca marca-publica">Publicada</span>
-                            }
+                        <PortadaDeReceta RecetaId="receta.Id" FotoId="receta.FotoDePortadaId" />
+                        <span class="datos">
+                            <span class="nombre">@receta.Nombre</span>
+                            <span class="meta">
+                                @Etiquetas.DeTipo(receta.TipoDePlato)
+                                @if (receta.Visibilidad == "Publica")
+                                {
+                                    <span class="marca marca-publica">Publicada</span>
+                                }
+                            </span>
                         </span>
                     </a>
                 </li>

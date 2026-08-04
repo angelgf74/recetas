@@ -97,7 +97,7 @@ _Los comandos de `dotnet ef` necesitan `ASPNETCORE_ENVIRONMENT=Development` para
 
   Añadir un valor implica cambio de código y migración: no es configurable en tiempo de ejecución. Persistir como texto (nombre del valor), no como número: así una reordenación del enumerado no reescribe el significado de los datos ya guardados.
 - `Ingrediente` — entidad propia, no texto libre dentro de la receta: la búsqueda por ingredientes lo exige. Una receta referencia varios ingredientes, cada uno con su cantidad y unidad.
-- `Foto` — una receta puede tener fotos. **El binario no vive en PostgreSQL**: la base de datos guarda solo la referencia (ruta/identificador) y los metadatos; el archivo va al almacenamiento de ficheros.
+- `Foto` — una receta puede tener fotos. **El binario no vive en PostgreSQL**: la base de datos guarda solo la referencia (ruta/identificador) y los metadatos; el archivo va al almacenamiento de ficheros. Cada foto tiene además una **miniatura** para los listados, que **no es una entidad**: ni fila, ni identificador, ni fecha. Su ruta se deriva de la de la foto, de modo que las dos no pueden desincronizarse. La portada de una receta también es derivada —la foto más antigua—, para que borrar esa foto no deje un identificador apuntando al vacío.
 
 ### Alta de usuario (dos pasos)
 

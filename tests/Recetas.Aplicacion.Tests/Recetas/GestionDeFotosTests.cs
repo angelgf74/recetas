@@ -11,12 +11,14 @@ public class GestionDeFotosTests
     private readonly RepositorioDeRecetasEnMemoria _recetas = new();
     private readonly RepositorioDeIngredientesEnMemoria _ingredientes = new();
     private readonly AlmacenDeFotosEnMemoria _almacen = new();
+    private readonly EscaladorFalso _escalador = new();
     private readonly RelojFalso _reloj = new(new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero));
 
     private readonly Guid _ana = Guid.NewGuid();
     private readonly Guid _bruno = Guid.NewGuid();
 
-    private GestionDeFotos Fotos => new(_recetas, _almacen, new LimpiadorQueNoTocaNada(), _reloj);
+    private GestionDeFotos Fotos =>
+        new(_recetas, _almacen, new LimpiadorQueNoTocaNada(), _escalador, _reloj);
 
     private GestionDeRecetas RecetasDe =>
         new(_recetas, new ResolverIngredientes(_ingredientes), _almacen, _reloj);

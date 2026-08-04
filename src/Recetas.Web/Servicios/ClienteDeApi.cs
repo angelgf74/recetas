@@ -132,11 +132,22 @@ public sealed class ClienteDeApi(HttpClient http)
     /// 33 % que engorda base64.
     /// </para>
     /// </remarks>
-    public async Task<string?> DescargarFotoAsync(Guid recetaId, Guid fotoId)
+    public Task<string?> DescargarFotoAsync(Guid recetaId, Guid fotoId) =>
+        DescargarImagenAsync($"recetas/{recetaId}/fotos/{fotoId}");
+
+    /// <summary>
+    /// Igual, pero la versión reducida. Es la que usan los listados: pintar
+    /// cincuenta tarjetas con el archivo original serían cientos de megabytes,
+    /// y encima inflados un 33 % por el base64.
+    /// </summary>
+    public Task<string?> DescargarMiniaturaAsync(Guid recetaId, Guid fotoId) =>
+        DescargarImagenAsync($"recetas/{recetaId}/fotos/{fotoId}/miniatura");
+
+    private async Task<string?> DescargarImagenAsync(string ruta)
     {
         try
         {
-            var respuesta = await http.GetAsync($"recetas/{recetaId}/fotos/{fotoId}");
+            var respuesta = await http.GetAsync(ruta);
 
             if (!respuesta.IsSuccessStatusCode)
             {
