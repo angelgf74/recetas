@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Tema mínimo: el aspecto real lo pone Compose en Tema.kt. Este solo existe
+        para que la ventana tenga un fondo antes de que Compose pinte, y para que
+        la pantalla de arranque no dé un fogonazo blanco sobre fondo oscuro.
+    -->
+    <style name="Theme.Recetas" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/fondo</item>
+    </style>
+</resources>

@@ -67,7 +67,7 @@ Todo en C#/.NET 10 sobre un servidor de red local, expuesto vía túnel Cloudfla
 
 - **API REST** — arquitectura hexagonal, EF Core, PostgreSQL, JWT. Fotos en el disco del servidor, nunca en la BD. Correo transaccional por la API HTTP de **Brevo**, tras el puerto `IEnviadorDeCorreo` (en desarrollo y tests se sustituye por un adaptador que no envía nada real).
 - **Web** — Blazor WebAssembly. Cliente estático que consume la API por HTTP; sin reglas de negocio. CSS propio con tokens en variables y estilo aislado por componente: sin framework CSS ni biblioteca de componentes.
-- **Android** — **aplazada**. Kotlin + Compose cuando llegue; hasta entonces la web responsive/PWA cubre el móvil. Llevará **publicidad AdMob**, única monetización del producto y solo en esa superficie: la web y la API no la conocen ni la mencionan en el contrato.
+- **Android** — Kotlin + Compose en `android/`, **proyecto Gradle aparte de la solución .NET**: `dotnet build` no lo compila y `gradlew` no compila lo otro. Desde la 012 existe el esqueleto —sesión, recetario, ficha, búsqueda—; escribir recetas sigue siendo cosa de la web. Llevará **publicidad AdMob**, única monetización del producto y solo en esa superficie: la web y la API no la conocen ni la mencionan en el contrato. **Todavía no la lleva**, y añadirla no es solo código (ver el backlog).
 
 Dos reglas que atraviesan todo el diseño:
 
@@ -90,7 +90,7 @@ Están en `spec/constitution/tech-stack.md` (secciones "Convenciones" y "Límite
 
 ## Comandos
 
-La solución es `Recetas.slnx` (formato .NET 10), **no** `.sln`.
+La solución es `Recetas.slnx` (formato .NET 10), **no** `.sln`. La app Android tiene sus propios comandos, en `android/README.md`: usa el **JDK 21 de Android Studio** (no el del sistema) y llega a la API local con `adb reverse tcp:5199 tcp:5199`, no con `10.0.2.2`, porque esa entra por la red y la para el cortafuegos.
 
 ```
 docker compose up -d                       # PostgreSQL local — puerto 5433 del host, no 5432

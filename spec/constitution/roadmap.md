@@ -25,6 +25,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 11. **[011 · Importar receta desde URL](../features/011-importar-desde-url/spec.md)** — pegar un enlace rellena el formulario leyendo el `schema.org/Recipe` de la página. **De una en una y sin guardar nada**: el usuario revisa y guarda, que es lo que la mantiene dentro del "no es un catálogo editorial" de `mission.md`. Estrena peticiones salientes desde el servidor a destinos que elige un usuario, con todo lo que eso obliga a defender (SSRF).
 
+12. **[012 · Android: esqueleto usable](../features/012-android-esqueleto/spec.md)** — aplicación nativa en Kotlin + Compose contra la misma API: sesión, recetario, ficha y búsqueda. Se parte igual que se partió la web (002 esqueleto, 007 resto) y por lo mismo. **Sin AdMob**, que arrastra trabajo que no es código.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -35,7 +37,10 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 
 ## Backlog / ideas 💡
 
-- **App Android** — Kotlin + Compose contra la misma API, **con publicidad AdMob**. Aplazada deliberadamente (ver `tech-stack.md`). Arrastra trabajo que no es de programación: política de privacidad publicada, declaración de datos en Google Play y plataforma de consentimiento para la UE. Contarlo en el alcance cuando llegue.
+- **Android: escribir** — crear y editar recetas, fotos, publicar, escalar cantidades e importar desde URL. Es a la 012 lo que la 007 fue a la 002.
+- **Android: alta y recuperar contraseña** — necesitan enlaces profundos, porque el enlace del correo aterriza hoy en la web.
+- **AdMob en Android** — la única monetización prevista. **No es solo código**: exige cuenta de publicador, identificador de aplicación real, política de privacidad publicada, declaración de datos en Google Play y plataforma de consentimiento para la UE. Contar todo eso en el alcance cuando se aborde.
+- **Publicar en Google Play** — firma de la aplicación, ficha de la tienda y las declaraciones de arriba.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.

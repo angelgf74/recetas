@@ -10,6 +10,12 @@
 deploy/nginx/* text eol=lf
 deploy/systemd/* text eol=lf
 
+# El envoltorio de Gradle es el mismo caso: `gradlew` no lleva extensión .sh pero
+# es un script de shell, y con CRLF no arranca en Linux ni en macOS. `gradlew.bat`
+# es lo contrario y necesita CRLF.
+android/gradlew text eol=lf
+android/gradlew.bat text eol=crlf
+
 # Los scripts de PowerShell van con CRLF y UTF-8 con BOM: PowerShell 5.1 lee un
 # .ps1 sin BOM como ANSI y destroza los acentos, hasta el punto de que un
 # carácter multibyte puede convertirse en una comilla tipográfica y romper el
@@ -21,3 +27,7 @@ deploy/systemd/* text eol=lf
 *.jpg binary
 *.wasm binary
 *.dll binary
+
+# El JAR del envoltorio de Gradle SÍ se versiona: es lo que permite compilar el
+# proyecto Android sin tener Gradle instalado.
+*.jar binary

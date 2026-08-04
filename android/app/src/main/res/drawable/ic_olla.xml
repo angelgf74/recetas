@@ -1,0 +1,37 @@
+<!--
+    La olla del icono de la aplicación, la misma figura que favicon.svg en la web.
+    Va como vector y no como PNG: escala a cualquier densidad sin meter cinco
+    copias del mismo dibujo en el APK.
+
+    El lienzo es de 108 y la figura se dibuja dentro de los 72 centrales, que es la
+    zona segura de un icono adaptativo: fuera de ahí, el sistema recorta.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Pomo de la tapa. -->
+    <path
+        android:fillColor="#FDFCFA"
+        android:pathData="M54,35.5m-6.75,0a6.75,6.75 0,1 1,13.5 0a6.75,6.75 0,1 1,-13.5 0" />
+
+    <!-- Tapa: más ancha que el cuerpo, para que se lea como tapa. -->
+    <path
+        android:fillColor="#FDFCFA"
+        android:pathData="M18.6,43.9h70.9v11.8a5.9,5.9 0,0 1,-5.9 5.9h-59.1a5.9,5.9 0,0 1,-5.9 -5.9z" />
+
+    <!-- Asas. -->
+    <path
+        android:fillColor="#FDFCFA"
+        android:pathData="M10.1,64.2h15.2v11.8h-15.2a5.9,5.9 0,0 1,0 -11.8z" />
+    <path
+        android:fillColor="#FDFCFA"
+        android:pathData="M82.7,64.2h15.2a5.9,5.9 0,0 1,0 11.8h-15.2z" />
+
+    <!-- Cuerpo. -->
+    <path
+        android:fillColor="#FDFCFA"
+        android:pathData="M23.6,60.8h60.8v27.9a10.1,10.1 0,0 1,-10.1 10.1h-40.5a10.1,10.1 0,0 1,-10.1 -10.1z" />
+</vector>

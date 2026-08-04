@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Los mismos tokens que tokens.css en la web, para que las dos superficies
+         no acaben pareciendo dos productos distintos. -->
+    <color name="fondo">#FDFCFA</color>
+    <color name="acento">#B4541F</color>
+</resources>
