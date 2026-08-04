@@ -79,9 +79,18 @@ object Anuncios {
                 }
             },
             { error ->
-                // No se ha podido consultar el consentimiento. Sin él no se pide
-                // ningún anuncio, y la aplicación sigue su camino.
                 Log.i(ETIQUETA, "No se pudo obtener el consentimiento: ${error.message}")
+
+                // Que la consulta falle NO significa que haya que renunciar a los
+                // anuncios. Un fallo de red, o que falte configurar el formulario
+                // en la consola, es distinto de que el usuario haya dicho que no.
+                //
+                // UMP conserva el estado de la última vez y sigue sabiendo
+                // responder: si dice que se pueden pedir anuncios, se piden. Si
+                // dice que no, no se piden. La decisión sigue siendo suya, no
+                // nuestra, y así un error de configuración no deja la aplicación
+                // sin publicidad para siempre.
+                continuarSiSePuede(actividad, informacion, esDepuracion, alEstarListo)
             }
         )
     }
