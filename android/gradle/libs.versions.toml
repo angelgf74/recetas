@@ -14,6 +14,8 @@ ktor = "3.5.2"
 serialization = "1.11.0"
 coroutines = "1.10.2"
 junit = "4.13.2"
+playServicesAds = "25.4.0"
+userMessagingPlatform = "4.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +32,12 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 
 # El token se cifra con el almacén de claves del sistema, a mano: androidx.security
 # está obsoleto y no merecía la dependencia. Ver SesionLocal.kt.
+
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+
+# Plataforma de mensajes de usuario: la CMP de Google. Sin ella no se pueden
+# servir anuncios personalizados en el Espacio Económico Europeo.
+user-messaging-platform = { group = "com.google.android.ump", name = "user-messaging-platform", version.ref = "userMessagingPlatform" }
 
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }

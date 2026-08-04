@@ -12,6 +12,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -25,6 +28,7 @@ import com.angelgf.recetas.ui.PantallaDeBusqueda
 import com.angelgf.recetas.ui.PantallaDeFicha
 import com.angelgf.recetas.ui.PantallaDeRecetario
 import com.angelgf.recetas.ui.PantallaDeSesion
+import com.angelgf.recetas.ui.PrepararAnuncios
 import com.angelgf.recetas.ui.TemaDeRecetas
 
 class MainActivity : ComponentActivity() {
@@ -60,12 +64,21 @@ class MainActivity : ComponentActivity() {
 private fun Aplicacion(modelo: AppViewModel) {
     val estado: EstadoDeLaApp by modelo.estado.collectAsState()
 
+    // Estado observable propio: `Anuncios` no lo es, así que sin esto Compose no
+    // se enteraría de que el consentimiento ha terminado.
+    var anunciosListos by rememberSaveable { mutableStateOf(false) }
+
+    PrepararAnuncios(esDepuracion = BuildConfig.DEBUG) { anunciosListos = true }
+
     Scaffold { relleno ->
         Surface(modifier = Modifier.padding(relleno)) {
             when (estado.pantalla) {
                 Pantalla.Sesion -> PantallaDeSesion(estado, modelo)
-                Pantalla.Recetario -> PantallaDeRecetario(estado, modelo)
-                Pantalla.Busqueda -> PantallaDeBusqueda(estado, modelo)
+                Pantalla.Recetario -> PantallaDeRecetario(estado, modelo, anunciosListos)
+                Pantalla.Busqueda -> PantallaDeBusqueda(estado, modelo, anunciosListos)
+
+                // La ficha NO recibe el parámetro: es la pantalla que se lee
+                // cocinando y ahí no va publicidad. Ver mission.md.
                 is Pantalla.Ficha -> PantallaDeFicha(estado, modelo)
             }
         }

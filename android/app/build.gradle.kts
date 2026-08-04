@@ -34,10 +34,29 @@ android {
             // `adb reverse` va por el canal de depuración, así que no toca nada, y
             // además funciona igual con un teléfono real conectado por cable.
             buildConfigField("String", "BASE_DE_LA_API", "\"http://localhost:5199/\"")
+
+            // BLOQUES DE PRUEBA DE GOOGLE, nunca los reales.
+            //
+            // Servir o pulsar anuncios reales mientras se desarrolla genera lo que
+            // AdMob considera tráfico inválido, y la consecuencia habitual no es un
+            // aviso: es la suspensión de la cuenta de publicador. Esta cuenta tiene
+            // otras diez aplicaciones dentro.
+            //
+            // Estos identificadores son públicos y están hechos justo para esto.
+            buildConfigField(
+                "String", "ANUNCIO_RECETARIO", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField(
+                "String", "ANUNCIO_BUSQUEDA", "\"ca-app-pub-3940256099942544/6300978111\"")
         }
 
         release {
             buildConfigField("String", "BASE_DE_LA_API", "\"https://recetas-api.angelgf.com.es/\"")
+
+            // Los bloques reales, creados en la consola de AdMob. Solo aquí.
+            buildConfigField(
+                "String", "ANUNCIO_RECETARIO", "\"ca-app-pub-8600791204816041/2095402606\"")
+            buildConfigField(
+                "String", "ANUNCIO_BUSQUEDA", "\"ca-app-pub-8600791204816041/9782320932\"")
 
             isMinifyEnabled = true
             isShrinkResources = true
@@ -75,6 +94,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    implementation(libs.play.services.ads)
+    implementation(libs.user.messaging.platform)
 
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.okhttp)

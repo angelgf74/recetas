@@ -73,8 +73,9 @@ Crear y editar recetas, fotos, publicar, escalar cantidades e importar desde URL
 Todo eso está en la API y lo cubre la web, que funciona en el móvil. Entra en la
 feature siguiente de Android.
 
-**Tampoco lleva AdMob todavía.** La parte de consola ya está dada de alta; lo que
-falta es integrar el SDK y el trabajo que no es código.
+**AdMob está integrado en el código** (feature 013), pero **todavía no sale ningún
+anuncio**: falta crear el mensaje de consentimiento del RGPD en la consola. Ver
+más abajo.
 
 ## AdMob
 
@@ -98,10 +99,37 @@ La aplicación figura como **"Debe revisarse"** y con servicio de anuncios
 limitado, porque no está publicada en ninguna tienda. Es lo esperado hasta que se
 suba a Google Play.
 
-Lo que falta antes de que esto pueda mostrar anuncios de verdad:
+### En depuración se usan bloques de prueba, y no es opcional
 
-- Integrar el SDK de anuncios de Google para móviles.
-- **Política de privacidad publicada** y enlazada desde la ficha de Play.
-- **Declaración de datos** en Google Play.
-- **Plataforma de consentimiento para la UE**, obligatoria para servir anuncios
-  personalizados a usuarios europeos.
+Servir o pulsar anuncios **reales** mientras se desarrolla genera lo que AdMob
+considera tráfico inválido, y la consecuencia habitual no es un aviso: es la
+**suspensión de la cuenta de publicador**, que tiene otras diez aplicaciones
+dentro.
+
+Por eso hay dos defensas, a propósito:
+
+1. La compilación de depuración usa los **bloques de prueba públicos de Google**;
+   los reales solo entran en la de publicación (`app/build.gradle.kts`).
+2. El emulador se registra como **dispositivo de prueba** en `Anuncios.kt`.
+
+Si vas a probar en un teléfono propio, añade su identificador a esa lista: sale en
+el logcat la primera vez que se pide un anuncio.
+
+### Lo que bloquea que salgan anuncios
+
+Hoy no sale ninguno. UMP responde:
+
+```
+no form(s) configured for the input app ID
+```
+
+Falta crear el mensaje de consentimiento en **AdMob → Privacidad y mensajes →
+Reglamentos europeos → Crear**. Hasta entonces el código no pide anuncios, que es
+el comportamiento correcto.
+
+### Lo demás que falta
+
+- **Política de privacidad**: actualizarla cuando los anuncios se sirvan de
+  verdad. Hoy dice que no hay publicidad, y es cierto.
+- **Declaración de datos** en Google Play, marcando que la aplicación contiene
+  anuncios.

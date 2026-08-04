@@ -17,6 +17,17 @@
             token de sesión.
         -->
 
+        <!--
+            Identificador de aplicación de AdMob. Va aquí y no en el código porque
+            el SDK lo lee del manifiesto al arrancar; si falta, la aplicación
+            revienta nada más iniciar el SDK.
+
+            No es un secreto: acaba dentro del APK y cualquiera puede leerlo.
+        -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8600791204816041~1145017083" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

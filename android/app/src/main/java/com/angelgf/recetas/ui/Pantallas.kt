@@ -3,6 +3,7 @@ package com.angelgf.recetas.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.angelgf.recetas.BuildConfig
 import com.angelgf.recetas.datos.RespuestaDeReceta
 import com.angelgf.recetas.datos.ResumenDeReceta
 
@@ -113,22 +115,28 @@ fun PantallaDeSesion(estado: EstadoDeLaApp, modelo: AppViewModel) {
 // ------------------------------------------------------------------ Recetario
 
 @Composable
-fun PantallaDeRecetario(estado: EstadoDeLaApp, modelo: AppViewModel) {
+fun PantallaDeRecetario(estado: EstadoDeLaApp, modelo: AppViewModel, anunciosListos: Boolean) {
     Column(Modifier.fillMaxSize()) {
         Barra(titulo = "Mi recetario", modelo = modelo)
 
         estado.error?.let { Aviso(it, esError = true) }
 
-        when {
-            estado.cargando && estado.recetas.isEmpty() -> Cargando()
+        // weight(1f) para que la lista se quede con todo el alto sobrante y el
+        // banner no la empuje fuera de la pantalla.
+        Box(Modifier.weight(1f)) {
+            when {
+                estado.cargando && estado.recetas.isEmpty() -> Cargando()
 
-            estado.recetas.isEmpty() -> Vacio(
-                "Todavía no has guardado ninguna receta.",
-                "Créalas desde la web; aquí las tendrás a mano mientras cocinas."
-            )
+                estado.recetas.isEmpty() -> Vacio(
+                    "Todavía no has guardado ninguna receta.",
+                    "Créalas desde la web; aquí las tendrás a mano mientras cocinas."
+                )
 
-            else -> ListaDeRecetas(estado.recetas, modelo)
+                else -> ListaDeRecetas(estado.recetas, modelo)
+            }
         }
+
+        BannerDeAnuncios(BuildConfig.ANUNCIO_RECETARIO, anunciosListos)
     }
 }
 
@@ -250,7 +258,7 @@ fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel) {
 // -------------------------------------------------------------------- Búsqueda
 
 @Composable
-fun PantallaDeBusqueda(estado: EstadoDeLaApp, modelo: AppViewModel) {
+fun PantallaDeBusqueda(estado: EstadoDeLaApp, modelo: AppViewModel, anunciosListos: Boolean) {
     var nombre by rememberSaveable { mutableStateOf("") }
     var ingredientes by rememberSaveable { mutableStateOf("") }
 
@@ -292,23 +300,27 @@ fun PantallaDeBusqueda(estado: EstadoDeLaApp, modelo: AppViewModel) {
 
         val resultados = estado.resultados
 
-        when {
-            resultados == null -> Unit
-            resultados.isEmpty() -> Vacio(
-                "No hay ninguna receta que cumpla eso.",
-                "Prueba con menos criterios o con otro ingrediente."
-            )
-            else -> {
-                if (estado.hayMasResultados) {
-                    Text(
-                        "Hay más resultados: afina la búsqueda.",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+        Box(Modifier.weight(1f)) {
+            when {
+                resultados == null -> Unit
+                resultados.isEmpty() -> Vacio(
+                    "No hay ninguna receta que cumpla eso.",
+                    "Prueba con menos criterios o con otro ingrediente."
+                )
+                else -> Column {
+                    if (estado.hayMasResultados) {
+                        Text(
+                            "Hay más resultados: afina la búsqueda.",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                    ListaDeRecetas(resultados, modelo)
                 }
-                ListaDeRecetas(resultados, modelo)
             }
         }
+
+        BannerDeAnuncios(BuildConfig.ANUNCIO_BUSQUEDA, anunciosListos)
     }
 }
 
