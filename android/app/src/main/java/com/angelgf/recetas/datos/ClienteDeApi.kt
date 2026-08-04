@@ -5,10 +5,12 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.readRawBytes
@@ -99,7 +101,105 @@ class ClienteDeApi(
 
     suspend fun misRecetas(): Resultado<List<ResumenDeReceta>> = leer("recetas")
 
-    suspend fun receta(id: String): Resultado<RespuestaDeReceta> = leer("recetas/$id")
+    /**
+     * @param raciones comensales a los que ajustar las cantidades. El cálculo y el
+     *   redondeo los hace el servidor: son reglas de negocio (feature 010) y no se
+     *   reimplementan aquí.
+     */
+    suspend fun receta(id: String, raciones: Int? = null): Resultado<RespuestaDeReceta> =
+        envolver {
+            val respuesta = http.get("recetas/$id") {
+                raciones?.let { parameter("raciones", it) }
+            }
+
+            traducir(respuesta)
+        }
+
+    suspend fun crearReceta(peticion: PeticionDeReceta): Resultado<RespuestaDeReceta> =
+        envolver {
+            val respuesta = http.post("recetas") {
+                contentType(ContentType.Application.Json)
+                setBody(peticion)
+            }
+
+            traducir(respuesta)
+        }
+
+    suspend fun actualizarReceta(id: String, peticion: PeticionDeReceta): Resultado<Unit> =
+        envolver {
+            val respuesta = http.put("recetas/$id") {
+                contentType(ContentType.Application.Json)
+                setBody(peticion)
+            }
+
+            sinContenido(respuesta)
+        }
+
+    suspend fun borrarReceta(id: String): Resultado<Unit> =
+        envolver { sinContenido(http.delete("recetas/$id")) }
+
+    // ------------------------------------------------------- Publicación
+
+    suspend fun publicar(id: String): Resultado<Unit> =
+        envolver { sinContenido(http.post("recetas/$id/publicacion")) }
+
+    suspend fun despublicar(id: String): Resultado<Unit> =
+        envolver { sinContenido(http.delete("recetas/$id/publicacion")) }
+
+    // ------------------------------------------------------------- Fotos
+
+    suspend fun subirFoto(recetaId: String, contenido: ByteArray): Resultado<Unit> =
+        envolver {
+            val respuesta = http.post("recetas/$recetaId/fotos") {
+                setBody(contenido)
+            }
+
+            traducirVacio(respuesta)
+        }
+
+    suspend fun borrarFoto(recetaId: String, fotoId: String): Resultado<Unit> =
+        envolver { sinContenido(http.delete("recetas/$recetaId/fotos/$fotoId")) }
+
+    // --------------------------------------------------------- Importar
+
+    suspend fun importar(direccion: String): Resultado<RespuestaDeImportacion> =
+        envolver {
+            val respuesta = http.post("recetas/importaciones") {
+                contentType(ContentType.Application.Json)
+                setBody(PeticionDeImportacion(direccion))
+            }
+
+            traducir(respuesta)
+        }
+
+    // ------------------------------------------------------------ Cuenta
+
+    suspend fun solicitarAlta(correo: String): Resultado<String> =
+        mensajeDe("registro/solicitudes", PeticionDeSolicitudDeRegistro(correo))
+
+    suspend fun completarAlta(token: String, contrasena: String): Resultado<String> =
+        mensajeDe("registro/completar", PeticionDeCompletarRegistro(token, contrasena))
+
+    suspend fun solicitarContrasena(correo: String): Resultado<String> =
+        mensajeDe("contrasena/solicitudes", PeticionDeSolicitudDeContrasena(correo))
+
+    suspend fun restablecerContrasena(token: String, contrasena: String): Resultado<String> =
+        mensajeDe("contrasena/restablecer", PeticionDeRestablecerContrasena(token, contrasena))
+
+    /** Endpoints que responden 200 con un mensaje pensado para enseñárselo al usuario. */
+    private suspend inline fun <reified T> mensajeDe(ruta: String, cuerpo: T): Resultado<String> =
+        envolver {
+            val respuesta = http.post(ruta) {
+                contentType(ContentType.Application.Json)
+                setBody(cuerpo)
+            }
+
+            if (respuesta.status.isSuccess()) {
+                Resultado.Correcto(respuesta.body<RespuestaDeError>().mensaje.orEmpty())
+            } else {
+                Resultado.Fallo(mensajeDeError(respuesta))
+            }
+        }
 
     suspend fun buscar(nombre: String, ingredientes: List<String>): Resultado<RespuestaDeBusqueda> =
         envolver {
@@ -140,6 +240,20 @@ class ClienteDeApi(
 
     private suspend inline fun <reified T> leer(ruta: String): Resultado<T> =
         envolver { traducir(http.get(ruta)) }
+
+    /** Para respuestas 204, que no traen cuerpo que interpretar. */
+    private suspend fun sinContenido(respuesta: HttpResponse): Resultado<Unit> =
+        traducirVacio(respuesta)
+
+    private suspend fun traducirVacio(respuesta: HttpResponse): Resultado<Unit> =
+        when {
+            respuesta.status.isSuccess() -> Resultado.Correcto(Unit)
+            respuesta.status == HttpStatusCode.Unauthorized -> {
+                sesion.borrar()
+                Resultado.SesionCaducada
+            }
+            else -> Resultado.Fallo(mensajeDeError(respuesta))
+        }
 
     private suspend inline fun <reified T> traducir(respuesta: HttpResponse): Resultado<T> =
         when {

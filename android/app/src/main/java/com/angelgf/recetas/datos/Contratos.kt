@@ -69,3 +69,45 @@ data class RespuestaDeBusqueda(
 
 @Serializable
 data class RespuestaDeError(val mensaje: String? = null)
+
+// ------------------------------------------------------------- Escritura
+
+@Serializable
+data class LineaDeIngredientePeticion(
+    val nombre: String,
+    val cantidad: Double? = null,
+    val unidad: String
+)
+
+@Serializable
+data class PeticionDeReceta(
+    val nombre: String,
+    val tipoDePlato: String,
+    val elaboracion: String,
+    val ingredientes: List<LineaDeIngredientePeticion>,
+    val raciones: Int? = null
+)
+
+@Serializable
+data class PeticionDeImportacion(val direccion: String)
+
+@Serializable
+data class RespuestaDeImportacion(
+    val nombre: String,
+    val elaboracion: String,
+    val raciones: Int? = null,
+    val ingredientes: List<LineaDeIngredientePeticion> = emptyList(),
+    val origen: String
+)
+
+@Serializable
+data class PeticionDeSolicitudDeRegistro(val correo: String)
+
+@Serializable
+data class PeticionDeCompletarRegistro(val token: String, val contrasena: String)
+
+@Serializable
+data class PeticionDeSolicitudDeContrasena(val correo: String)
+
+@Serializable
+data class PeticionDeRestablecerContrasena(val token: String, val contrasena: String)

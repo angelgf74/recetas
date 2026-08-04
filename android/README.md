@@ -75,11 +75,26 @@ docker compose up -d
 dotnet run --project ..\src\Recetas.Api
 ```
 
-## Lo que NO hace todavía
+## Paridad con la web
 
-Crear y editar recetas, fotos, publicar, escalar cantidades e importar desde URL.
-Todo eso está en la API y lo cubre la web, que funciona en el móvil. Entra en la
-feature siguiente de Android.
+Desde la feature 014 hace lo mismo que la web: crear, editar y borrar recetas,
+fotos, publicar, escalar cantidades, importar desde URL, alta y recuperar
+contraseña.
+
+### Enlaces de aplicación
+
+El enlace del correo del alta y del restablecimiento abre la aplicación en lugar
+del navegador. Lo autoriza `/.well-known/assetlinks.json`, publicado en la web con
+la huella del certificado de **depuración**.
+
+**Al firmar para publicar hay que añadir la huella del certificado de publicación
+a ese archivo**, o los enlaces dejarán de abrir la aplicación descargada de Google
+Play. Para obtenerla:
+
+```powershell
+& "$env:ProgramFiles\Android\Android Studio\jbr\bin\keytool.exe" `
+    -list -v -keystore RUTA_DEL_ALMACEN -alias EL_ALIAS
+```
 
 **AdMob está integrado en el código** (feature 013), pero **todavía no sale ningún
 anuncio**: falta crear el mensaje de consentimiento del RGPD en la consola. Ver

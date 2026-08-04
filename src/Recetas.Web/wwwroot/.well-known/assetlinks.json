@@ -1,0 +1,15 @@
+[
+  {
+    "//": "Enlaces de aplicacion de Android. Autoriza a com.angelgf.recetas a abrir los enlaces de este dominio, en lugar de que los abra el navegador. La huella es la del certificado de DEPURACION; al firmar para publicar hay que anadir la del certificado de publicacion a este mismo array, o los enlaces dejaran de abrir la aplicacion instalada desde Google Play.",
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.angelgf.recetas",
+      "sha256_cert_fingerprints": [
+        "96:23:6E:5C:F9:DF:62:90:D6:A6:20:F2:6E:4E:78:FD:16:A9:3E:9A:63:0A:17:65:B2:9F:AC:96:37:A5:07:48"
+      ]
+    }
+  }
+]

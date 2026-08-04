@@ -3,6 +3,8 @@ package com.angelgf.recetas.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelgf.recetas.datos.ClienteDeApi
+import com.angelgf.recetas.datos.PeticionDeReceta
+import com.angelgf.recetas.datos.RespuestaDeImportacion
 import com.angelgf.recetas.datos.Resultado
 import com.angelgf.recetas.datos.RespuestaDeReceta
 import com.angelgf.recetas.datos.ResumenDeReceta
@@ -15,15 +17,23 @@ import kotlinx.coroutines.launch
 /**
  * Dónde está el usuario.
  *
- * Navegación con estado y no con `navigation-compose`: son cuatro pantallas y una
- * dependencia menos que descargar. Si la aplicación crece hasta necesitar enlaces
- * profundos —que hará falta para el enlace del correo del alta—, entonces sí.
+ * Navegación con estado y no con `navigation-compose`: siguen siendo pocas
+ * pantallas y es una dependencia menos.
  */
 sealed interface Pantalla {
     data object Sesion : Pantalla
+    data object Alta : Pantalla
+    data object RecuperarContrasena : Pantalla
+
+    /** Paso 2 del alta o del restablecimiento, al que se llega por el enlace del correo. */
+    data class ElegirContrasena(val token: String, val esAlta: Boolean) : Pantalla
+
     data object Recetario : Pantalla
     data object Busqueda : Pantalla
     data class Ficha(val recetaId: String) : Pantalla
+
+    /** Crear una receta, o editar una existente si trae identificador. */
+    data class Formulario(val recetaId: String? = null) : Pantalla
 }
 
 data class EstadoDeLaApp(
@@ -34,16 +44,19 @@ data class EstadoDeLaApp(
     val recetas: List<ResumenDeReceta> = emptyList(),
     val receta: RespuestaDeReceta? = null,
     val resultados: List<ResumenDeReceta>? = null,
-    val hayMasResultados: Boolean = false
+    val hayMasResultados: Boolean = false,
+
+    /** Raciones que representan las cantidades en pantalla. Lo dice la respuesta. */
+    val racionesMostradas: Int? = null,
+
+    /** Borrador de una importación, para precargar el formulario. */
+    val borrador: PeticionDeReceta? = null,
+    val origenDelBorrador: String? = null,
+
+    /** Receta que se está editando, ya cargada. */
+    val recetaAEditar: RespuestaDeReceta? = null
 )
 
-/**
- * Estado de toda la aplicación.
- *
- * Vive en un [ViewModel] y no en la actividad porque un `ViewModel` sobrevive al
- * giro de pantalla. Es el criterio de aceptación "sobrevive a girar sin perder lo
- * cargado", y el fallo clásico de una primera aplicación Android.
- */
 class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
 
     private val _estado = MutableStateFlow(
@@ -62,7 +75,7 @@ class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
         lanzar {
             when (val resultado = api.iniciarSesion(correo.trim(), contrasena)) {
                 is Resultado.Correcto -> {
-                    _estado.update { it.copy(pantalla = Pantalla.Recetario, error = null) }
+                    _estado.update { it.copy(pantalla = Pantalla.Recetario, error = null, aviso = null) }
                     cargarRecetario()
                 }
                 is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
@@ -83,29 +96,133 @@ class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
         )
     }
 
-    // ----------------------------------------------------------- Navegar
+    // ------------------------------------------------------------ Cuenta
 
-    fun irAlRecetario() {
-        _estado.update { it.copy(pantalla = Pantalla.Recetario, error = null, receta = null) }
-        cargarRecetario()
+    fun irAlAlta() = _estado.update { it.copy(pantalla = Pantalla.Alta, error = null, aviso = null) }
+
+    fun irARecuperarContrasena() =
+        _estado.update { it.copy(pantalla = Pantalla.RecuperarContrasena, error = null, aviso = null) }
+
+    fun volverAlLogin() =
+        _estado.update { it.copy(pantalla = Pantalla.Sesion, error = null, aviso = null) }
+
+    fun solicitarAlta(correo: String) = pedirYAvisar { api.solicitarAlta(correo.trim()) }
+
+    fun solicitarContrasena(correo: String) = pedirYAvisar { api.solicitarContrasena(correo.trim()) }
+
+    /**
+     * Llega desde el enlace del correo. El token viaja en la dirección; la
+     * contraseña se manda después, en el cuerpo de la petición.
+     */
+    fun abrirEnlaceDeCorreo(token: String, esAlta: Boolean) {
+        _estado.value = EstadoDeLaApp(
+            pantalla = Pantalla.ElegirContrasena(token, esAlta)
+        )
     }
 
-    fun irABuscar() {
-        _estado.update { it.copy(pantalla = Pantalla.Busqueda, error = null, receta = null) }
-    }
-
-    fun abrirReceta(id: String) {
-        // Se limpia la receta anterior antes de pedir la nueva: si no, se vería un
-        // instante la anterior con el nombre de la que se acaba de tocar.
-        _estado.update { it.copy(pantalla = Pantalla.Ficha(id), receta = null, error = null) }
-
+    fun elegirContrasena(token: String, contrasena: String, esAlta: Boolean) {
         lanzar {
-            when (val resultado = api.receta(id)) {
-                is Resultado.Correcto -> _estado.update { it.copy(receta = resultado.valor) }
+            val resultado =
+                if (esAlta) api.completarAlta(token, contrasena)
+                else api.restablecerContrasena(token, contrasena)
+
+            when (resultado) {
+                is Resultado.Correcto -> _estado.value = EstadoDeLaApp(
+                    pantalla = Pantalla.Sesion,
+                    aviso = resultado.valor.ifBlank { "Listo. Ya puedes iniciar sesión." }
+                )
                 is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
                 Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
             }
         }
+    }
+
+    private fun pedirYAvisar(bloque: suspend () -> Resultado<String>) {
+        lanzar {
+            when (val resultado = bloque()) {
+                is Resultado.Correcto -> _estado.update {
+                    it.copy(aviso = resultado.valor, error = null)
+                }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    // ----------------------------------------------------------- Navegar
+
+    fun irAlRecetario() {
+        _estado.update {
+            it.copy(
+                pantalla = Pantalla.Recetario,
+                error = null,
+                aviso = null,
+                receta = null,
+                borrador = null,
+                origenDelBorrador = null,
+                recetaAEditar = null
+            )
+        }
+        cargarRecetario()
+    }
+
+    fun irABuscar() =
+        _estado.update { it.copy(pantalla = Pantalla.Busqueda, error = null, receta = null) }
+
+    fun irACrearReceta() =
+        _estado.update {
+            it.copy(
+                pantalla = Pantalla.Formulario(),
+                error = null,
+                aviso = null,
+                borrador = null,
+                origenDelBorrador = null,
+                recetaAEditar = null
+            )
+        }
+
+    fun irAEditarReceta(receta: RespuestaDeReceta) =
+        _estado.update {
+            it.copy(
+                pantalla = Pantalla.Formulario(receta.id),
+                error = null,
+                aviso = null,
+                recetaAEditar = receta,
+                borrador = null
+            )
+        }
+
+    fun abrirReceta(id: String, raciones: Int? = null) {
+        _estado.update {
+            it.copy(
+                pantalla = Pantalla.Ficha(id),
+                receta = if (raciones == null) null else it.receta,
+                error = null,
+                aviso = null
+            )
+        }
+
+        lanzar {
+            when (val resultado = api.receta(id, raciones)) {
+                is Resultado.Correcto -> _estado.update {
+                    it.copy(receta = resultado.valor, racionesMostradas = resultado.valor.racionesMostradas)
+                }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    /**
+     * Ajusta las cantidades a otro número de comensales.
+     *
+     * Se parte siempre de la receta guardada, nunca de lo ya escalado: encadenar
+     * redondeos acumularía error (ver feature 010).
+     */
+    fun ajustarRaciones(raciones: Int) {
+        val id = (_estado.value.pantalla as? Pantalla.Ficha)?.recetaId ?: return
+
+        if (raciones in 1..100) abrirReceta(id, raciones)
     }
 
     // ------------------------------------------------------------ Datos
@@ -138,9 +255,126 @@ class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
         }
     }
 
+    // -------------------------------------------------------- Escritura
+
+    fun guardarReceta(peticion: PeticionDeReceta, recetaId: String?) {
+        lanzar {
+            val resultado =
+                if (recetaId == null) {
+                    when (val creada = api.crearReceta(peticion)) {
+                        is Resultado.Correcto -> {
+                            abrirReceta(creada.valor.id)
+                            return@lanzar
+                        }
+                        is Resultado.Fallo -> Resultado.Fallo(creada.mensaje)
+                        Resultado.SesionCaducada -> Resultado.SesionCaducada
+                    }
+                } else {
+                    api.actualizarReceta(recetaId, peticion)
+                }
+
+            when (resultado) {
+                is Resultado.Correcto -> abrirReceta(recetaId!!)
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    fun borrarReceta(id: String) {
+        lanzar {
+            when (val resultado = api.borrarReceta(id)) {
+                is Resultado.Correcto -> irAlRecetario()
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    fun cambiarVisibilidad(id: String, publicar: Boolean) {
+        lanzar {
+            val resultado = if (publicar) api.publicar(id) else api.despublicar(id)
+
+            when (resultado) {
+                is Resultado.Correcto -> {
+                    _estado.update {
+                        it.copy(
+                            aviso = if (publicar) "Receta compartida: ya pueden verla otros usuarios."
+                            else "Receta retirada: vuelve a ser solo tuya."
+                        )
+                    }
+                    recargarFicha(id)
+                }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    fun subirFoto(recetaId: String, contenido: ByteArray) {
+        lanzar {
+            when (val resultado = api.subirFoto(recetaId, contenido)) {
+                is Resultado.Correcto -> {
+                    _estado.update { it.copy(aviso = "Foto añadida.") }
+                    recargarFicha(recetaId)
+                }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    fun borrarFoto(recetaId: String, fotoId: String) {
+        lanzar {
+            when (val resultado = api.borrarFoto(recetaId, fotoId)) {
+                is Resultado.Correcto -> recargarFicha(recetaId)
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    private suspend fun recargarFicha(id: String) {
+        when (val resultado = api.receta(id)) {
+            is Resultado.Correcto -> _estado.update {
+                it.copy(receta = resultado.valor, racionesMostradas = resultado.valor.racionesMostradas)
+            }
+            is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+            Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+        }
+    }
+
+    // --------------------------------------------------------- Importar
+
+    fun importar(direccion: String) {
+        lanzar {
+            when (val resultado = api.importar(direccion.trim())) {
+                is Resultado.Correcto -> _estado.update {
+                    it.copy(borrador = aBorrador(resultado.valor), origenDelBorrador = resultado.valor.origen, error = null)
+                }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    private fun aBorrador(importada: RespuestaDeImportacion) = PeticionDeReceta(
+        nombre = importada.nombre,
+
+        // El tipo de plato no se adivina: lo elige el usuario en el formulario.
+        tipoDePlato = "PlatoPrincipal",
+        elaboracion = importada.elaboracion,
+        ingredientes = importada.ingredientes,
+        raciones = importada.raciones
+    )
+
+    // ------------------------------------------------------------ Fotos
+
     suspend fun miniatura(recetaId: String, fotoId: String): ByteArray? = api.miniatura(recetaId, fotoId)
 
     suspend fun foto(recetaId: String, fotoId: String): ByteArray? = api.foto(recetaId, fotoId)
+
+    fun limpiarAviso() = _estado.update { it.copy(aviso = null, error = null) }
 
     private fun lanzar(bloque: suspend () -> Unit) {
         viewModelScope.launch {

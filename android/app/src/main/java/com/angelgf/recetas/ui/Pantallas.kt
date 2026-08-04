@@ -17,10 +17,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -99,16 +102,15 @@ fun PantallaDeSesion(estado: EstadoDeLaApp, modelo: AppViewModel) {
             Text(if (estado.cargando) "Entrando…" else "Entrar")
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // El alta y la recuperación de contraseña necesitan un enlace de correo
-        // que aterriza en la web. Duplicar ese flujo aquí, antes de tener enlaces
-        // profundos, sería trabajo tirado (ver spec de la 012).
-        Text(
-            "¿No tienes cuenta o has olvidado la contraseña? Entra desde recetas.angelgf.com.es",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        TextButton(onClick = { modelo.irARecuperarContrasena() }) {
+            Text("¿Has olvidado la contraseña?")
+        }
+
+        TextButton(onClick = { modelo.irAlAlta() }) {
+            Text("Crear una cuenta")
+        }
     }
 }
 
@@ -129,7 +131,7 @@ fun PantallaDeRecetario(estado: EstadoDeLaApp, modelo: AppViewModel, anunciosLis
 
                 estado.recetas.isEmpty() -> Vacio(
                     "Todavía no has guardado ninguna receta.",
-                    "Créalas desde la web; aquí las tendrás a mano mientras cocinas."
+                    "Empieza por esa que haces de memoria: cuando la busques dentro de seis meses, lo agradecerás."
                 )
 
                 else -> ListaDeRecetas(estado.recetas, modelo)
@@ -183,7 +185,7 @@ private fun ListaDeRecetas(recetas: List<ResumenDeReceta>, modelo: AppViewModel)
 // ---------------------------------------------------------------------- Ficha
 
 @Composable
-fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel) {
+fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel, alElegirFoto: (String) -> Unit) {
     // Mientras esta pantalla esté abierta, la pantalla no se apaga: se lee
     // cocinando y con las manos ocupadas. Solo aquí; en toda la aplicación
     // gastaría batería sin motivo.
@@ -195,6 +197,7 @@ fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel) {
         Barra(titulo = receta?.nombre ?: "Receta", modelo = modelo, atras = { modelo.irAlRecetario() })
 
         estado.error?.let { Aviso(it, esError = true) }
+        estado.aviso?.let { Aviso(it, esError = false) }
 
         if (receta == null) {
             if (estado.cargando) Cargando()
@@ -206,25 +209,61 @@ fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel) {
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            Text(
-                Etiquetas.deTipo(receta.tipoDePlato)
-                    + (receta.raciones?.let { " · $it ${if (it == 1) "ración" else "raciones"}" } ?: ""),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    Etiquetas.deTipo(receta.tipoDePlato)
+                        + (receta.raciones?.let { " · $it ${if (it == 1) "ración" else "raciones"}" } ?: ""),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-            receta.fotos.firstOrNull()?.let { foto ->
+                if (receta.visibilidad == "Publica") {
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Publicada",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            // Todas las fotos, no solo la primera.
+            receta.fotos.forEach { foto ->
                 Spacer(Modifier.height(12.dp))
                 ImagenDeLaApi(
                     cargar = { modelo.foto(receta.id, foto.id) },
                     clave = "${receta.id}:${foto.id}",
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                if (receta.esMia) {
+                    ConfirmarAccion(
+                        texto = "Borrar foto",
+                        pregunta = "¿Borrar esta foto? No se puede deshacer.",
+                        alConfirmar = { modelo.borrarFoto(receta.id, foto.id) }
+                    )
+                }
+            }
+
+            if (receta.esMia) {
+                Spacer(Modifier.height(16.dp))
+                AccionesDeLaReceta(receta, modelo, alElegirFoto)
+            } else {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "Esta receta la ha compartido otra persona.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             Spacer(Modifier.height(20.dp))
             Text("Ingredientes", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(8.dp))
+
+            receta.raciones?.let { deLaReceta ->
+                ControlDeComensales(estado, modelo, deLaReceta)
+            }
 
             receta.ingredientes.forEach { linea ->
                 Row(Modifier.padding(vertical = 4.dp)) {
@@ -254,6 +293,113 @@ fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel) {
         }
     }
 }
+
+/** Editar, foto, compartir y borrar. Solo sobre recetas propias. */
+@Composable
+private fun AccionesDeLaReceta(
+    receta: RespuestaDeReceta,
+    modelo: AppViewModel,
+    alElegirFoto: (String) -> Unit
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        OutlinedButton(onClick = { modelo.irAEditarReceta(receta) }) { Text("Editar") }
+        OutlinedButton(onClick = { alElegirFoto(receta.id) }) { Text("Foto") }
+    }
+
+    Spacer(Modifier.height(8.dp))
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        val publicada = receta.visibilidad == "Publica"
+
+        OutlinedButton(
+            onClick = { modelo.cambiarVisibilidad(receta.id, !publicada) }
+        ) { Text(if (publicada) "Dejar de compartir" else "Compartir") }
+
+        ConfirmarAccion(
+            texto = "Borrar receta",
+            pregunta = "¿Borrar esta receta y sus fotos? No se puede deshacer.",
+            alConfirmar = { modelo.borrarReceta(receta.id) }
+        )
+    }
+}
+
+/**
+ * Ajuste de comensales.
+ *
+ * El cálculo y el redondeo los hace el servidor: son reglas de negocio de la
+ * feature 010 y reimplantarlas aquí es justo lo que aquella evitó.
+ */
+@Composable
+private fun ControlDeComensales(estado: EstadoDeLaApp, modelo: AppViewModel, deLaReceta: Int) {
+    val mostradas = estado.racionesMostradas ?: deLaReceta
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(bottom = 8.dp)
+    ) {
+        Text("Para")
+
+        OutlinedButton(
+            onClick = { modelo.ajustarRaciones(mostradas - 1) },
+            enabled = mostradas > 1
+        ) { Text("−") }
+
+        Text("$mostradas", fontWeight = FontWeight.Bold)
+
+        OutlinedButton(
+            onClick = { modelo.ajustarRaciones(mostradas + 1) },
+            enabled = mostradas < 100
+        ) { Text("+") }
+
+        Text(if (mostradas == 1) "ración" else "raciones")
+
+        if (mostradas != deLaReceta) {
+            TextButton(onClick = { modelo.ajustarRaciones(deLaReceta) }) { Text("Volver a $deLaReceta") }
+        }
+    }
+
+    if (mostradas != deLaReceta) {
+        Text(
+            "Cantidades ajustadas. La receta está guardada para $deLaReceta " +
+                "${if (deLaReceta == 1) "ración" else "raciones"}, y los pasos siguen citando esas cifras.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+    }
+}
+
+/** Botón con diálogo de confirmación. Borrar no se deshace. */
+@Composable
+fun ConfirmarAccion(texto: String, pregunta: String, alConfirmar: () -> Unit) {
+    var preguntando by remember { mutableStateOf(false) }
+
+    OutlinedButton(onClick = { preguntando = true }) { Text(texto) }
+
+    if (preguntando) {
+        AlertDialog(
+            onDismissRequest = { preguntando = false },
+            title = { Text(texto) },
+            text = { Text(pregunta) },
+            confirmButton = {
+                TextButton(onClick = {
+                    preguntando = false
+                    alConfirmar()
+                }) { Text("Sí, borrar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { preguntando = false }) { Text("Cancelar") }
+            }
+        )
+    }
+}
+
+@Composable
+fun AvisoDeError(mensaje: String) = Aviso(mensaje, esError = true)
+
+@Composable
+fun AvisoDeExito(mensaje: String) = Aviso(mensaje, esError = false)
 
 // -------------------------------------------------------------------- Búsqueda
 
@@ -327,7 +473,7 @@ fun PantallaDeBusqueda(estado: EstadoDeLaApp, modelo: AppViewModel, anunciosList
 // ------------------------------------------------------------------- Comunes
 
 @Composable
-private fun Barra(titulo: String, modelo: AppViewModel, atras: (() -> Unit)? = null) {
+fun Barra(titulo: String, modelo: AppViewModel, atras: (() -> Unit)? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -350,6 +496,7 @@ private fun Barra(titulo: String, modelo: AppViewModel, atras: (() -> Unit)? = n
         )
 
         if (atras == null) {
+            TextButton(onClick = { modelo.irACrearReceta() }) { Text("Nueva") }
             TextButton(onClick = { modelo.irABuscar() }) { Text("Buscar") }
             TextButton(onClick = { modelo.cerrarSesion() }) { Text("Salir") }
         }

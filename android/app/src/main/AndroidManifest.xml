@@ -37,6 +37,26 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+                Enlaces de aplicación: el enlace del correo del alta o del
+                restablecimiento abre la aplicación si está instalada, y si no,
+                sigue funcionando en la web.
+
+                autoVerify exige que el dominio publique /.well-known/assetlinks.json
+                con la huella del certificado de firma. Está publicado con la de
+                DEPURACIÓN; al firmar para publicar hay que añadir la suya, o los
+                enlaces dejarán de abrir la aplicación instalada desde la tienda.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" android:host="recetas.angelgf.com.es" />
+                <data android:pathPrefix="/registro/completar" />
+                <data android:pathPrefix="/contrasena/nueva" />
+            </intent-filter>
         </activity>
     </application>
 
