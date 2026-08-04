@@ -28,12 +28,27 @@
 </head>
 
 <body>
+    <!--
+      Pantalla de carga. Blazor WebAssembly tarda en arrancar (descarga el runtime
+      y los ensamblados), así que esto es lo primero y lo único que ve el usuario
+      durante unos segundos: merece la pena que sea el icono de la aplicación.
+
+      El SVG va incrustado, no como <img src="favicon.svg">: así aparece con el
+      HTML, sin una petición más que retrasaría justo el momento que pretende
+      cubrir. Es el mismo dibujo que favicon.svg; si cambia uno, cambian los dos.
+    -->
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="cargando">
+            <svg class="cargando-icono" viewBox="0 0 64 64" role="img" aria-label="Recetas">
+                <rect width="64" height="64" rx="14" fill="#b4541f" />
+                <circle cx="32" cy="14" r="4" fill="#fdfcfa" />
+                <rect x="11" y="19" width="42" height="7" rx="3.5" fill="#fdfcfa" />
+                <rect x="6" y="31" width="9" height="7" rx="3.5" fill="#fdfcfa" />
+                <rect x="49" y="31" width="9" height="7" rx="3.5" fill="#fdfcfa" />
+                <rect x="14" y="29" width="36" height="23" rx="6" fill="#fdfcfa" />
+            </svg>
+            <p class="cargando-texto">Cargando…</p>
+        </div>
     </div>
 
     <div id="blazor-error-ui">

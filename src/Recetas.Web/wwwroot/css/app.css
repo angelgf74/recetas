@@ -174,6 +174,54 @@ a {
     color: var(--color-error);
 }
 
+/* Pantalla de carga ------------------------------------------------------- */
+
+/*
+ * Lo que se ve mientras Blazor descarga el runtime. Vive en index.html, fuera
+ * del árbol de componentes, así que se estila aquí y no en un `.razor.css`:
+ * el aislamiento por componente no alcanza a un marcado que existe antes de
+ * que arranque la aplicación.
+ */
+.cargando {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--espacio-4);
+
+    /* Centrado en la ventana, no en el flujo: en este momento la página está
+       vacía y no hay nada más que la sitúe. */
+    position: fixed;
+    inset: 0;
+}
+
+.cargando-icono {
+    width: 6rem;
+    height: 6rem;
+
+    /* Latido lento: dice "sigue trabajando" sin la ansiedad de un giro rápido.
+       Quien haya pedido menos movimiento no ve ninguno. */
+    animation: cargando-latido 1.8s ease-in-out infinite;
+}
+
+.cargando-texto {
+    margin: 0;
+    font-size: var(--texto-pequeno);
+    color: var(--color-texto-tenue);
+}
+
+@keyframes cargando-latido {
+    50% {
+        opacity: 0.45;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cargando-icono {
+        animation: none;
+    }
+}
+
 /* Error no controlado de Blazor. La plantilla lo trae oculto y lo muestra al fallar. */
 #blazor-error-ui {
     display: none;
