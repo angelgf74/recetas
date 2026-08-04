@@ -49,6 +49,11 @@ public sealed class ConfiguracionDeReceta : IEntityTypeConfiguration<Receta>
             .HasMaxLength(Receta.LongitudMaximaDeLaElaboracion)
             .IsRequired();
 
+        // Nula: las recetas anteriores a la feature 010 no dicen para cuántos son,
+        // y un valor por defecto sería un dato inventado del que depende el escalado.
+        constructor.Property(receta => receta.Raciones)
+            .HasColumnName("raciones");
+
         constructor.Property(receta => receta.Visibilidad)
             .HasColumnName("visibilidad")
             .HasConversion<string>()

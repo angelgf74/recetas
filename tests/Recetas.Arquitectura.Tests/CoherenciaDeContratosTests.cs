@@ -1,4 +1,6 @@
+using Recetas.Contratos.Recetas;
 using Recetas.Contratos.Registro;
+using Recetas.Dominio.Recetas;
 using Recetas.Dominio.Usuarios;
 
 namespace Recetas.Arquitectura.Tests;
@@ -29,5 +31,17 @@ public class CoherenciaDeContratosTests
         Assert.Equal(
             Contrasena.LongitudMaxima,
             PeticionDeCompletarRegistro.LongitudMaximaDeContrasena);
+    }
+
+    [Fact]
+    public void LasRacionesMinimas_CoincidenEnDominioYContratos()
+    {
+        Assert.Equal(Receta.RacionesMinimas, PeticionDeReceta.RacionesMinimas);
+    }
+
+    [Fact]
+    public void LasRacionesMaximas_CoincidenEnDominioYContratos()
+    {
+        Assert.Equal(Receta.RacionesMaximas, PeticionDeReceta.RacionesMaximas);
     }
 }

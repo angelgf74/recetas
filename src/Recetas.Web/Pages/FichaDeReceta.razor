@@ -67,6 +67,37 @@
 
             <section>
                 <h2>Ingredientes</h2>
+
+                @if (_receta.Raciones is { } raciones)
+                {
+                    <div class="comensales">
+                        <label for="comensales">Para</label>
+                        <input id="comensales" type="number" min="1" max="100"
+                               value="@_racionesMostradas"
+                               @onchange="CambiarRacionesAsync"
+                               disabled="@_ajustando" />
+                        <span>@(_racionesMostradas == 1 ? "ración" : "raciones")</span>
+
+                        @if (_racionesMostradas != raciones)
+                        {
+                            <button type="button" class="boton-enlace" @onclick="() => AjustarAsync(raciones)">
+                                Volver a @raciones
+                            </button>
+                        }
+                    </div>
+
+                    @if (_racionesMostradas != raciones)
+                    {
+                        @* Que quede claro que esto no es lo que hay guardado: la
+                           elaboración sigue mencionando las cantidades originales. *@
+                        <p class="ayuda" role="status">
+                            Cantidades ajustadas. La receta está guardada para @raciones
+                            @(raciones == 1 ? "ración" : "raciones"), y los pasos siguen
+                            citando esas cifras.
+                        </p>
+                    }
+                }
+
                 <ul class="ingredientes-lista">
                     @foreach (var linea in _receta.Ingredientes)
                     {
@@ -157,6 +188,13 @@
     private ResultadoDeLlamada? _aviso;
     private bool _cargando = true;
     private bool _subiendoFoto;
+    private bool _ajustando;
+
+    /// <summary>
+    /// Raciones que representan las cantidades en pantalla. Lo dice la respuesta, no
+    /// se deduce de lo que se pidió.
+    /// </summary>
+    private int? _racionesMostradas;
 
     /// <summary>Lo dice la propia respuesta: una sola llamada para pintar la ficha.</summary>
     private bool EsMia => _receta?.EsMia == true;
@@ -167,11 +205,59 @@
         _aviso = null;
 
         (_resultado, _receta) = await Api.ObtenerRecetaAsync(Id);
+        _racionesMostradas = _receta?.RacionesMostradas;
 
         _cargando = false;
     }
 
-    private async Task RecargarAsync() => (_resultado, _receta) = await Api.ObtenerRecetaAsync(Id);
+    /// <summary>
+    /// Vuelve a pedir la receta con otro número de comensales.
+    /// </summary>
+    /// <remarks>
+    /// Se pide al servidor en vez de multiplicar aquí: el redondeo a cantidades
+    /// medibles es una regla de negocio, y hacerlo en el navegador la dejaría fuera
+    /// del alcance de Android.
+    /// <para>
+    /// Se parte <b>siempre de la receta guardada</b>, nunca de lo ya mostrado:
+    /// encadenar escalados acumularía el error de cada redondeo.
+    /// </para>
+    /// </remarks>
+    private async Task AjustarAsync(int raciones)
+    {
+        if (raciones is < 1 or > 100)
+        {
+            return;
+        }
+
+        _ajustando = true;
+
+        var (resultado, receta) = await Api.ObtenerRecetaAsync(Id, raciones);
+
+        if (receta is not null)
+        {
+            _receta = receta;
+            _racionesMostradas = receta.RacionesMostradas;
+        }
+        else
+        {
+            _aviso = resultado;
+        }
+
+        _ajustando = false;
+    }
+
+    private Task CambiarRacionesAsync(ChangeEventArgs argumentos) =>
+        int.TryParse(argumentos.Value?.ToString(), out var raciones)
+            ? AjustarAsync(raciones)
+            : Task.CompletedTask;
+
+    private async Task RecargarAsync()
+    {
+        // Recargar tras publicar, subir foto o borrarla vuelve a las cantidades
+        // guardadas: esas acciones no tienen nada que ver con el ajuste.
+        (_resultado, _receta) = await Api.ObtenerRecetaAsync(Id);
+        _racionesMostradas = _receta?.RacionesMostradas;
+    }
 
     private async Task PublicarAsync()
     {

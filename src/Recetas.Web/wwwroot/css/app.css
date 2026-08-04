@@ -392,6 +392,34 @@ a {
     list-style: none;
 }
 
+/* Ajuste de comensales (010) --------------------------------------------- */
+
+.comensales {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-2);
+    margin-bottom: var(--espacio-3);
+}
+
+.comensales input {
+    /* Justo para tres cifras: el máximo son 100 raciones. */
+    width: 5rem;
+}
+
+/* Acción secundaria con aspecto de enlace: no compite con los botones de la
+   ficha, que son las acciones de verdad sobre la receta. */
+.boton-enlace {
+    padding: 0;
+    font: inherit;
+    font-size: var(--texto-pequeno);
+    color: var(--color-acento);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
 .ingredientes-lista li {
     display: flex;
     gap: var(--espacio-3);

@@ -36,6 +36,19 @@ public sealed class PeticionDeReceta
     [Required]
     [MinLength(1, ErrorMessage = "La receta necesita al menos un ingrediente.")]
     public List<LineaDeIngredientePeticion> Ingredientes { get; set; } = [];
+
+    /// <summary>
+    /// Para cuántas raciones son las cantidades. Opcional: las recetas anteriores a
+    /// la feature 010 no lo dicen, y sin ese dato simplemente no se puede escalar.
+    /// </summary>
+    [Range(RacionesMinimas, RacionesMaximas,
+        ErrorMessage = "Las raciones deben estar entre {1} y {2}.")]
+    public int? Raciones { get; set; }
+
+    /// <summary>Debe coincidir con <c>Receta</c> en el dominio; se repite porque Contratos no lo referencia.</summary>
+    public const int RacionesMinimas = 1;
+
+    public const int RacionesMaximas = 100;
 }
 
 /// <param name="Nombre">Nombre normalizado del ingrediente.</param>
@@ -69,7 +82,21 @@ public sealed record RespuestaDeReceta(
     /// que faltaba un dato en la respuesta.
     /// </para>
     /// </summary>
-    bool EsMia);
+    bool EsMia,
+    /// <summary>
+    /// Raciones que declara la receta, o <c>null</c> si no lo dice. Es el punto de
+    /// partida del escalado: sin él, la ficha no puede ofrecerlo.
+    /// </summary>
+    int? Raciones = null,
+    /// <summary>
+    /// Para cuántas raciones son las cantidades <b>que van en esta respuesta</b>.
+    /// </summary>
+    /// <remarks>
+    /// Se manda además de <see cref="Raciones"/> para que el cliente pueda decir
+    /// "estás viendo 6 raciones de una receta para 4" sin tener que acordarse de lo
+    /// que pidió, y para que sepa que lo que lee no son las cantidades guardadas.
+    /// </remarks>
+    int? RacionesMostradas = null);
 
 /// <summary>
 /// Receta en un listado: sin ingredientes ni elaboración.

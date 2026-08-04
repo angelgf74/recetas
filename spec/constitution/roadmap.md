@@ -21,6 +21,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 9. **[009 · Fotos en los listados](../features/009-fotos-en-los-listados/spec.md)** — el recetario y la búsqueda dejan de ser texto puro. Trae miniaturas generadas con ImageSharp, que es lo que hace viable pintar una foto por tarjeta: el archivo original llega a 8 MB y viaja en base64. Las fotos anteriores estrenan miniatura la primera vez que se piden, sin script de relleno.
 
+10. **[010 · Escalar cantidades](../features/010-escalar-cantidades/spec.md)** — una receta puede decir para cuántas raciones es, y la ficha ajusta las cantidades a otro número de comensales. El valor no está en multiplicar sino en **redondear a cantidades medibles**, que es regla de negocio: por eso vive en el dominio y el ajuste se pide al servidor en lugar de calcularse en el navegador.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -37,7 +39,7 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.
 - **Elegir la foto de portada** — hoy la receta se representa con la primera que se subió. Que el autor designe otra es un campo nuevo y un control en la ficha (sale de la 009).
 - **Visor de fotos** — abrir una foto a tamaño completo desde la ficha. Hace falta antes de poder pasar la ficha a miniaturas, porque un enlace normal no vale: el endpoint exige cabecera de autorización.
-- **Escalar cantidades** — ajustar los ingredientes al número de comensales.
+- **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).
 - **Importar receta desde URL** — roza el límite de "no es un catálogo editorial" de `mission.md`; valorar con cuidado.
 
 > Cada feature nueva se crea como `features/NNN-nombre-feature/` con `spec.md`, `plan.md` y `tasks.md` antes de tocar código.

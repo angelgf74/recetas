@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Las siete features del plan están terminadas, más la 008 (recuperar contraseña) y la 009 (fotos en los listados), salidas del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
+**Las siete features del plan están terminadas, más la 008 (recuperar contraseña), la 009 (fotos en los listados) y la 010 (escalar cantidades), salidas del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
 
 **Web:** portada, alta en dos pasos, login, recuperar contraseña en dos pasos, recetario con miniaturas, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
 
@@ -22,6 +22,8 @@ Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar
 - `Receta.PuedeVerla(usuarioId)` — autor **o** receta publicada. Solo para leer la receta y descargar sus fotos.
 
 Confundirlas permitiría a cualquiera modificar recetas públicas ajenas. Los nombres son distintos a propósito.
+
+**Escalar cantidades (010):** `Receta.Raciones` es opcional; sin ese dato no se puede escalar y la ficha no lo ofrece. `GET /recetas/{id}?raciones=N` devuelve las cantidades ajustadas y **no escribe nada**: escalar es leer. El cálculo va en `EscaladoDeCantidades`, en el dominio, porque lo que importa no es multiplicar sino **redondear a cantidades medibles** —contables a media unidad, gramos y mililitros a entero, el resto a cuartos, y nunca a cero—, y eso es regla de negocio: en Blazor quedaría fuera del alcance de Android. `AlGusto` y `Pizca` no escalan. Se escala **siempre desde lo guardado**, nunca desde lo ya escalado, para no acumular redondeos.
 
 **Miniaturas (009):** cada foto tiene una versión reducida en el mismo directorio, con sufijo `-min`. No lleva fila propia ni identificador: su ruta se deriva de la foto, y `Receta.FotoDePortada` —la más antigua— también es derivada, no un campo. Las fotos subidas antes de la 009 no tienen miniatura hasta que alguien la pide: se genera y se guarda en esa primera petición. **Esa generación perezosa va después de comprobar `PuedeVerla`**, o sería una puerta trasera a las fotos privadas ajenas.
 

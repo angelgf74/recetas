@@ -135,21 +135,38 @@ public static class RecetasEndpoints
             hayMas));
     }
 
+    /// <param name="raciones">
+    /// Ajusta las cantidades a ese número de comensales. Va como parámetro de
+    /// consulta y no como endpoint aparte porque escalar es <b>leer</b> la receta de
+    /// otra manera: no se guarda nada.
+    /// </param>
     private static async Task<IResult> ObtenerAsync(
         Guid id,
         ClaimsPrincipal usuario,
         GestionDeRecetas gestion,
-        CancellationToken cancelacion)
+        CancellationToken cancelacion,
+        int? raciones = null)
     {
         if (!usuario.TryObtenerId(out var usuarioId))
         {
             return Results.Unauthorized();
         }
 
+        // Se valida antes de tocar nada. Un factor disparatado no rompería la base
+        // de datos —no se escribe— pero devolver cantidades absurdas sin decir nada
+        // es peor que un error claro.
+        if (raciones is { } pedidas
+            && pedidas is < PeticionDeReceta.RacionesMinimas or > PeticionDeReceta.RacionesMaximas)
+        {
+            return Results.BadRequest(new RespuestaDeError(
+                $"Las raciones deben estar entre {PeticionDeReceta.RacionesMinimas} " +
+                $"y {PeticionDeReceta.RacionesMaximas}."));
+        }
+
         var (resultado, receta) = await gestion.ObtenerAsync(usuarioId, id, cancelacion);
 
         return resultado is ResultadoDeReceta.Correcto && receta is not null
-            ? Results.Ok(ARespuesta(receta, usuarioId))
+            ? Results.Ok(ARespuesta(receta, usuarioId, raciones))
             : NoEncontrada();
     }
 
@@ -223,7 +240,13 @@ public static class RecetasEndpoints
             lineas.Add(new LineaDeIngrediente(linea.Nombre, linea.Cantidad, unidad));
         }
 
-        datos = new DatosDeReceta(peticion.Nombre, tipo, peticion.Elaboracion, lineas);
+        if (peticion.Raciones is { } raciones
+            && raciones is < PeticionDeReceta.RacionesMinimas or > PeticionDeReceta.RacionesMaximas)
+        {
+            return false;
+        }
+
+        datos = new DatosDeReceta(peticion.Nombre, tipo, peticion.Elaboracion, lineas, peticion.Raciones);
         return true;
     }
 
@@ -237,7 +260,14 @@ public static class RecetasEndpoints
             receta.EsDe(usuarioId),
             receta.FotoDePortada?.Id);
 
-    private static RespuestaDeReceta ARespuesta(DominioReceta receta, Guid usuarioId) =>
+    /// <param name="racionesPedidas">
+    /// Raciones a las que ajustar las cantidades, o <c>null</c> para devolverlas tal
+    /// como están guardadas. La receta no se modifica en ningún caso.
+    /// </param>
+    private static RespuestaDeReceta ARespuesta(
+        DominioReceta receta,
+        Guid usuarioId,
+        int? racionesPedidas = null) =>
         new(
             receta.Id,
             receta.Nombre,
@@ -246,7 +276,7 @@ public static class RecetasEndpoints
             receta.Visibilidad.ToString(),
             receta.FechaDeCreacion,
             receta.FechaDeModificacion,
-            receta.Ingredientes
+            receta.EscalarA(racionesPedidas)
                 .Select(linea => new LineaDeIngredienteRespuesta(
                     linea.Ingrediente?.Nombre.Valor ?? string.Empty,
                     linea.Cantidad,
@@ -257,7 +287,9 @@ public static class RecetasEndpoints
                 .OrderBy(foto => foto.FechaDeSubida)
                 .Select(foto => new FotoRespuesta(foto.Id, foto.Tipo.ToString(), foto.TamanoEnBytes))
                 .ToList(),
-            receta.EsDe(usuarioId));
+            receta.EsDe(usuarioId),
+            receta.Raciones,
+            receta.RacionesMostradasPara(racionesPedidas));
 
     private static IResult NoEncontrada() =>
         Results.Json(new RespuestaDeError(MensajeDeNoEncontrada), statusCode: StatusCodes.Status404NotFound);

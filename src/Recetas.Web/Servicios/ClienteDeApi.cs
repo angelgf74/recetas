@@ -62,8 +62,15 @@ public sealed class ClienteDeApi(HttpClient http)
     public Task<(ResultadoDeLlamada Resultado, List<ResumenDeReceta>? Recetas)> ListarRecetasAsync() =>
         LeerAsync<List<ResumenDeReceta>>("recetas");
 
-    public Task<(ResultadoDeLlamada Resultado, RespuestaDeReceta? Receta)> ObtenerRecetaAsync(Guid id) =>
-        LeerAsync<RespuestaDeReceta>($"recetas/{id}");
+    /// <param name="raciones">
+    /// Comensales a los que ajustar las cantidades. El servidor hace el cálculo y el
+    /// redondeo: son reglas de negocio y no se duplican aquí.
+    /// </param>
+    public Task<(ResultadoDeLlamada Resultado, RespuestaDeReceta? Receta)> ObtenerRecetaAsync(
+        Guid id,
+        int? raciones = null) =>
+        LeerAsync<RespuestaDeReceta>(
+            raciones is { } valor ? $"recetas/{id}?raciones={valor}" : $"recetas/{id}");
 
     public async Task<(ResultadoDeLlamada Resultado, Guid Id)> CrearRecetaAsync(PeticionDeReceta peticion)
     {

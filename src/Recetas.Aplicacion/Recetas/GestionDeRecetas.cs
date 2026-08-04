@@ -7,11 +7,13 @@ namespace Recetas.Aplicacion.Recetas;
 /// <param name="TipoDePlato">Tipo de plato, de la lista cerrada.</param>
 /// <param name="Elaboracion">Pasos de elaboración.</param>
 /// <param name="Ingredientes">Líneas de ingrediente, al menos una.</param>
+/// <param name="Raciones">Para cuántas raciones son las cantidades, o <c>null</c> si no se sabe.</param>
 public sealed record DatosDeReceta(
     string Nombre,
     TipoDePlato TipoDePlato,
     string Elaboracion,
-    IReadOnlyCollection<LineaDeIngrediente> Ingredientes);
+    IReadOnlyCollection<LineaDeIngrediente> Ingredientes,
+    int? Raciones = null);
 
 /// <summary>
 /// Resultado de las operaciones que pueden fallar por permisos o por datos.
@@ -61,7 +63,8 @@ public sealed class GestionDeRecetas(
         {
             // La visibilidad no se pasa: Receta.Crear la fija en Privada y no hay
             // forma de pedir otra cosa. Publicar llega con la feature 005.
-            receta = Receta.Crear(autorId, datos.Nombre, datos.TipoDePlato, datos.Elaboracion, reloj.Ahora);
+            receta = Receta.Crear(
+                autorId, datos.Nombre, datos.TipoDePlato, datos.Elaboracion, reloj.Ahora, datos.Raciones);
             receta.ReemplazarIngredientes(lineas);
         }
         catch (ArgumentException)
@@ -139,7 +142,8 @@ public sealed class GestionDeRecetas(
 
         try
         {
-            receta.Actualizar(datos.Nombre, datos.TipoDePlato, datos.Elaboracion, reloj.Ahora);
+            receta.Actualizar(
+                datos.Nombre, datos.TipoDePlato, datos.Elaboracion, reloj.Ahora, datos.Raciones);
             receta.ReemplazarIngredientes(lineas);
         }
         catch (ArgumentException)

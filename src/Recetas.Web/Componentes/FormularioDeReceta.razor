@@ -33,6 +33,16 @@
         </InputSelect>
     </div>
 
+    <div class="campo">
+        <label for="raciones">Raciones</label>
+        <InputNumber id="raciones" @bind-Value="_formulario.Raciones" min="1" max="100"
+                     disabled="@_enviando" />
+        <ValidationMessage For="() => _formulario.Raciones" />
+        <p class="ayuda">
+            Opcional. Si lo indicas, la ficha podrá ajustar las cantidades a otro número de comensales.
+        </p>
+    </div>
+
     <fieldset class="ingredientes">
         <legend>Ingredientes</legend>
 
@@ -143,6 +153,7 @@
         _formulario.Nombre = Receta.Nombre;
         _formulario.TipoDePlato = Receta.TipoDePlato;
         _formulario.Elaboracion = Receta.Elaboracion;
+        _formulario.Raciones = Receta.Raciones;
         _formulario.Ingredientes = Receta.Ingredientes
             .Select(linea => new LineaEditable
             {
@@ -192,6 +203,7 @@
             Nombre = _formulario.Nombre,
             TipoDePlato = _formulario.TipoDePlato,
             Elaboracion = _formulario.Elaboracion,
+            Raciones = _formulario.Raciones,
             Ingredientes = _formulario.Ingredientes
                 .Where(linea => !string.IsNullOrWhiteSpace(linea.Nombre))
                 .Select(linea => new LineaDeIngredientePeticion(
@@ -220,6 +232,11 @@
         [Required(ErrorMessage = "Cuenta cómo se hace.")]
         [MaxLength(20_000)]
         public string Elaboracion { get; set; } = string.Empty;
+
+        /// <summary>Opcional: una receta puede no decir para cuántos es.</summary>
+        [Range(PeticionDeReceta.RacionesMinimas, PeticionDeReceta.RacionesMaximas,
+            ErrorMessage = "Las raciones deben estar entre {1} y {2}.")]
+        public int? Raciones { get; set; }
 
         public List<LineaEditable> Ingredientes { get; set; } = [new()];
     }

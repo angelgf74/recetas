@@ -8,6 +8,11 @@ public sealed class Receta
     public const int LongitudMaximaDelNombre = 120;
     public const int LongitudMaximaDeLaElaboracion = 20_000;
 
+    public const int RacionesMinimas = 1;
+
+    /// <summary>Tope alto pero finito: evita factores absurdos al escalar.</summary>
+    public const int RacionesMaximas = 100;
+
     private readonly List<IngredienteDeReceta> _ingredientes = [];
     private readonly List<Foto> _fotos = [];
 
@@ -17,6 +22,7 @@ public sealed class Receta
         string nombre,
         TipoDePlato tipoDePlato,
         string elaboracion,
+        int? raciones,
         DateTimeOffset ahora)
     {
         Id = id;
@@ -25,6 +31,7 @@ public sealed class Receta
         NombreParaBusqueda = TextoParaBusqueda.Normalizar(nombre);
         TipoDePlato = tipoDePlato;
         Elaboracion = elaboracion;
+        Raciones = raciones;
         Visibilidad = Visibilidad.Privada;
         FechaDeCreacion = ahora;
         FechaDeModificacion = ahora;
@@ -58,6 +65,18 @@ public sealed class Receta
     /// una decisión de presentación: la web puede hacerlo por saltos de línea.
     /// </summary>
     public string Elaboracion { get; private set; }
+
+    /// <summary>
+    /// Para cuántas raciones son las cantidades guardadas, o <c>null</c> si no se
+    /// sabe.
+    /// </summary>
+    /// <remarks>
+    /// Opcional a propósito: las recetas anteriores a la feature 010 no lo dicen, y
+    /// ponerles un "4" por defecto sería inventarse un dato del que dependen todos
+    /// los cálculos de esta feature. Sin raciones no se puede escalar, y eso es
+    /// justo lo que hay que mostrar.
+    /// </remarks>
+    public int? Raciones { get; private set; }
 
     /// <summary>
     /// Quién puede leerla. Solo la cambia la feature 005: aquí no hay ninguna
@@ -98,7 +117,8 @@ public sealed class Receta
         string nombre,
         TipoDePlato tipoDePlato,
         string elaboracion,
-        DateTimeOffset ahora)
+        DateTimeOffset ahora,
+        int? raciones = null)
     {
         if (autorId == Guid.Empty)
         {
@@ -111,8 +131,54 @@ public sealed class Receta
             ValidarNombre(nombre),
             tipoDePlato,
             ValidarElaboracion(elaboracion),
+            ValidarRaciones(raciones),
             ahora);
     }
+
+    /// <summary>
+    /// Cantidades ajustadas a otro número de raciones.
+    /// </summary>
+    /// <remarks>
+    /// Devuelve una proyección: <b>la receta no se toca</b>. Escalar es una forma
+    /// de leerla, no una edición, y por eso ni cambia las líneas ni la fecha de
+    /// modificación.
+    /// <para>
+    /// Se escala <b>siempre desde las cantidades guardadas</b>, nunca desde unas ya
+    /// escaladas: encadenar redondeos acumularía error, y pasar de 4 a 6 y luego a
+    /// 9 daría un resultado distinto que ir de 4 a 9 directamente.
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<LineaEscalada> EscalarA(int? raciones)
+    {
+        var factor = FactorPara(raciones);
+
+        return _ingredientes
+            .Select(linea => new LineaEscalada(
+                linea.IngredienteId,
+                linea.Ingrediente,
+                EscaladoDeCantidades.Escalar(linea.Cantidad, linea.Unidad, factor),
+                linea.Unidad))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Raciones que representan las cantidades devueltas por <see cref="EscalarA"/>.
+    /// Coincide con <see cref="Raciones"/> cuando no hay nada que escalar.
+    /// </summary>
+    public int? RacionesMostradasPara(int? racionesPedidas) =>
+        PuedeEscalarseA(racionesPedidas) ? racionesPedidas : Raciones;
+
+    private bool PuedeEscalarseA(int? racionesPedidas) =>
+        Raciones is > 0
+        && racionesPedidas is { } pedidas
+        && pedidas is >= RacionesMinimas and <= RacionesMaximas;
+
+    /// <summary>
+    /// Factor de escalado, o 1 si la receta no dice sus raciones o no se ha pedido
+    /// ninguna: sin punto de partida no hay proporción que aplicar.
+    /// </summary>
+    private decimal FactorPara(int? racionesPedidas) =>
+        PuedeEscalarseA(racionesPedidas) ? (decimal)racionesPedidas! / Raciones!.Value : 1m;
 
     /// <summary>
     /// Comprobación de autoría, en el dominio y no en el endpoint.
@@ -169,7 +235,12 @@ public sealed class Receta
         FechaDeModificacion = ahora;
     }
 
-    public void Actualizar(string nombre, TipoDePlato tipoDePlato, string elaboracion, DateTimeOffset ahora)
+    public void Actualizar(
+        string nombre,
+        TipoDePlato tipoDePlato,
+        string elaboracion,
+        DateTimeOffset ahora,
+        int? raciones = null)
     {
         // Ni el autor ni la visibilidad se tocan: no son datos que la edición
         // pueda cambiar, y por eso ni siquiera aparecen como parámetros.
@@ -179,6 +250,10 @@ public sealed class Receta
         NombreParaBusqueda = TextoParaBusqueda.Normalizar(Nombre);
         TipoDePlato = tipoDePlato;
         Elaboracion = ValidarElaboracion(elaboracion);
+
+        // Se admite volver a null: quitar las raciones es una edición legítima
+        // ("resulta que no sé para cuántos es").
+        Raciones = ValidarRaciones(raciones);
         FechaDeModificacion = ahora;
     }
 
@@ -238,6 +313,15 @@ public sealed class Receta
 
         return foto;
     }
+
+    private static int? ValidarRaciones(int? raciones) => raciones switch
+    {
+        null => null,
+        >= RacionesMinimas and <= RacionesMaximas => raciones,
+        _ => throw new ArgumentOutOfRangeException(
+            nameof(raciones),
+            $"Las raciones deben estar entre {RacionesMinimas} y {RacionesMaximas}.")
+    };
 
     private static string ValidarNombre(string nombre)
     {
