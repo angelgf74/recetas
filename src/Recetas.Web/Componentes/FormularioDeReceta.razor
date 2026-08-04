@@ -96,6 +96,13 @@
     [Parameter]
     public RespuestaDeReceta? Receta { get; set; }
 
+    /// <summary>
+    /// Borrador con el que precargar los campos, venga de donde venga (hoy, de
+    /// importar una URL). Cada borrador nuevo sustituye lo que hubiera.
+    /// </summary>
+    [Parameter]
+    public PeticionDeReceta? Borrador { get; set; }
+
     [Parameter, EditorRequired]
     public EventCallback<PeticionDeReceta> AlGuardar { get; set; }
 
@@ -138,10 +145,20 @@
     private ResultadoDeLlamada? _resultado;
     private bool _enviando;
 
+    /// <summary>Último borrador volcado, por referencia: importar dos veces recarga.</summary>
+    private PeticionDeReceta? _borradorVolcado;
+
     protected override void OnParametersSet()
     {
         _resultado = Resultado;
         _enviando = false;
+
+        if (Borrador is not null && !ReferenceEquals(Borrador, _borradorVolcado))
+        {
+            VolcarBorrador(Borrador);
+            _borradorVolcado = Borrador;
+            return;
+        }
 
         if (Receta is null || _formulario.Cargado)
         {
@@ -162,6 +179,33 @@
                 Unidad = linea.Unidad
             })
             .ToList();
+        _formulario.Cargado = true;
+    }
+
+    /// <summary>
+    /// Vuelca un borrador en los campos. Machaca lo que hubiera escrito: quien
+    /// pulsa importar está pidiendo justo eso.
+    /// </summary>
+    private void VolcarBorrador(PeticionDeReceta borrador)
+    {
+        _formulario.Nombre = borrador.Nombre;
+        _formulario.TipoDePlato = borrador.TipoDePlato;
+        _formulario.Elaboracion = borrador.Elaboracion;
+        _formulario.Raciones = borrador.Raciones;
+
+        _formulario.Ingredientes = borrador.Ingredientes.Count > 0
+            ? borrador.Ingredientes
+                .Select(linea => new LineaEditable
+                {
+                    Nombre = linea.Nombre,
+                    Cantidad = SinCerosDeMas(linea.Cantidad),
+                    Unidad = linea.Unidad
+                })
+                .ToList()
+            // Una receta sin ingredientes no se puede guardar: se deja una línea
+            // vacía para que el usuario no tenga que buscar el botón de añadir.
+            : [new LineaEditable()];
+
         _formulario.Cargado = true;
     }
 

@@ -92,6 +92,32 @@ public sealed class ClienteDeApi(HttpClient http)
         }
     }
 
+    /// <summary>
+    /// Pide al servidor que lea una receta de una página web. Devuelve un borrador:
+    /// no crea nada hasta que el usuario envía el formulario.
+    /// </summary>
+    public async Task<(ResultadoDeLlamada Resultado, RespuestaDeImportacion? Borrador)> ImportarRecetaAsync(
+        string direccion)
+    {
+        try
+        {
+            var respuesta = await http.PostAsJsonAsync("recetas/importaciones",
+                new PeticionDeImportacion { Direccion = direccion });
+
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                return (await TraducirErrorAsync(respuesta), null);
+            }
+
+            return (ResultadoDeLlamada.Correcto(),
+                await respuesta.Content.ReadFromJsonAsync<RespuestaDeImportacion>());
+        }
+        catch (HttpRequestException)
+        {
+            return (ResultadoDeLlamada.Fallido(MensajeDeRedCaida), null);
+        }
+    }
+
     public Task<ResultadoDeLlamada> ActualizarRecetaAsync(Guid id, PeticionDeReceta peticion) =>
         EnviarAsync(HttpMethod.Put, $"recetas/{id}", peticion);
 

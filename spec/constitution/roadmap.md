@@ -23,6 +23,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 10. **[010 · Escalar cantidades](../features/010-escalar-cantidades/spec.md)** — una receta puede decir para cuántas raciones es, y la ficha ajusta las cantidades a otro número de comensales. El valor no está en multiplicar sino en **redondear a cantidades medibles**, que es regla de negocio: por eso vive en el dominio y el ajuste se pide al servidor en lugar de calcularse en el navegador.
 
+11. **[011 · Importar receta desde URL](../features/011-importar-desde-url/spec.md)** — pegar un enlace rellena el formulario leyendo el `schema.org/Recipe` de la página. **De una en una y sin guardar nada**: el usuario revisa y guarda, que es lo que la mantiene dentro del "no es un catálogo editorial" de `mission.md`. Estrena peticiones salientes desde el servidor a destinos que elige un usuario, con todo lo que eso obliga a defender (SSRF).
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -40,6 +42,7 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 - **Elegir la foto de portada** — hoy la receta se representa con la primera que se subió. Que el autor designe otra es un campo nuevo y un control en la ficha (sale de la 009).
 - **Visor de fotos** — abrir una foto a tamaño completo desde la ficha. Hace falta antes de poder pasar la ficha a miniaturas, porque un enlace normal no vale: el endpoint exige cabecera de autorización.
 - **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).
-- **Importar receta desde URL** — roza el límite de "no es un catálogo editorial" de `mission.md`; valorar con cuidado.
+- **Importar también la foto de la receta** — descargar y republicar la imagen de un tercero tiene más aristas que el texto; quedó fuera de la 011.
+- **Más formatos de marcado al importar** (microdatos, RDFa) y páginas que montan la receta con JavaScript. Hoy solo se lee JSON-LD.
 
 > Cada feature nueva se crea como `features/NNN-nombre-feature/` con `spec.md`, `plan.md` y `tasks.md` antes de tocar código.

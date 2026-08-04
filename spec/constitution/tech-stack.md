@@ -128,6 +128,7 @@ Reglas que debe cumplir la implementación:
 - Solo el autor puede editar, publicar, despublicar o borrar su receta.
 - Una receta `Privada` no aparece en ninguna búsqueda ni respuesta dirigida a alguien que no sea su autor.
 - Borrar un usuario borra o anonimiza sus recetas: no quedan recetas huérfanas.
+- **Toda petición saliente a una dirección que elige un usuario pasa por un filtro de destino.** Hoy solo la hace la importación (011). El servidor no puede acabar hablando con su propia red porque alguien pegue `http://127.0.0.1:5432` en un formulario, y el error nunca distingue ese caso de un fallo normal.
 - **Toda la API exige autenticación salvo los endpoints de alta (los dos pasos), los de recuperar contraseña (los dos pasos) y el inicio de sesión.** No existe endpoint de lectura anónima: sin JWT válido, `401`. Esto incluye servir las fotos — una imagen de receta no puede quedar accesible por URL directa sin sesión.
 - **No hay cuenta sin correo verificado.** La única vía de creación de un `Usuario` es consumir una `SolicitudDeRegistro` válida.
 - **La contraseña solo se cambia consumiendo una `SolicitudDeContrasena` válida.** No hay endpoint administrativo ni ninguna otra vía.

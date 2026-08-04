@@ -28,6 +28,11 @@ public static class RecetasEndpoints
         // Antes que "/{id:guid}" no hace falta por el restrictor de ruta, pero se
         // declara aquí junto al listado porque son las dos consultas de conjunto.
         grupo.MapGet("/busqueda", BuscarAsync);
+        // Un recurso propio y no un verbo colgando de /recetas: esto NO crea una
+        // receta, devuelve un borrador que el usuario aún tiene que revisar.
+        grupo.MapPost("/importaciones", ImportarAsync)
+            .RequireRateLimiting(LimitesDePeticiones.Importacion);
+
         grupo.MapGet("/{id:guid}", ObtenerAsync);
         grupo.MapPut("/{id:guid}", ActualizarAsync);
         grupo.MapDelete("/{id:guid}", BorrarAsync);
@@ -168,6 +173,59 @@ public static class RecetasEndpoints
         return resultado is ResultadoDeReceta.Correcto && receta is not null
             ? Results.Ok(ARespuesta(receta, usuarioId, raciones))
             : NoEncontrada();
+    }
+
+    /// <summary>
+    /// Lee una receta de una página web y devuelve un borrador.
+    /// </summary>
+    /// <remarks>
+    /// No guarda nada. El usuario revisa el resultado en el formulario y es su
+    /// envío el que crea la receta, que además nace privada como cualquier otra.
+    /// </remarks>
+    private static async Task<IResult> ImportarAsync(
+        [FromBody] PeticionDeImportacion peticion,
+        ClaimsPrincipal usuario,
+        ImportarReceta casoDeUso,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out _))
+        {
+            return Results.Unauthorized();
+        }
+
+        var (resultado, receta, origen) = await casoDeUso.EjecutarAsync(peticion.Direccion, cancelacion);
+
+        return resultado switch
+        {
+            ResultadoDeImportacion.Correcto when receta is not null && origen is not null =>
+                Results.Ok(new RespuestaDeImportacion(
+                    receta.Nombre,
+                    receta.Elaboracion,
+                    receta.Raciones,
+                    receta.Ingredientes
+                        .Select(linea => new LineaDeIngredientePeticion(
+                            linea.Nombre, linea.Cantidad, linea.Unidad.ToString()))
+                        .ToList(),
+                    origen.ToString())),
+
+            ResultadoDeImportacion.DireccionNoValida =>
+                Results.BadRequest(new RespuestaDeError(
+                    "Esa dirección no vale. Pega el enlace completo de la receta, empezando por https://")),
+
+            ResultadoDeImportacion.SinReceta =>
+                Results.Json(
+                    new RespuestaDeError(
+                        "Esa página se ha abierto, pero no publica la receta en un formato que sepamos leer. "
+                        + "Tendrás que copiarla a mano."),
+                    statusCode: StatusCodes.Status422UnprocessableEntity),
+
+            // Un único mensaje para "no responde", "no existe", "no es HTML" y
+            // "apunta a la red interna". Distinguirlos convertiría este endpoint en
+            // un escáner de la red del servidor manejado desde fuera.
+            _ => Results.Json(
+                new RespuestaDeError("No se ha podido abrir esa página. Comprueba la dirección."),
+                statusCode: StatusCodes.Status502BadGateway)
+        };
     }
 
     private static async Task<IResult> ActualizarAsync(

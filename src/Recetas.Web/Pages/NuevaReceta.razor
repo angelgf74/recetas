@@ -10,7 +10,44 @@
 <RutaProtegida>
     <h1>Nueva receta</h1>
 
+    @*
+        Importar es un atajo para rellenar el formulario, no otra forma de crear
+        recetas: lo que se importa queda editable y no se guarda hasta que el
+        usuario pulsa el botón de abajo.
+    *@
+    <section class="importar">
+        <label for="origen">¿La has visto en una web?</label>
+
+        <div class="importar-fila">
+            <input id="origen" type="url" inputmode="url" placeholder="https://…"
+                   @bind="_direccion" @bind:event="oninput" disabled="@_importando" />
+
+            <button type="button" class="boton boton-secundario"
+                    @onclick="ImportarAsync"
+                    disabled="@(_importando || string.IsNullOrWhiteSpace(_direccion))">
+                @(_importando ? "Leyendo…" : "Importar")
+            </button>
+        </div>
+
+        <p class="ayuda">
+            Pega el enlace y rellenamos lo que la página publique. Después revísalo:
+            se guarda lo que haya en el formulario.
+        </p>
+
+        @if (_avisoDeImportacion is { Correcta: false })
+        {
+            <div class="aviso aviso-error" role="alert">@_avisoDeImportacion.Mensaje</div>
+        }
+        else if (_origen is not null)
+        {
+            <div class="aviso aviso-exito" role="status">
+                Importado de <strong>@_origen</strong>. Revisa los ingredientes y los pasos antes de guardar.
+            </div>
+        }
+    </section>
+
     <FormularioDeReceta AlGuardar="GuardarAsync"
+                        Borrador="_borrador"
                         TextoDeGuardar="Crear receta"
                         Resultado="_resultado" />
 
@@ -19,6 +56,41 @@
 
 @code {
     private ResultadoDeLlamada? _resultado;
+    private ResultadoDeLlamada? _avisoDeImportacion;
+    private PeticionDeReceta? _borrador;
+    private string _direccion = string.Empty;
+    private string? _origen;
+    private bool _importando;
+
+    private async Task ImportarAsync()
+    {
+        _importando = true;
+        _avisoDeImportacion = null;
+        _origen = null;
+
+        var (resultado, borrador) = await Api.ImportarRecetaAsync(_direccion);
+
+        if (borrador is not null)
+        {
+            // Objeto nuevo en cada importación: el formulario detecta el cambio por
+            // referencia, así que importar dos veces vuelve a rellenarlo.
+            _borrador = new PeticionDeReceta
+            {
+                Nombre = borrador.Nombre,
+                Elaboracion = borrador.Elaboracion,
+                Raciones = borrador.Raciones,
+                Ingredientes = borrador.Ingredientes.ToList()
+            };
+
+            _origen = borrador.Origen;
+        }
+        else
+        {
+            _avisoDeImportacion = resultado;
+        }
+
+        _importando = false;
+    }
 
     private async Task GuardarAsync(PeticionDeReceta peticion)
     {

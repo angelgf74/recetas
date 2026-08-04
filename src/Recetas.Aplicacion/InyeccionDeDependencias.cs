@@ -23,6 +23,7 @@ public static class InyeccionDeDependencias
         servicios.AddScoped<ResolverIngredientes>();
         servicios.AddScoped<GestionDeRecetas>();
         servicios.AddScoped<GestionDeFotos>();
+        servicios.AddScoped<ImportarReceta>();
 
         return servicios;
     }

@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Las siete features del plan están terminadas, más la 008 (recuperar contraseña), la 009 (fotos en los listados) y la 010 (escalar cantidades), salidas del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
+**Las siete features del plan están terminadas, más la 008 (recuperar contraseña), la 009 (fotos en los listados), la 010 (escalar cantidades) y la 011 (importar desde URL), salidas del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
 
 **Web:** portada, alta en dos pasos, login, recuperar contraseña en dos pasos, recetario con miniaturas, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
 
-Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /contrasena/solicitudes`, `POST /contrasena/restablecer`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos`, `GET|DELETE /recetas/{id}/fotos/{fotoId}` y `GET /recetas/{id}/fotos/{fotoId}/miniatura` (todos protegidos salvo salud, alta, recuperación de contraseña e inicio de sesión).
+Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /contrasena/solicitudes`, `POST /contrasena/restablecer`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/importaciones`, `POST /recetas/{id}/fotos`, `GET|DELETE /recetas/{id}/fotos/{fotoId}` y `GET /recetas/{id}/fotos/{fotoId}/miniatura` (todos protegidos salvo salud, alta, recuperación de contraseña e inicio de sesión).
 
 **Búsqueda:** hay columnas `nombre_para_busqueda` en `recetas` e `ingredientes`, con el texto en minúsculas y sin acentos. Se rellenan con `TextoParaBusqueda.Normalizar`, y **el texto guardado y el de la consulta deben pasar por esa misma función**: si divergen, las búsquedas no encuentran nada y no falla nada. No se usa la extensión `unaccent` porque instalarla exige privilegios que el despliegue no tiene.
 
@@ -22,6 +22,10 @@ Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar
 - `Receta.PuedeVerla(usuarioId)` — autor **o** receta publicada. Solo para leer la receta y descargar sus fotos.
 
 Confundirlas permitiría a cualquiera modificar recetas públicas ajenas. Los nombres son distintos a propósito.
+
+**Importar desde URL (011) — el único sitio donde el servidor pide una dirección que escribe un usuario.** Eso es SSRF, y `DescargadorDePaginasSeguro` es lo que lo contiene: `ConnectCallback` que valida **la IP a la que se conecta** (validar al resolver el nombre deja abierto el DNS rebinding), redirecciones a mano con tope porque cada salto hay que volver a comprobarlo, tope de bytes y de tiempo, y solo HTML. `ComprobadorDeDireccionesPublicas` tiene la lista de rangos; **cualquier cambio ahí va con test**. El error es **el mismo** para "dirección interna", "no responde" y "no existe": si distinguiera, el endpoint sería un escáner de la red del servidor. No quitar ninguna de esas defensas sin entender cuál tapa qué.
+
+`POST /recetas/importaciones` **no crea nada**: devuelve un borrador que rellena el formulario. Es lo que mantiene la feature dentro del "no es un catálogo editorial" de `mission.md`, junto con que sea de una en una.
 
 **Escalar cantidades (010):** `Receta.Raciones` es opcional; sin ese dato no se puede escalar y la ficha no lo ofrece. `GET /recetas/{id}?raciones=N` devuelve las cantidades ajustadas y **no escribe nada**: escalar es leer. El cálculo va en `EscaladoDeCantidades`, en el dominio, porque lo que importa no es multiplicar sino **redondear a cantidades medibles** —contables a media unidad, gramos y mililitros a entero, el resto a cuartos, y nunca a cero—, y eso es regla de negocio: en Blazor quedaría fuera del alcance de Android. `AlGusto` y `Pizca` no escalan. Se escala **siempre desde lo guardado**, nunca desde lo ya escalado, para no acumular redondeos.
 

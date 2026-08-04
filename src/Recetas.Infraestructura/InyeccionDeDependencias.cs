@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Recetas.Dominio.Puertos;
 using Recetas.Infraestructura.Correo;
 using Recetas.Infraestructura.Fotos;
+using Recetas.Infraestructura.Importacion;
 using Recetas.Infraestructura.Persistencia;
 using Recetas.Infraestructura.Seguridad;
 using Recetas.Infraestructura.Tiempo;
@@ -43,6 +44,9 @@ public static class InyeccionDeDependencias
         servicios.AddSingleton<IAlmacenDeFotos, AlmacenDeFotosEnDisco>();
         servicios.AddSingleton<ILimpiadorDeImagenes, LimpiadorDeImagenesConImageSharp>();
         servicios.AddSingleton<IEscaladorDeImagenes, EscaladorDeImagenesConImageSharp>();
+
+        servicios.Configure<OpcionesDeImportacion>(configuracion.GetSection(OpcionesDeImportacion.Seccion));
+        servicios.AddSingleton<IDescargadorDePaginas, DescargadorDePaginasSeguro>();
 
         AnadirOpcionesDeJwt(servicios, configuracion);
         AnadirCorreo(servicios, configuracion);
