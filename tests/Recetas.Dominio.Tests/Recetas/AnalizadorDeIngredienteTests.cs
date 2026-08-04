@@ -48,8 +48,9 @@ public class AnalizadorDeIngredienteTests
     {
         var linea = AnalizadorDeIngrediente.Analizar(texto);
 
+        Assert.NotNull(linea);
         Assert.NotNull(linea.Cantidad);
-        Assert.Equal((decimal)esperada, linea.Cantidad!.Value, precision: 3);
+        Assert.Equal((decimal)esperada, linea.Cantidad.Value, precision: 3);
     }
 
     /// <summary>
