@@ -1,7 +1,6 @@
 # 013 · Anuncios en Android
 
-**Estado:** código terminado; **bloqueada** por configuración pendiente en la
-consola de AdMob (ver `tasks.md`).
+**Estado:** hecho. El banner de prueba aparece en un dispositivo real.
 
 ## Qué hace
 
