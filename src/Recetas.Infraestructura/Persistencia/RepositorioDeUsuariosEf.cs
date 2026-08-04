@@ -11,6 +11,9 @@ public sealed class RepositorioDeUsuariosEf(RecetasDbContext contexto) : IReposi
         CancellationToken cancelacion = default) =>
         contexto.Usuarios.FirstOrDefaultAsync(usuario => usuario.Correo == correo, cancelacion);
 
+    public Task<Usuario?> BuscarPorIdAsync(Guid id, CancellationToken cancelacion = default) =>
+        contexto.Usuarios.FirstOrDefaultAsync(usuario => usuario.Id == id, cancelacion);
+
     public Task<bool> ExisteConCorreoAsync(
         CorreoElectronico correo,
         CancellationToken cancelacion = default) =>
@@ -21,4 +24,8 @@ public sealed class RepositorioDeUsuariosEf(RecetasDbContext contexto) : IReposi
         await contexto.Usuarios.AddAsync(usuario, cancelacion);
         await contexto.SaveChangesAsync(cancelacion);
     }
+
+    public Task ActualizarAsync(Usuario usuario, CancellationToken cancelacion = default) =>
+        // El usuario ya lo rastrea el contexto; basta con volcar los cambios.
+        contexto.SaveChangesAsync(cancelacion);
 }

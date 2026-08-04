@@ -4,15 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Las siete features del plan están terminadas.** El producto se usa entero desde el navegador. Lo siguiente sale del backlog de `roadmap.md`.
+**Las siete features del plan están terminadas, más la 008 (recuperar contraseña), primera salida del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
 
-**Web:** portada, alta en dos pasos, login, recetario, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
+**Web:** portada, alta en dos pasos, login, recuperar contraseña en dos pasos, recetario, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
 
-Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud y alta).
+Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar`, `POST /contrasena/solicitudes`, `POST /contrasena/restablecer`, `POST /sesiones`, `GET /yo`, `GET|POST /recetas`, `GET /recetas/busqueda`, `GET|PUT|DELETE /recetas/{id}`, `POST|DELETE /recetas/{id}/publicacion`, `POST /recetas/{id}/fotos` y `GET|DELETE /recetas/{id}/fotos/{fotoId}` (todos protegidos salvo salud, alta, recuperación de contraseña e inicio de sesión).
 
 **Búsqueda:** hay columnas `nombre_para_busqueda` en `recetas` e `ingredientes`, con el texto en minúsculas y sin acentos. Se rellenan con `TextoParaBusqueda.Normalizar`, y **el texto guardado y el de la consulta deben pasar por esa misma función**: si divergen, las búsquedas no encuentran nada y no falla nada. No se usa la extensión `unaccent` porque instalarla exige privilegios que el despliegue no tiene.
 
-**La web solo tiene las cuatro pantallas de la 002** (portada, alta, contraseña, login). Todo lo demás es API: construir la interfaz es la 007, por decisión explícita del usuario.
+**Dos flujos de token por correo, en tablas separadas a propósito:** `solicitudes_de_registro` (alta, 24 h) y `solicitudes_de_contrasena` (restablecimiento, 1 h). Comparten forma pero no significado; unificarlas con un campo "tipo" haría que cada consulta tuviera que acordarse de filtrarlo, y olvidarlo una vez permitiría canjear un enlace de alta por un cambio de contraseña ajena.
+
+**Restablecer la contraseña no cierra las sesiones abiertas.** Un JWT emitido antes del cambio sigue valiendo hasta siete días. Es consecuencia de haber elegido JWT sin estado en la 002, está documentado en `spec/features/008-recuperar-contrasena/spec.md` y anotado en el backlog. No es un descuido: no lo "arregles" sin decidir antes el cambio de arquitectura.
 
 ## Permisos: dos preguntas distintas
 

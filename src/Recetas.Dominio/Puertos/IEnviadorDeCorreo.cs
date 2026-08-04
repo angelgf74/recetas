@@ -20,4 +20,14 @@ public interface IEnviadorDeCorreo
     Task EnviarAvisoDeCuentaExistenteAsync(
         CorreoElectronico destinatario,
         CancellationToken cancelacion = default);
+
+    /// <summary>
+    /// Enlace para elegir una contraseña nueva. Solo se envía a buzones que tienen
+    /// cuenta: a los demás no se les manda nada, porque el mensaje no les serviría
+    /// de nada y confirmaría a quien lo pidió que el intento llegó a alguna parte.
+    /// </summary>
+    Task EnviarEnlaceDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        string enlace,
+        CancellationToken cancelacion = default);
 }

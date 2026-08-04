@@ -30,6 +30,30 @@ public sealed class Usuario
 
     public DateTimeOffset FechaDeAlta { get; private set; }
 
+    /// <summary>
+    /// Sustituye la contraseña. Solo lo invoca el restablecimiento de la feature
+    /// 008, tras consumir un enlace válido enviado al buzón del usuario.
+    /// </summary>
+    /// <remarks>
+    /// Recibe el hash ya calculado: el dominio no sabe derivar contraseñas, eso
+    /// es cosa del puerto <c>IHasheadorDeContrasenas</c>.
+    /// <para>
+    /// Cambiarla <b>no invalida las sesiones abiertas</b>: un JWT emitido antes
+    /// sigue valiendo hasta que caduque. Es consecuencia de haber elegido tokens
+    /// sin estado en la 002, y está documentado en la spec de la 008.
+    /// </para>
+    /// </remarks>
+    public void CambiarContrasena(string hashDeContrasena, DateTimeOffset ahora)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(hashDeContrasena);
+
+        HashDeContrasena = hashDeContrasena;
+        FechaDeCambioDeContrasena = ahora;
+    }
+
+    /// <summary>Cuándo se cambió la contraseña por última vez. <c>null</c> si nunca.</summary>
+    public DateTimeOffset? FechaDeCambioDeContrasena { get; private set; }
+
     public static Usuario Crear(CorreoElectronico correo, string hashDeContrasena, DateTimeOffset ahora)
     {
         ArgumentNullException.ThrowIfNull(correo);

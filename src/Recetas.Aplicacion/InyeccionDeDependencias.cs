@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Recetas.Aplicacion.Contrasenas;
 using Recetas.Aplicacion.Recetas;
 using Recetas.Aplicacion.Registro;
 using Recetas.Aplicacion.Salud;
@@ -16,6 +17,8 @@ public static class InyeccionDeDependencias
         servicios.AddScoped<ConsultarSalud>();
         servicios.AddScoped<SolicitarRegistro>();
         servicios.AddScoped<CompletarRegistro>();
+        servicios.AddScoped<SolicitarRestablecerContrasena>();
+        servicios.AddScoped<RestablecerContrasena>();
         servicios.AddScoped<IniciarSesion>();
         servicios.AddScoped<ResolverIngredientes>();
         servicios.AddScoped<GestionDeRecetas>();

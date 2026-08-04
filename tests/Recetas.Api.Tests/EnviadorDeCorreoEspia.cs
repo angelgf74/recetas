@@ -12,9 +12,12 @@ namespace Recetas.Api.Tests;
 public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
 {
     private readonly ConcurrentQueue<(string Destinatario, string Enlace)> _enlaces = new();
+    private readonly ConcurrentQueue<(string Destinatario, string Enlace)> _enlacesDeContrasena = new();
     private readonly ConcurrentQueue<string> _avisos = new();
 
     public IReadOnlyCollection<(string Destinatario, string Enlace)> EnlacesDeAlta => _enlaces;
+
+    public IReadOnlyCollection<(string Destinatario, string Enlace)> EnlacesDeContrasena => _enlacesDeContrasena;
 
     public IReadOnlyCollection<string> AvisosDeCuentaExistente => _avisos;
 
@@ -35,10 +38,28 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
         return Task.CompletedTask;
     }
 
-    /// <summary>Extrae el token del último enlace enviado a ese destinatario.</summary>
-    public string TokenEnviadoA(string destinatario)
+    public Task EnviarEnlaceDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        string enlace,
+        CancellationToken cancelacion = default)
     {
-        var enlace = _enlaces.Last(envio => envio.Destinatario == destinatario).Enlace;
+        _enlacesDeContrasena.Enqueue((destinatario.Valor, enlace));
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Extrae el token del último enlace de alta enviado a ese destinatario.</summary>
+    public string TokenEnviadoA(string destinatario) =>
+        TokenDe(_enlaces, destinatario);
+
+    /// <summary>Extrae el token del último enlace de contraseña enviado a ese destinatario.</summary>
+    public string TokenDeContrasenaEnviadoA(string destinatario) =>
+        TokenDe(_enlacesDeContrasena, destinatario);
+
+    private static string TokenDe(
+        IEnumerable<(string Destinatario, string Enlace)> envios,
+        string destinatario)
+    {
+        var enlace = envios.Last(envio => envio.Destinatario == destinatario).Enlace;
         var consulta = System.Web.HttpUtility.ParseQueryString(new Uri(enlace).Query);
 
         return consulta["token"]

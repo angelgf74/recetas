@@ -1,0 +1,71 @@
+@page "/contrasena"
+@using System.ComponentModel.DataAnnotations
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+
+<PageTitle>Recuperar contraseña · Recetas</PageTitle>
+
+<div class="pagina-estrecha">
+
+<h1>Recuperar contraseña</h1>
+
+@if (_resultado is { Correcta: true })
+{
+    <div class="aviso aviso-exito" role="status">@_resultado.Mensaje</div>
+    <p class="ayuda">
+        Revisa tu bandeja de entrada. El enlace caduca en una hora y solo se puede usar una vez.
+    </p>
+}
+else
+{
+    <p>Indica tu correo y te enviaremos un enlace para elegir una contraseña nueva.</p>
+
+    @if (_resultado is { Correcta: false })
+    {
+        <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
+    }
+
+    <EditForm Model="_formulario" OnValidSubmit="EnviarAsync" FormName="solicitar-contrasena">
+        <DataAnnotationsValidator />
+
+        <div class="campo">
+            <label for="correo">Correo electrónico</label>
+            <InputText id="correo" @bind-Value="_formulario.Correo" type="email"
+                       autocomplete="email" inputmode="email" disabled="@_enviando" />
+            <ValidationMessage For="() => _formulario.Correo" />
+        </div>
+
+        <button type="submit" class="boton" disabled="@_enviando">
+            @(_enviando ? "Enviando…" : "Enviarme el enlace")
+        </button>
+    </EditForm>
+
+    <p class="ayuda">
+        ¿Ya te acuerdas? <a href="/sesion">Iniciar sesión</a>
+    </p>
+}
+
+</div>
+
+@code {
+    private readonly Formulario _formulario = new();
+    private ResultadoDeLlamada? _resultado;
+    private bool _enviando;
+
+    private async Task EnviarAsync()
+    {
+        _enviando = true;
+        _resultado = null;
+
+        _resultado = await Api.SolicitarContrasenaAsync(_formulario.Correo);
+
+        _enviando = false;
+    }
+
+    private sealed class Formulario
+    {
+        [Required(ErrorMessage = "Indica tu correo electrónico.")]
+        [EmailAddress(ErrorMessage = "Ese correo electrónico no parece válido.")]
+        public string Correo { get; set; } = string.Empty;
+    }
+}

@@ -107,6 +107,7 @@ aplicacion.MapGet("/salud", async (ConsultarSalud consultarSalud, CancellationTo
 });
 
 aplicacion.MapearEndpointsDeRegistro();
+aplicacion.MapearEndpointsDeContrasenas();
 aplicacion.MapearEndpointsDeSesiones();
 aplicacion.MapearEndpointsDeRecetas();
 aplicacion.MapearEndpointsDeFotos();

@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Recetas.Contratos.Contrasenas;
 using Recetas.Contratos.Recetas;
 using Recetas.Contratos.Registro;
 using Recetas.Contratos.Sesiones;
@@ -24,6 +25,14 @@ public sealed class ClienteDeApi(HttpClient http)
     public Task<ResultadoDeLlamada> CompletarAltaAsync(string token, string contrasena) =>
         EnviarAsync(HttpMethod.Post, "registro/completar",
             new PeticionDeCompletarRegistro { Token = token, Contrasena = contrasena });
+
+    public Task<ResultadoDeLlamada> SolicitarContrasenaAsync(string correo) =>
+        EnviarAsync(HttpMethod.Post, "contrasena/solicitudes",
+            new PeticionDeSolicitudDeContrasena { Correo = correo });
+
+    public Task<ResultadoDeLlamada> RestablecerContrasenaAsync(string token, string contrasena) =>
+        EnviarAsync(HttpMethod.Post, "contrasena/restablecer",
+            new PeticionDeRestablecerContrasena { Token = token, Contrasena = contrasena });
 
     public async Task<(ResultadoDeLlamada Resultado, RespuestaDeInicioDeSesion? Acceso)> IniciarSesionAsync(
         string correo,

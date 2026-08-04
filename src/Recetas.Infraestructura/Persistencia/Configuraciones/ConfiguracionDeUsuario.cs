@@ -36,5 +36,9 @@ public sealed class ConfiguracionDeUsuario : IEntityTypeConfiguration<Usuario>
         constructor.Property(usuario => usuario.FechaDeAlta)
             .HasColumnName("fecha_de_alta")
             .IsRequired();
+
+        // Nula mientras nadie la haya cambiado desde el alta.
+        constructor.Property(usuario => usuario.FechaDeCambioDeContrasena)
+            .HasColumnName("fecha_de_cambio_de_contrasena");
     }
 }

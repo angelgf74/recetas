@@ -41,6 +41,33 @@ internal static class MensajesDeCorreo
          crea ninguna cuenta.
          """;
 
+    public const string AsuntoDeContrasena = "Recupera tu contraseña de Recetas";
+
+    public static string CuerpoDeContrasena(string enlace) =>
+        $"""
+         <p>Hola:</p>
+         <p>Has pedido volver a entrar en Recetas. Elige aquí tu contraseña nueva:</p>
+         <p><a href="{enlace}">Elegir contraseña nueva</a></p>
+         <p>Si el botón no funciona, copia esta dirección en tu navegador:<br>
+         <span>{enlace}</span></p>
+         <p>El enlace caduca en una hora y solo se puede usar una vez.</p>
+         <p>Si no lo has pedido tú, ignora este mensaje: tu contraseña actual sigue funcionando y no hemos cambiado nada.</p>
+         """;
+
+    public static string TextoDeContrasena(string enlace) =>
+        $"""
+         Hola:
+
+         Has pedido volver a entrar en Recetas. Elige tu contraseña nueva en esta dirección:
+
+         {enlace}
+
+         El enlace caduca en una hora y solo se puede usar una vez.
+
+         Si no lo has pedido tú, ignora este mensaje: tu contraseña actual sigue
+         funcionando y no hemos cambiado nada.
+         """;
+
     public static string CuerpoDeCuentaExistente() =>
         """
         <p>Hola:</p>

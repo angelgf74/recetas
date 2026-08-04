@@ -14,6 +14,8 @@ public class RecetasDbContext(DbContextOptions<RecetasDbContext> opciones) : DbC
 
     public DbSet<SolicitudDeRegistro> SolicitudesDeRegistro => Set<SolicitudDeRegistro>();
 
+    public DbSet<SolicitudDeContrasena> SolicitudesDeContrasena => Set<SolicitudDeContrasena>();
+
     public DbSet<Receta> Recetas => Set<Receta>();
 
     public DbSet<Ingrediente> Ingredientes => Set<Ingrediente>();

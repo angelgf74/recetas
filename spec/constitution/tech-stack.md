@@ -88,6 +88,7 @@ _Los comandos de `dotnet ef` necesitan `ASPNETCORE_ENVIRONMENT=Development` para
 
 - `Usuario` — identidad de la cuenta. El correo es único y es el identificador de acceso. La contraseña **nunca** se guarda en claro: solo su hash. **Un `Usuario` solo existe cuando el alta está completa**: correo verificado y contraseña puesta. No hay usuarios a medio crear ni hash de contraseña nulo.
 - `SolicitudDeRegistro` — el estado intermedio del alta en dos pasos: correo indicado, hash del token de verificación, fecha de creación y de caducidad, y si ya fue consumida. **No es un `Usuario`**: mientras vive aquí, ese correo no puede iniciar sesión ni aparece en ninguna parte del producto. Al completarse se crea el `Usuario` y la solicitud se marca consumida.
+- `SolicitudDeContrasena` — el equivalente para recuperar el acceso: apunta a un `Usuario` que **ya existe**, guarda el hash del token, sus fechas y si fue consumida. **Tabla aparte de `SolicitudDeRegistro`**, no un campo "tipo": comparten forma pero no significado, y una consulta que olvidara filtrar el tipo permitiría canjear un enlace de alta por un cambio de contraseña ajena. Caduca en **una hora**, no en veinticuatro: el enlace de alta solo crea una cuenta que aún no existe, este toma el control de una que ya tiene recetas dentro.
 - `Receta` — pertenece siempre a un `Usuario` (su autor). Campos centrales: nombre, ingredientes, elaboración, `TipoPlato` y `Visibilidad`.
 - `Receta.Visibilidad` — `Privada` | `Publica`. **Nace `Privada`**; pasar a `Publica` es una acción explícita del autor y es reversible (despublicar). Determina quién puede leerla: `Privada` solo el autor; `Publica` cualquier **usuario registrado**. No hay lectura anónima en ningún caso.
 - `Receta.TipoPlato` — **lista cerrada** (enumerado), no etiquetas libres. Valor único y obligatorio. Valores: `Entrante`, `PrimerPlato`, `PlatoPrincipal`, `Guarnicion`, `Postre`, `Bebida`, `Salsa`.
@@ -126,8 +127,10 @@ Reglas que debe cumplir la implementación:
 - Solo el autor puede editar, publicar, despublicar o borrar su receta.
 - Una receta `Privada` no aparece en ninguna búsqueda ni respuesta dirigida a alguien que no sea su autor.
 - Borrar un usuario borra o anonimiza sus recetas: no quedan recetas huérfanas.
-- **Toda la API exige autenticación salvo los endpoints de alta (los dos pasos) y el inicio de sesión.** No existe endpoint de lectura anónima: sin JWT válido, `401`. Esto incluye servir las fotos — una imagen de receta no puede quedar accesible por URL directa sin sesión.
+- **Toda la API exige autenticación salvo los endpoints de alta (los dos pasos), los de recuperar contraseña (los dos pasos) y el inicio de sesión.** No existe endpoint de lectura anónima: sin JWT válido, `401`. Esto incluye servir las fotos — una imagen de receta no puede quedar accesible por URL directa sin sesión.
 - **No hay cuenta sin correo verificado.** La única vía de creación de un `Usuario` es consumir una `SolicitudDeRegistro` válida.
+- **La contraseña solo se cambia consumiendo una `SolicitudDeContrasena` válida.** No hay endpoint administrativo ni ninguna otra vía.
+- **Cambiar la contraseña no invalida los JWT ya emitidos.** Limitación conocida y documentada (008), consecuencia de los tokens sin estado de la 002.
 
 ## Convenciones
 

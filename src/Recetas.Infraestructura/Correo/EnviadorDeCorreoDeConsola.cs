@@ -27,6 +27,19 @@ public sealed class EnviadorDeCorreoDeConsola(ILogger<EnviadorDeCorreoDeConsola>
         return Task.CompletedTask;
     }
 
+    public Task EnviarEnlaceDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        string enlace,
+        CancellationToken cancelacion = default)
+    {
+        registro.LogInformation(
+            "[CORREO SIMULADO] Restablecer contraseña de {Destinatario}. Enlace: {Enlace}",
+            destinatario.Valor,
+            enlace);
+
+        return Task.CompletedTask;
+    }
+
     public Task EnviarAvisoDeCuentaExistenteAsync(
         CorreoElectronico destinatario,
         CancellationToken cancelacion = default)

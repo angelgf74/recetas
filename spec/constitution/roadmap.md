@@ -17,6 +17,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 7. **[007 · Web completa](../features/007-web-completa/spec.md)** — el resto del cliente Blazor sobre el esqueleto que dejó la 002: recetario propio, ficha, edición, fotos, publicación y búsqueda, con sesión persistente y rutas protegidas.
 
+8. **[008 · Recuperar contraseña](../features/008-recuperar-contrasena/spec.md)** — enlace de un solo uso por correo para volver a entrar, con la mecánica de la 002 pero caducando en una hora en vez de veinticuatro. Primera feature salida del backlog. Deja anotado que restablecer **no cierra las sesiones ya abiertas**: es consecuencia de los JWT sin estado de la 002.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -28,7 +30,8 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 ## Backlog / ideas 💡
 
 - **App Android** — Kotlin + Compose contra la misma API, **con publicidad AdMob**. Aplazada deliberadamente (ver `tech-stack.md`). Arrastra trabajo que no es de programación: política de privacidad publicada, declaración de datos en Google Play y plataforma de consentimiento para la UE. Contarlo en el alcance cuando llegue.
-- **Recuperar contraseña** — mismo patrón que el alta (token de un solo uso por correo), reaprovechando la infraestructura de envío que trae la 002. Barata una vez hecha la 002.
+- **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
+- **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.
 - **Escalado de fotos** — generar miniaturas para no servir la imagen completa en los listados.
 - **Escalar cantidades** — ajustar los ingredientes al número de comensales.

@@ -30,6 +30,7 @@ public static class InyeccionDeDependencias
         servicios.AddScoped<IComprobadorDeAlmacen, ComprobadorDeAlmacenEf>();
         servicios.AddScoped<IRepositorioDeUsuarios, RepositorioDeUsuariosEf>();
         servicios.AddScoped<IRepositorioDeSolicitudesDeRegistro, RepositorioDeSolicitudesDeRegistroEf>();
+        servicios.AddScoped<IRepositorioDeSolicitudesDeContrasena, RepositorioDeSolicitudesDeContrasenaEf>();
         servicios.AddScoped<IRepositorioDeRecetas, RepositorioDeRecetasEf>();
         servicios.AddScoped<IRepositorioDeIngredientes, RepositorioDeIngredientesEf>();
 

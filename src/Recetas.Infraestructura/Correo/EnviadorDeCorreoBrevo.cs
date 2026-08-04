@@ -41,6 +41,17 @@ public sealed class EnviadorDeCorreoBrevo(
             MensajesDeCorreo.TextoDeCuentaExistente(),
             cancelacion);
 
+    public Task EnviarEnlaceDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        string enlace,
+        CancellationToken cancelacion = default) =>
+        EnviarAsync(
+            destinatario,
+            MensajesDeCorreo.AsuntoDeContrasena,
+            MensajesDeCorreo.CuerpoDeContrasena(enlace),
+            MensajesDeCorreo.TextoDeContrasena(enlace),
+            cancelacion);
+
     private async Task EnviarAsync(
         CorreoElectronico destinatario,
         string asunto,
