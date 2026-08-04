@@ -73,7 +73,35 @@ Crear y editar recetas, fotos, publicar, escalar cantidades e importar desde URL
 Todo eso está en la API y lo cubre la web, que funciona en el móvil. Entra en la
 feature siguiente de Android.
 
-**Tampoco lleva AdMob**, y no es un olvido: exige cuenta de publicador,
-identificador real, política de privacidad publicada, declaración de datos en
-Google Play y una plataforma de consentimiento para la UE. Nada de eso es código.
-Ver `spec/features/012-android-esqueleto/spec.md`.
+**Tampoco lleva AdMob todavía.** La parte de consola ya está dada de alta; lo que
+falta es integrar el SDK y el trabajo que no es código.
+
+## AdMob
+
+Identificadores ya creados en la consola. **No son secretos**: acaban dentro del
+APK y cualquiera puede leerlos, así que se versionan.
+
+| Qué | Identificador |
+| --- | --- |
+| Aplicación | `ca-app-pub-8600791204816041~1145017083` |
+| Banner del recetario | `ca-app-pub-8600791204816041/2095402606` |
+| Banner de la búsqueda | `ca-app-pub-8600791204816041/9782320932` |
+
+**Dónde van y dónde no.** Banner al pie del recetario y de la búsqueda. **Ninguno
+en la ficha de receta**: es la pantalla que se lee cocinando, y `mission.md` dice
+que un anuncio que estorbe ahí se quita. Por lo mismo no hay intersticial.
+
+Un bloque por pantalla en vez de uno compartido, para poder medir cuál rinde y
+retirar el que moleste sin tocar el otro.
+
+La aplicación figura como **"Debe revisarse"** y con servicio de anuncios
+limitado, porque no está publicada en ninguna tienda. Es lo esperado hasta que se
+suba a Google Play.
+
+Lo que falta antes de que esto pueda mostrar anuncios de verdad:
+
+- Integrar el SDK de anuncios de Google para móviles.
+- **Política de privacidad publicada** y enlazada desde la ficha de Play.
+- **Declaración de datos** en Google Play.
+- **Plataforma de consentimiento para la UE**, obligatoria para servir anuncios
+  personalizados a usuarios europeos.

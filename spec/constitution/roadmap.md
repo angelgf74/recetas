@@ -39,7 +39,9 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 
 - **Android: escribir** — crear y editar recetas, fotos, publicar, escalar cantidades e importar desde URL. Es a la 012 lo que la 007 fue a la 002.
 - **Android: alta y recuperar contraseña** — necesitan enlaces profundos, porque el enlace del correo aterriza hoy en la web.
-- **AdMob en Android** — la única monetización prevista. **No es solo código**: exige cuenta de publicador, identificador de aplicación real, política de privacidad publicada, declaración de datos en Google Play y plataforma de consentimiento para la UE. Contar todo eso en el alcance cuando se aborde.
+- **AdMob en Android** — la única monetización prevista. La parte de consola **ya está hecha**: la aplicación y los dos bloques existen en AdMob (identificadores en `android/README.md`). Falta lo demás, que **no es solo código**: integrar el SDK, política de privacidad publicada, declaración de datos en Google Play y plataforma de consentimiento para la UE.
+
+  **Emplazamiento decidido: banner al pie del recetario y de la búsqueda, y ninguno en la ficha.** La ficha es la pantalla que se lee cocinando y con las manos ocupadas; `mission.md` dice que si un anuncio estorba ahí, el anuncio se quita. Por eso tampoco hay intersticial: a pantalla completa al abrir una receta incumpliría eso de lleno. Hay un bloque por pantalla, y no uno compartido, precisamente para poder medir cuál rinde y retirar el que moleste sin tocar el otro.
 - **Publicar en Google Play** — firma de la aplicación, ficha de la tienda y las declaraciones de arriba.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
