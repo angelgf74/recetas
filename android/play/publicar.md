@@ -12,27 +12,61 @@ hacerlo: hay cosas que son código y otras que exigen decisiones o una cuenta.
 ## 1. Mensaje de consentimiento del RGPD en AdMob
 
 **Por qué:** sin él no se pueden servir anuncios personalizados a usuarios del
-Espacio Económico Europeo. Hoy los anuncios de prueba salen igual, así que **esto
-no bloquea el desarrollo, pero sí la publicación**.
+Espacio Económico Europeo, Reino Unido y Suiza. Hoy los anuncios de prueba salen
+igual, así que **no bloquea el desarrollo, pero sí la publicación**.
 
-**Dónde:** [AdMob](https://apps.admob.com) → **Privacidad y mensajes** →
-**Reglamentos europeos** → **Crear**.
+Datos que vas a necesitar a mano:
 
-**Qué te va a pedir:**
+| Qué | Valor |
+| --- | --- |
+| Aplicación | Recetas |
+| ID de aplicación | `ca-app-pub-8600791204816041~1145017083` |
+| Política de privacidad | `https://recetas.angelgf.com.es/privacidad.html` |
 
-1. **A qué aplicaciones se aplica.** Elige *Recetas*. Puedes aplicarlo a todas las
-   tuyas de golpe si te interesa.
-2. **Proveedores de anuncios.** Google propone una lista larga de terceros.
-   Cuantos más autorices, más competencia por el hueco y más ingresos; también más
-   empresas tratando datos de tus usuarios. Es una decisión tuya.
-3. **Idiomas del mensaje.** Añade **español** además del inglés, o los usuarios
-   españoles verán el formulario en inglés.
-4. **Opciones que ofreces.** Recomendable incluir el botón de **"Gestionar
-   opciones"** además de aceptar: es lo que permite rechazar de verdad.
+### Paso 1 · Entrar
 
-Al terminar, **publícalo**. Un mensaje creado pero sin publicar no cuenta.
+[apps.admob.com](https://apps.admob.com) → menú lateral **Privacidad y mensajes**
+→ tarjeta **Reglamentos europeos** → **Crear**.
 
-**Cómo saber que ha funcionado:** ejecuta la aplicación y mira el log.
+### Paso 2 · Elegir a qué aplicaciones se aplica
+
+Marca **Recetas**. Puedes marcar también el resto de tus aplicaciones si quieres
+un único mensaje para todas; el mensaje es por cuenta, no por aplicación, y se
+asigna a las que elijas.
+
+### Paso 3 · Proveedores de anuncios
+
+**Esta es la decisión de verdad, y es tuya.** Google presenta la lista de
+terceros que podrán tratar datos de tus usuarios si estos consienten.
+
+- Menos proveedores: menos empresas con datos de tus usuarios, menos competencia
+  por cada hueco, menos ingresos.
+- Más proveedores: al revés.
+
+Google trae marcada una selección por defecto. Si no tienes criterio propio,
+déjala: es la que usan la mayoría de publicadores. Lo que **no** conviene es
+marcarlos todos sin mirar.
+
+### Paso 4 · Opciones del mensaje
+
+- **Idiomas:** añade **español**. Si solo dejas inglés, tus usuarios verán el
+  formulario en inglés, y un consentimiento que el usuario no entiende no es
+  consentimiento válido.
+- **Botones:** tiene que haber una forma de **rechazar tan accesible como la de
+  aceptar**. Google lo exige desde 2024 y es lo que hace válido el consentimiento
+  bajo el RGPD. Si el asistente ofrece "Consentir / Gestionar opciones", añade
+  también **"No consentir"**.
+- **Enlace a la política de privacidad:** pega
+  `https://recetas.angelgf.com.es/privacidad.html`.
+
+### Paso 5 · Publicar
+
+**Guardar no basta: hay que pulsar Publicar.** Un mensaje creado y sin publicar
+sigue dando el mismo error que ahora.
+
+### Paso 6 · Comprobar que funciona
+
+Con el móvil conectado:
 
 ```powershell
 adb logcat -c
@@ -40,8 +74,26 @@ adb shell am start -n com.angelgf.recetas/.MainActivity
 adb logcat -d -s Anuncios:*
 ```
 
-Antes decía `no form(s) configured for the input app ID`. Cuando esté bien, esa
-línea desaparece y sale `Consentimiento consultado`.
+- **Antes:** `No se pudo obtener el consentimiento: … no form(s) configured for
+  the input app ID`.
+- **Bien:** `Consentimiento consultado. ¿Se pueden pedir anuncios? true`, y el
+  formulario aparece en pantalla.
+
+Puede tardar **hasta una hora** en propagarse. Si sigue igual pasado ese rato,
+revisa que el mensaje esté *publicado* y asignado a *Recetas*.
+
+### El formulario solo sale una vez
+
+Una vez respondes, UMP guarda la respuesta y no vuelve a preguntar. Para volver a
+verlo mientras pruebas:
+
+**Ajustes → Aplicaciones → Recetas → Almacenamiento → Borrar datos.**
+
+Eso borra también la sesión, así que habrá que iniciar sesión otra vez.
+
+> Si esto se va a repetir mucho, se puede añadir a la compilación de depuración
+> una llamada a `ConsentInformation.reset()`. No está puesto porque un botón que
+> borra el consentimiento no debe existir en la versión publicada.
 
 ---
 
