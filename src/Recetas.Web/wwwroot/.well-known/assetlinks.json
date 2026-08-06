@@ -1,6 +1,6 @@
 [
   {
-    "//": "Enlaces de aplicacion de Android. Autoriza a com.angelgf.recetas a abrir los enlaces de este dominio, en lugar de que los abra el navegador. La huella es la del certificado de DEPURACION; al firmar para publicar hay que anadir la del certificado de publicacion a este mismo array, o los enlaces dejaran de abrir la aplicacion instalada desde Google Play.",
+    "//": "Enlaces de aplicacion de Android. Autoriza a com.angelgf.recetas a abrir los enlaces de este dominio, en lugar de que los abra el navegador. Las dos huellas conviven a proposito: la primera es la del certificado de PUBLICACION que Google Play genera y con el que refirma la aplicacion antes de entregarla, y la segunda la del certificado de DEPURACION, que es con la que se instala desde el equipo de desarrollo. NO vale la huella de la clave de subida: esa solo demuestra quien sube el paquete, y no es la que el dispositivo comprueba al abrir un enlace.",
     "relation": [
       "delegate_permission/common.handle_all_urls"
     ],
@@ -8,6 +8,7 @@
       "namespace": "android_app",
       "package_name": "com.angelgf.recetas",
       "sha256_cert_fingerprints": [
+        "4A:7E:85:0B:33:73:16:4F:53:B3:2E:7F:36:B2:C1:A8:E5:93:A5:FD:13:9B:B7:7A:0F:27:62:A0:87:B6:51:34",
         "96:23:6E:5C:F9:DF:62:90:D6:A6:20:F2:6E:4E:78:FD:16:A9:3E:9A:63:0A:17:65:B2:9F:AC:96:37:A5:07:48"
       ]
     }
