@@ -67,26 +67,15 @@ seas tú, esto deja de ser un detalle.
 
 ---
 
-## 3. Capturas de pantalla de verdad
+## 3. ~~Capturas de pantalla de verdad~~ · HECHO
 
-**Por qué:** las que hay en `capturas/` salieron del entorno de desarrollo —
-"Croquetas de jamon" y óvalos amarillos donde debería haber comida. Play pide que
-las capturas representen la aplicación real, y además dan mala impresión.
+Las cuatro capturas de `capturas/` están hechas en un teléfono real con recetas y
+fotos de verdad, y recortadas a 1220×2440.
 
-**Cómo:**
-
-1. Entra en la aplicación con una cuenta que tenga cuatro o cinco recetas **con
-   fotos de comida de verdad**. La tuya ya las tiene.
-2. Con el móvil conectado:
-
-```powershell
-adb exec-out screencap -p > 1-recetario.png
-```
-
-Repite en el recetario, una ficha, la búsqueda y el formulario. Sustituye los
-archivos de `android/play/capturas/`.
-
-**Necesitas entre 2 y 8.** Con 4 va sobrado.
+**Si alguna vez se rehacen, cuidado con la proporción:** Play admite como máximo
+**2:1**, y la pantalla nativa de un móvil moderno suele ser más alargada (2,22:1
+en el Redmi con el que se hicieron). Sin recortar, Play las rechaza. El detalle
+está en `ficha.md`.
 
 ---
 

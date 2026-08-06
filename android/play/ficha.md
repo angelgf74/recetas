@@ -124,31 +124,32 @@ Para crear y editar recetas, de momento entra desde recetas.angelgf.com.es
 | --- | --- | --- | --- |
 | Icono | `graficos/icono-512.png` | 512×512 | Listo |
 | Gráfico destacado | `graficos/destacado-1024x500.png` | 1024×500 | Listo |
-| Captura 1 · Recetario | `capturas/1-recetario.png` | 1080×2424 | **Con datos de prueba** |
-| Captura 2 · Ficha | `capturas/2-ficha.png` | 1080×2424 | **Con datos de prueba** |
-| Captura 3 · Búsqueda | `capturas/3-busqueda.png` | 1080×2424 | **Con datos de prueba** |
-| Captura 4 · Inicio de sesión | `capturas/4-sesion.png` | 1080×2424 | Aceptable |
+| Captura 1 · Recetario | `capturas/1-recetario.png` | 1220×2440 | Listo |
+| Captura 2 · Ficha con foto | `capturas/2-ficha.png` | 1220×2440 | Listo |
+| Captura 3 · Búsqueda | `capturas/3-busqueda.png` | 1220×2440 | Listo |
+| Captura 4 · Nueva receta | `capturas/4-nueva-receta.png` | 1220×2440 | Listo |
 
 El icono y el gráfico destacado se generan con el programa que hay en
 `herramientas/graficos-de-play/`, a partir de la misma figura que el favicon de la
 web, para que la tienda, el lanzador y el sitio no parezcan tres productos
 distintos.
 
-### Las capturas hay que rehacerlas
+### Cómo se hicieron, por si hay que rehacerlas
 
-Son capturas reales del emulador, pero del **entorno de desarrollo**: salen
-recetas llamadas "Tortitas para escalar" o "Croquetas de jamon" y, en lugar de
-fotos de comida, unos óvalos amarillos que son la imagen de prueba con la que se
-verificaron las fotos.
+Capturadas en un teléfono real (Redmi Note 13 Pro, 1220×2712) con una cuenta que
+tiene recetas y fotos de verdad:
 
-Publicar eso da una impresión pésima y además Play pide que las capturas
-representen la aplicación real. Hay que:
+```powershell
+adb exec-out screencap -p > captura.png
+```
 
-1. Cargar en una cuenta cuatro o cinco recetas de verdad, con fotos de comida.
-2. Repetir las capturas con esa cuenta.
+**Y después recortadas a 1220×2440.** El motivo importa: Play admite una relación
+de aspecto **máxima de 2:1**, y la pantalla nativa del teléfono es 2,22:1, así que
+las capturas sin tocar se rechazan. El recorte quita 90 píxeles de arriba y el
+resto por abajo, lo que de paso elimina la barra de estado y la de navegación.
 
-El procedimiento está en `android/README.md`; las capturas se sacan con
-`adb shell screencap`.
+Si se rehacen en otro dispositivo, comprobar siempre esa proporción antes de
+subirlas.
 
 ---
 
