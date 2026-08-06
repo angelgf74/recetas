@@ -146,6 +146,18 @@ class ClienteDeApi(
     suspend fun despublicar(id: String): Resultado<Unit> =
         envolver { sinContenido(http.delete("recetas/$id/publicacion")) }
 
+    // -------------------------------------------------------- Denuncias
+
+    suspend fun denunciar(recetaId: String, motivo: String, comentario: String?): Resultado<Unit> =
+        envolver {
+            val respuesta = http.post("recetas/$recetaId/denuncias") {
+                contentType(ContentType.Application.Json)
+                setBody(PeticionDeDenuncia(motivo, comentario?.takeIf { it.isNotBlank() }))
+            }
+
+            sinContenido(respuesta)
+        }
+
     // ------------------------------------------------------------- Fotos
 
     suspend fun subirFoto(recetaId: String, contenido: ByteArray): Resultado<Unit> =

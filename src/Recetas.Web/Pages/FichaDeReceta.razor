@@ -1,4 +1,5 @@
 @page "/recetas/{Id:guid}"
+@using Recetas.Contratos.Moderacion
 @using Recetas.Contratos.Recetas
 @using Recetas.Web.Componentes
 @using Recetas.Web.Servicios
@@ -174,6 +175,55 @@
                 @* Receta ajena publicada: se lee, no se toca. La autorización real
                    está en el servidor; esto solo evita ofrecer lo que va a fallar. *@
                 <p class="ayuda">Esta receta la ha compartido otra persona.</p>
+
+                <section class="denuncia">
+                    @if (_denunciada)
+                    {
+                        @* Ya no se ofrece denunciar otra vez: la segunda no haría
+                           nada y repetirla solo transmite que la primera no valió. *@
+                        <p class="ayuda" role="status">
+                            Gracias. Hemos recibido tu aviso y lo revisaremos.
+                        </p>
+                    }
+                    else if (!_denunciando)
+                    {
+                        <button type="button" class="boton-enlace" @onclick="() => _denunciando = true">
+                            Denunciar esta receta
+                        </button>
+                    }
+                    else
+                    {
+                        <h2 class="denuncia-titulo">Denunciar esta receta</h2>
+                        <p class="ayuda">
+                            Cuéntanos qué pasa y la revisaremos. El autor no sabrá quién ha avisado.
+                        </p>
+
+                        <label for="motivo-denuncia">Motivo</label>
+                        <select id="motivo-denuncia" @bind="_motivo">
+                            @foreach (var (valor, texto) in MotivosDeDenuncia)
+                            {
+                                <option value="@valor">@texto</option>
+                            }
+                        </select>
+
+                        <label for="comentario-denuncia">Explicación (opcional)</label>
+                        <textarea id="comentario-denuncia" rows="3"
+                                  maxlength="@PeticionDeDenuncia.LongitudMaximaDelComentario"
+                                  @bind="_comentario"></textarea>
+
+                        <div class="acciones-fila">
+                            <button type="button" class="boton" disabled="@_enviandoDenuncia"
+                                    @onclick="DenunciarAsync">
+                                @(_enviandoDenuncia ? "Enviando…" : "Enviar denuncia")
+                            </button>
+
+                            <button type="button" class="boton-enlace" disabled="@_enviandoDenuncia"
+                                    @onclick="() => _denunciando = false">
+                                Cancelar
+                            </button>
+                        </div>
+                    }
+                </section>
             }
         </article>
     }
@@ -326,5 +376,50 @@
         {
             _aviso = resultado;
         }
+    }
+
+    // ------------------------------------------------------------- Denuncias
+
+    /// <summary>
+    /// Los valores son los del enumerado del dominio y el texto es lo que lee el
+    /// usuario. Se envía el valor, nunca el texto: cambiar la redacción no debe
+    /// cambiar bajo qué motivo se archiva la denuncia.
+    /// </summary>
+    private static readonly (string Valor, string Texto)[] MotivosDeDenuncia =
+    [
+        ("NoEsUnaReceta", "No es una receta"),
+        ("Ofensivo", "Contenido ofensivo o de odio"),
+        ("Sexual", "Contenido sexual"),
+        ("Violento", "Contenido violento"),
+        ("Spam", "Spam o publicidad"),
+        ("Derechos", "Copia contenido de otra persona"),
+        ("Otro", "Otro motivo")
+    ];
+
+    private bool _denunciando;
+    private bool _enviandoDenuncia;
+    private bool _denunciada;
+    private string _motivo = "NoEsUnaReceta";
+    private string? _comentario;
+
+    private async Task DenunciarAsync()
+    {
+        _enviandoDenuncia = true;
+        _aviso = null;
+
+        var resultado = await Api.DenunciarAsync(Id, _motivo, _comentario);
+
+        if (resultado.Correcta)
+        {
+            _denunciando = false;
+            _denunciada = true;
+            _comentario = null;
+        }
+        else
+        {
+            _aviso = resultado;
+        }
+
+        _enviandoDenuncia = false;
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Recetas.Api.Endpoints;
 using Recetas.Aplicacion;
+using Recetas.Aplicacion.Moderacion;
 using Recetas.Aplicacion.Salud;
 using Recetas.Contratos.Salud;
 using Recetas.Dominio.Salud;
@@ -22,6 +23,16 @@ constructor.Host.UseSystemd();
 constructor.Services.AnadirAplicacion();
 constructor.Services.AnadirInfraestructura(constructor.Configuration);
 constructor.Services.AnadirLimitesDePeticiones(constructor.Configuration);
+
+// Quién recibe las denuncias y puede retirar contenido publicado. Se registra
+// aquí y no en Infraestructura porque el tipo vive en Aplicación, e
+// Infraestructura no puede verla: las dependencias apuntan hacia dentro.
+//
+// Sin este valor la aplicación arranca igual, pero las denuncias no avisan a
+// nadie y nadie puede retirar nada. Se avisa al arrancar en vez de fallar: un
+// despliegue no debe caerse por esto, pero tampoco pasar desapercibido.
+constructor.Services.AddSingleton(new CorreoDelResponsable(
+    constructor.Configuration["Moderacion:CorreoDelResponsable"]));
 
 var opcionesDeJwt = new OpcionesDeJwt();
 constructor.Configuration.GetSection(OpcionesDeJwt.Seccion).Bind(opcionesDeJwt);
@@ -111,6 +122,7 @@ aplicacion.MapearEndpointsDeContrasenas();
 aplicacion.MapearEndpointsDeSesiones();
 aplicacion.MapearEndpointsDeRecetas();
 aplicacion.MapearEndpointsDeFotos();
+aplicacion.MapearEndpointsDeDenuncias();
 
 await aplicacion.RunAsync();
 

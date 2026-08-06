@@ -27,6 +27,12 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 12. **[012 · Android: esqueleto usable](../features/012-android-esqueleto/spec.md)** — aplicación nativa en Kotlin + Compose contra la misma API: sesión, recetario, ficha y búsqueda. Se parte igual que se partió la web (002 esqueleto, 007 resto) y por lo mismo. **Sin AdMob**, que arrastra trabajo que no es código.
 
+13. **[013 · Anuncios en Android](../features/013-anuncios-en-android/spec.md)** — banner de AdMob al pie del recetario y de la búsqueda, y **ninguno en la ficha**, que es la pantalla que se lee cocinando. Consentimiento del RGPD con UMP antes de pedir el primer anuncio, y opción de revocarlo desde Ajustes, que Play exige. La web no lleva publicidad ni la llevará.
+
+14. **[014 · Android: paridad con la web](../features/014-android-paridad-con-la-web/spec.md)** — crear y editar recetas, fotos, publicar, escalar cantidades e importar desde URL. Es a la 012 lo que la 007 fue a la 002.
+
+15. **[015 · Denunciar contenido](../features/015-denunciar-contenido/spec.md)** — denunciar una receta pública ajena, con aviso por correo al responsable y retirada por su parte. Sale de una exigencia concreta: Play no publica una aplicación donde los usuarios comparten contenido si no hay forma de denunciarlo **y** de actuar. Estrena una tercera pregunta de permisos —quién modera— que deliberadamente **no** vive en el dominio y solo abre despublicar.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -37,12 +43,8 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 
 ## Backlog / ideas 💡
 
-- **Android: escribir** — crear y editar recetas, fotos, publicar, escalar cantidades e importar desde URL. Es a la 012 lo que la 007 fue a la 002.
-- **Android: alta y recuperar contraseña** — necesitan enlaces profundos, porque el enlace del correo aterriza hoy en la web.
-- **AdMob en Android** — la única monetización prevista. La parte de consola **ya está hecha**: la aplicación y los dos bloques existen en AdMob (identificadores en `android/README.md`). Falta lo demás, que **no es solo código**: integrar el SDK, política de privacidad publicada, declaración de datos en Google Play y plataforma de consentimiento para la UE.
-
-  **Emplazamiento decidido: banner al pie del recetario y de la búsqueda, y ninguno en la ficha.** La ficha es la pantalla que se lee cocinando y con las manos ocupadas; `mission.md` dice que si un anuncio estorba ahí, el anuncio se quita. Por eso tampoco hay intersticial: a pantalla completa al abrir una receta incumpliría eso de lleno. Hay un bloque por pantalla, y no uno compartido, precisamente para poder medir cuál rinde y retirar el que moleste sin tocar el otro.
-- **Publicar en Google Play** — firma de la aplicación, ficha de la tienda y las declaraciones de arriba.
+- **Publicar en Google Play** — lo único que queda es de consola, no de código: cuenta de desarrollador, ficha de la tienda, clasificación de contenido, seguridad de los datos y declarar que contiene anuncios. El paquete firmado ya se genera y está probado en un teléfono real. Pasos en `android/play/publicar.md`.
+- **Avisar al autor de que su receta ha sido retirada** — hoy se entera al mirarla. Necesita decidir qué se le cuenta —sin exponer quién denunció— y si puede recurrir. Sale de la 015.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.

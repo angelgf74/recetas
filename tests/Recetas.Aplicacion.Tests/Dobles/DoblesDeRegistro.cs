@@ -99,6 +99,14 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
 
     public List<string> AvisosDeCuentaExistente { get; } = [];
 
+    public List<(string Destinatario, AvisoDeDenuncia Aviso)> AvisosDeDenuncia { get; } = [];
+
+    /// <summary>
+    /// Si está a <c>true</c>, el envío revienta. Sirve para comprobar que una
+    /// denuncia sobrevive a que el correo falle.
+    /// </summary>
+    public bool FallaAlEnviar { get; set; }
+
     public Task EnviarEnlaceDeAltaAsync(
         CorreoElectronico destinatario,
         string enlace,
@@ -122,6 +130,20 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
         CancellationToken cancelacion = default)
     {
         EnlacesDeContrasena.Add((destinatario.Valor, enlace));
+        return Task.CompletedTask;
+    }
+
+    public Task EnviarAvisoDeDenunciaAsync(
+        CorreoElectronico destinatario,
+        AvisoDeDenuncia aviso,
+        CancellationToken cancelacion = default)
+    {
+        if (FallaAlEnviar)
+        {
+            throw new InvalidOperationException("Fallo simulado del envío de correo.");
+        }
+
+        AvisosDeDenuncia.Add((destinatario.Valor, aviso));
         return Task.CompletedTask;
     }
 }

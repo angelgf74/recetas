@@ -20,6 +20,13 @@ public static class LimitesDePeticiones
     /// </summary>
     public const string Importacion = "importacion";
 
+    /// <summary>
+    /// Cada denuncia manda un correo al responsable del servicio. Sin límite, el
+    /// endpoint es una forma cómoda de inundarle el buzón, y el remitente sería el
+    /// propio dominio del proyecto.
+    /// </summary>
+    public const string Denuncia = "denuncia";
+
     public static void AnadirLimitesDePeticiones(this IServiceCollection servicios, IConfiguration configuracion)
     {
         // Configurables para que los tests puedan elevarlos y no chocar con el
@@ -27,6 +34,7 @@ public static class LimitesDePeticiones
         var maximoDeRegistros = configuracion.GetValue("Limites:RegistrosPorVentana", 5);
         var maximoDeInicios = configuracion.GetValue("Limites:IniciosDeSesionPorVentana", 10);
         var maximoDeImportaciones = configuracion.GetValue("Limites:ImportacionesPorVentana", 20);
+        var maximoDeDenuncias = configuracion.GetValue("Limites:DenunciasPorVentana", 10);
 
         servicios.AddRateLimiter(opciones =>
         {
@@ -59,6 +67,18 @@ public static class LimitesDePeticiones
                         // en cuando— y estrecho para usar la API como ariete.
                         PermitLimit = maximoDeImportaciones,
                         Window = TimeSpan.FromMinutes(5)
+                    }));
+
+            opciones.AddPolicy(Denuncia, contexto =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    ClaveDeParticion(contexto),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        // Denunciar es raro: quien encuentra algo que denunciar lo
+                        // hace una vez, no diez veces por hora. La ventana es larga
+                        // porque cada denuncia cuesta un correo.
+                        PermitLimit = maximoDeDenuncias,
+                        Window = TimeSpan.FromMinutes(60)
                     }));
         });
     }

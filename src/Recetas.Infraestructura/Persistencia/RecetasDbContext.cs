@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Recetas.Dominio.Moderacion;
 using Recetas.Dominio.Recetas;
 using Recetas.Dominio.Registro;
 using Recetas.Dominio.Usuarios;
@@ -19,6 +20,8 @@ public class RecetasDbContext(DbContextOptions<RecetasDbContext> opciones) : DbC
     public DbSet<Receta> Recetas => Set<Receta>();
 
     public DbSet<Ingrediente> Ingredientes => Set<Ingrediente>();
+
+    public DbSet<Denuncia> Denuncias => Set<Denuncia>();
 
     protected override void OnModelCreating(ModelBuilder modelo)
     {

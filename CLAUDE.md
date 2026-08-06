@@ -16,12 +16,15 @@ Endpoints: `GET /salud`, `POST /registro/solicitudes`, `POST /registro/completar
 
 **Restablecer la contraseña no cierra las sesiones abiertas.** Un JWT emitido antes del cambio sigue valiendo hasta siete días. Es consecuencia de haber elegido JWT sin estado en la 002, está documentado en `spec/features/008-recuperar-contrasena/spec.md` y anotado en el backlog. No es un descuido: no lo "arregles" sin decidir antes el cambio de arquitectura.
 
-## Permisos: dos preguntas distintas
+## Permisos: tres preguntas distintas
 
 - `Receta.EsDe(usuarioId)` — **solo el autor**. Gobierna editar, borrar, publicar, y subir o borrar fotos.
 - `Receta.PuedeVerla(usuarioId)` — autor **o** receta publicada. Solo para leer la receta y descargar sus fotos.
+- **Ser el responsable del servicio** (015) — no vive en la entidad: es el correo de `Moderacion:CorreoDelResponsable`, comparado con el del JWT en la capa de API. **Solo abre despublicar recetas públicas ajenas**, nunca editar, borrar, ni ver privadas. Se pasa como parámetro explícito a `CambiarVisibilidadAsync` para que no se cuele en otras operaciones, y hay tests de que no lo hace.
 
 Confundirlas permitiría a cualquiera modificar recetas públicas ajenas. Los nombres son distintos a propósito.
+
+**Denunciar (015) es lo que permite publicar en Play.** Play obliga a que una aplicación donde los usuarios comparten contenido tenga forma de denunciarlo **y** de actuar. `POST /recetas/{id}/denuncias` guarda la denuncia **y luego** avisa por correo: si el envío falla, la denuncia sigue existiendo. Denunciar dos veces lo mismo responde igual pero no duplica ni vuelve a avisar. Retirar **despublica, no borra**: el autor conserva su receta.
 
 **Importar desde URL (011) — el único sitio donde el servidor pide una dirección que escribe un usuario.** Eso es SSRF, y `DescargadorDePaginasSeguro` es lo que lo contiene: `ConnectCallback` que valida **la IP a la que se conecta** (validar al resolver el nombre deja abierto el DNS rebinding), redirecciones a mano con tope porque cada salto hay que volver a comprobarlo, tope de bytes y de tiempo, y solo HTML. `ComprobadorDeDireccionesPublicas` tiene la lista de rangos; **cualquier cambio ahí va con test**. El error es **el mismo** para "dirección interna", "no responde" y "no existe": si distinguiera, el endpoint sería un escáner de la red del servidor. No quitar ninguna de esas defensas sin entender cuál tapa qué.
 

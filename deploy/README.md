@@ -97,12 +97,21 @@ Correo__CorreoRemitente=no-responder@angelgf.com.es
 Correo__NombreRemitente=Recetas
 Correo__BaseDeLaWeb=https://recetas.angelgf.com.es
 
+Moderacion__CorreoDelResponsable=angelgf@gmail.com
+
 Cors__Origenes__0=https://recetas.angelgf.com.es
 EOF
 
 sudo chown webapps:webapps /etc/recetas/api.env
 sudo chmod 600 /etc/recetas/api.env
 ```
+
+> **`Moderacion__CorreoDelResponsable` tiene que ser el correo de una cuenta real
+> de la aplicación.** Es quien recibe las denuncias y el único que puede retirar
+> recetas publicadas ajenas, y se reconoce comparando ese valor con el correo del
+> token. Si no coincide con ninguna cuenta, las denuncias llegan igual pero nadie
+> puede actuar sobre ellas. La API arranca sin este valor: el fallo no se nota
+> hasta que hay algo que moderar.
 
 > **Cambiar `Jwt__ClaveDeFirma` invalida todas las sesiones abiertas.** No es
 > grave —los usuarios vuelven a iniciar sesión—, pero conviene saberlo antes de

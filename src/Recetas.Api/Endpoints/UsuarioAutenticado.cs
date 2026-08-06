@@ -20,4 +20,16 @@ public static class UsuarioAutenticado
 
         return Guid.TryParse(valor, out id);
     }
+
+    /// <summary>
+    /// Correo del usuario autenticado, tomado del token.
+    /// </summary>
+    /// <remarks>
+    /// Sale del JWT y no de la base de datos: el token lo firma el servidor, así
+    /// que su contenido no es manipulable, y comprobar quién modera no tiene por
+    /// qué costar una consulta.
+    /// </remarks>
+    public static string? ObtenerCorreo(this ClaimsPrincipal usuario) =>
+        usuario.FindFirstValue(JwtRegisteredClaimNames.Email)
+        ?? usuario.FindFirstValue(ClaimTypes.Email);
 }

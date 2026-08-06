@@ -111,3 +111,12 @@ data class PeticionDeSolicitudDeContrasena(val correo: String)
 
 @Serializable
 data class PeticionDeRestablecerContrasena(val token: String, val contrasena: String)
+
+/**
+ * Denuncia de una receta publica ajena.
+ *
+ * El motivo viaja como texto y no como numero, igual que el tipo de plato: asi
+ * el contrato no depende del orden del enumerado del servidor.
+ */
+@Serializable
+data class PeticionDeDenuncia(val motivo: String, val comentario: String? = null)

@@ -52,6 +52,17 @@ public sealed class EnviadorDeCorreoBrevo(
             MensajesDeCorreo.TextoDeContrasena(enlace),
             cancelacion);
 
+    public Task EnviarAvisoDeDenunciaAsync(
+        CorreoElectronico destinatario,
+        AvisoDeDenuncia aviso,
+        CancellationToken cancelacion = default) =>
+        EnviarAsync(
+            destinatario,
+            MensajesDeCorreo.AsuntoDeDenuncia,
+            MensajesDeCorreo.CuerpoDeDenuncia(aviso.RecetaId, aviso.NombreDeLaReceta, aviso.Motivo, aviso.Comentario),
+            MensajesDeCorreo.TextoDeDenuncia(aviso.RecetaId, aviso.NombreDeLaReceta, aviso.Motivo, aviso.Comentario),
+            cancelacion);
+
     private async Task EnviarAsync(
         CorreoElectronico destinatario,
         string asunto,

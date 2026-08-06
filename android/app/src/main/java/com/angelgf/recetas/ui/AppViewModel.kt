@@ -55,7 +55,16 @@ data class EstadoDeLaApp(
     val origenDelBorrador: String? = null,
 
     /** Receta que se está editando, ya cargada. */
-    val recetaAEditar: RespuestaDeReceta? = null
+    val recetaAEditar: RespuestaDeReceta? = null,
+
+    /**
+     * Recetas ya denunciadas en esta sesión, para no volver a ofrecerlo.
+     *
+     * Solo en memoria: el servidor ya impide la denuncia repetida, así que esto
+     * es cortesía con el usuario, no una regla. Al reabrir la aplicación se
+     * vuelve a ofrecer, y denunciar otra vez no hace daño.
+     */
+    val denunciadas: Set<String> = emptySet()
 )
 
 class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
@@ -308,6 +317,21 @@ class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
                         )
                     }
                     recargarFicha(id)
+                }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    fun denunciar(recetaId: String, motivo: String, comentario: String?) {
+        lanzar {
+            when (val resultado = api.denunciar(recetaId, motivo, comentario)) {
+                is Resultado.Correcto -> _estado.update {
+                    it.copy(
+                        aviso = "Gracias. Hemos recibido tu aviso y lo revisaremos.",
+                        denunciadas = it.denunciadas + recetaId
+                    )
                 }
                 is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
                 Resultado.SesionCaducada -> volverAlInicioDeSesion(null)

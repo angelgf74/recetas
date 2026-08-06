@@ -50,4 +50,20 @@ public sealed class EnviadorDeCorreoDeConsola(ILogger<EnviadorDeCorreoDeConsola>
 
         return Task.CompletedTask;
     }
+
+    public Task EnviarAvisoDeDenunciaAsync(
+        CorreoElectronico destinatario,
+        AvisoDeDenuncia aviso,
+        CancellationToken cancelacion = default)
+    {
+        registro.LogInformation(
+            "[CORREO SIMULADO] Denuncia para {Destinatario}. Receta {Receta} ({Nombre}), motivo {Motivo}. {Comentario}",
+            destinatario.Valor,
+            aviso.RecetaId,
+            aviso.NombreDeLaReceta,
+            aviso.Motivo,
+            aviso.Comentario ?? "(sin comentario)");
+
+        return Task.CompletedTask;
+    }
 }

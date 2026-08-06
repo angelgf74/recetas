@@ -30,4 +30,28 @@ public interface IEnviadorDeCorreo
         CorreoElectronico destinatario,
         string enlace,
         CancellationToken cancelacion = default);
+
+    /// <summary>
+    /// Aviso al responsable del servicio de que alguien ha denunciado una receta
+    /// pública.
+    /// </summary>
+    /// <remarks>
+    /// No lleva quién denuncia. El responsable decide sobre el contenido, no sobre
+    /// quién se quejó, y el dato está en la base si alguna vez hace falta
+    /// distinguir un aviso suelto de una campaña.
+    /// </remarks>
+    Task EnviarAvisoDeDenunciaAsync(
+        CorreoElectronico destinatario,
+        AvisoDeDenuncia aviso,
+        CancellationToken cancelacion = default);
 }
+
+/// <param name="RecetaId">Identificador de la receta, para poder localizarla.</param>
+/// <param name="NombreDeLaReceta">Su nombre, para reconocerla sin abrir nada.</param>
+/// <param name="Motivo">Motivo elegido, ya en texto legible.</param>
+/// <param name="Comentario">Explicación del denunciante, si la escribió.</param>
+public sealed record AvisoDeDenuncia(
+    Guid RecetaId,
+    string NombreDeLaReceta,
+    string Motivo,
+    string? Comentario);

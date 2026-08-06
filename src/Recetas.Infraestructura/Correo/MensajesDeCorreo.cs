@@ -1,3 +1,5 @@
+using System.Net;
+
 namespace Recetas.Infraestructura.Correo;
 
 /// <summary>
@@ -86,4 +88,46 @@ internal static class MensajesDeCorreo
 
         Si no reconoces el intento, puedes ignorar este mensaje.
         """;
+
+    public const string AsuntoDeDenuncia = "Han denunciado una receta pública en Recetas";
+
+    /// <summary>
+    /// Aviso al responsable del servicio.
+    /// </summary>
+    /// <remarks>
+    /// <b>El nombre de la receta y el comentario los escribe un usuario</b>, así que
+    /// van escapados: sin eso, quien denuncia podría meter etiquetas —o un enlace
+    /// disfrazado— en un correo que el responsable abre esperando algo de confianza.
+    /// </remarks>
+    public static string CuerpoDeDenuncia(Guid recetaId, string nombreDeLaReceta, string motivo, string? comentario)
+    {
+        var nombre = WebUtility.HtmlEncode(nombreDeLaReceta);
+        var texto = comentario is null
+            ? "<p><em>Sin comentario.</em></p>"
+            : $"<p>Comentario:</p><blockquote>{WebUtility.HtmlEncode(comentario)}</blockquote>";
+
+        return $"""
+                <p>Alguien ha denunciado una receta pública.</p>
+                <p><strong>Receta:</strong> {nombre}<br>
+                <strong>Identificador:</strong> {recetaId}<br>
+                <strong>Motivo:</strong> {WebUtility.HtmlEncode(motivo)}</p>
+                {texto}
+                <p>Para retirarla, entra con la cuenta responsable, abre la receta y despublícala.
+                Retirarla la devuelve a privada: su autor la conserva.</p>
+                """;
+    }
+
+    public static string TextoDeDenuncia(Guid recetaId, string nombreDeLaReceta, string motivo, string? comentario) =>
+        $"""
+         Alguien ha denunciado una receta pública.
+
+         Receta: {nombreDeLaReceta}
+         Identificador: {recetaId}
+         Motivo: {motivo}
+
+         Comentario: {comentario ?? "(sin comentario)"}
+
+         Para retirarla, entra con la cuenta responsable, abre la receta y despublicala.
+         Retirarla la devuelve a privada: su autor la conserva.
+         """;
 }

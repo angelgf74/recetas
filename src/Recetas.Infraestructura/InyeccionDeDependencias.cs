@@ -34,6 +34,7 @@ public static class InyeccionDeDependencias
         servicios.AddScoped<IRepositorioDeSolicitudesDeContrasena, RepositorioDeSolicitudesDeContrasenaEf>();
         servicios.AddScoped<IRepositorioDeRecetas, RepositorioDeRecetasEf>();
         servicios.AddScoped<IRepositorioDeIngredientes, RepositorioDeIngredientesEf>();
+        servicios.AddScoped<IRepositorioDeDenuncias, RepositorioDeDenunciasEf>();
 
         servicios.AddSingleton<IReloj, RelojDelSistema>();
         servicios.AddSingleton<IHasheadorDeContrasenas, HasheadorPbkdf2>();

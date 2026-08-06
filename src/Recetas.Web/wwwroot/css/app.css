@@ -244,7 +244,9 @@ a {
 .campo select,
 .campo textarea,
 .buscador input,
-.buscador select {
+.buscador select,
+.denuncia select,
+.denuncia textarea {
     width: 100%;
     padding: var(--espacio-3);
     font-family: inherit;
@@ -257,11 +259,13 @@ a {
 }
 
 .campo select,
-.buscador select {
+.buscador select,
+.denuncia select {
     min-height: var(--altura-tactil);
 }
 
-.campo textarea {
+.campo textarea,
+.denuncia textarea {
     line-height: var(--interlineado);
     resize: vertical;
 }
@@ -742,4 +746,36 @@ a {
     clip-path: inset(50%);
     white-space: nowrap;
     border: 0;
+}
+
+/* Denunciar una receta ajena ----------------------------------------------
+   Discreto a propósito: es una salida de emergencia, no una acción principal.
+   Un botón llamativo junto a una receta invita a usarlo por error. */
+
+.denuncia {
+    margin-top: var(--espacio-5);
+    padding-top: var(--espacio-4);
+    border-top: 1px solid var(--color-borde);
+}
+
+.denuncia-titulo {
+    margin: 0 0 var(--espacio-2);
+    font-size: var(--texto-base);
+}
+
+.denuncia label {
+    display: block;
+    margin-top: var(--espacio-3);
+    margin-bottom: var(--espacio-1);
+}
+
+.denuncia .acciones-fila {
+    margin-top: var(--espacio-4);
+    align-items: center;
+}
+
+/* `.boton` es de ancho completo por defecto, pensado para formularios de una
+   columna. Aquí convive con «Cancelar» en la misma fila. */
+.denuncia .acciones-fila .boton {
+    width: auto;
 }

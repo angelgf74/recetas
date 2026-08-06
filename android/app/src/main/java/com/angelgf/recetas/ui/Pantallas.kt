@@ -255,6 +255,8 @@ fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel, alElegirFoto: (
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
+                DenunciarReceta(receta.id, modelo, yaDenunciada = receta.id in estado.denunciadas)
             }
 
             Spacer(Modifier.height(20.dp))

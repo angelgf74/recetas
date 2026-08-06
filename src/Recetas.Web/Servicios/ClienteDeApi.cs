@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Recetas.Contratos.Contrasenas;
+using Recetas.Contratos.Moderacion;
 using Recetas.Contratos.Recetas;
 using Recetas.Contratos.Registro;
 using Recetas.Contratos.Sesiones;
@@ -131,6 +132,14 @@ public sealed class ClienteDeApi(HttpClient http)
 
     public Task<ResultadoDeLlamada> DespublicarAsync(Guid id) =>
         EnviarAsync(HttpMethod.Delete, $"recetas/{id}/publicacion");
+
+    // ----------------------------------------------------------- Denuncias
+
+    public Task<ResultadoDeLlamada> DenunciarAsync(Guid recetaId, string motivo, string? comentario) =>
+        EnviarAsync(
+            HttpMethod.Post,
+            $"recetas/{recetaId}/denuncias",
+            new PeticionDeDenuncia { Motivo = motivo, Comentario = comentario });
 
     // --------------------------------------------------------------- Fotos
 

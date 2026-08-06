@@ -206,6 +206,16 @@ public sealed class Receta
     public bool PuedeVerla(Guid usuarioId) => EsDe(usuarioId) || Visibilidad == Visibilidad.Publica;
 
     /// <summary>
+    /// Si la receta está compartida con el resto de usuarios.
+    /// </summary>
+    /// <remarks>
+    /// No responde a "quién puede hacer qué" —para eso están <see cref="EsDe"/> y
+    /// <see cref="PuedeVerla"/>—, solo al estado. Lo usa la moderación, que actúa
+    /// sobre lo público y nunca sobre lo privado.
+    /// </remarks>
+    public bool EsPublica => Visibilidad == Visibilidad.Publica;
+
+    /// <summary>
     /// Hace la receta visible para el resto de usuarios registrados.
     /// Idempotente: publicar algo ya público no es un error.
     /// </summary>

@@ -168,11 +168,30 @@ public sealed class GestionDeRecetas(
         Guid usuarioId,
         Guid recetaId,
         bool publicar,
+        bool esResponsable = false,
         CancellationToken cancelacion = default)
     {
         var receta = await recetas.BuscarPorIdAsync(recetaId, cancelacion);
 
-        if (receta is null || !receta.EsDe(usuarioId))
+        if (receta is null)
+        {
+            return ResultadoDeReceta.NoEncontrada;
+        }
+
+        // Retirada por moderación: el responsable del servicio puede devolver a
+        // privada una receta pública ajena, y NADA MÁS.
+        //
+        // Las dos restricciones importan. Solo retirar, porque publicar una receta
+        // privada ajena expondría contenido que su autor nunca compartió; y solo
+        // sobre lo ya público, porque sobre lo privado el responsable no tiene por
+        // qué actuar: nadie puede haberlo denunciado.
+        //
+        // Esta es una tercera pregunta, distinta de EsDe y de PuedeVerla, y llega
+        // hasta aquí como parámetro explícito precisamente para que no se cuele en
+        // editar ni en borrar.
+        var esRetiradaPorModeracion = esResponsable && !publicar && receta.EsPublica;
+
+        if (!receta.EsDe(usuarioId) && !esRetiradaPorModeracion)
         {
             return ResultadoDeReceta.NoEncontrada;
         }

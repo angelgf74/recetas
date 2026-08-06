@@ -25,6 +25,13 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
     /// <summary>Correos que la API ha intentado enviar. Es donde se lee el enlace del alta.</summary>
     public EnviadorDeCorreoEspia Correo { get; } = new();
 
+    /// <summary>
+    /// Correo de la cuenta que puede moderar. Un test que quiera retirar contenido
+    /// ajeno debe registrar un usuario con este correo exacto: la API reconoce al
+    /// responsable comparando el del token con el de la configuración.
+    /// </summary>
+    public const string CorreoDelResponsable = "responsable@ejemplo.com";
+
     /// <summary>Carpeta temporal donde esta instancia guarda las fotos.</summary>
     public string DirectorioDeFotos { get; } =
         Path.Combine(Path.GetTempPath(), $"recetas-fotos-{Guid.NewGuid():N}");
@@ -86,6 +93,14 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
         constructor.UseSetting(
             "Limites:IniciosDeSesionPorVentana",
             MaximoDeIniciosDeSesionPorVentana.ToString());
+
+        // Holgado: la ventana real de denuncias es de una hora, así que con el
+        // valor de producción los tests que encadenan varias chocarían con el 429.
+        constructor.UseSetting("Limites:DenunciasPorVentana", "500");
+
+        // Quién modera. Un test que quiera retirar contenido ajeno registra un
+        // usuario con exactamente este correo.
+        constructor.UseSetting("Moderacion:CorreoDelResponsable", CorreoDelResponsable);
 
         constructor.ConfigureTestServices(servicios =>
         {

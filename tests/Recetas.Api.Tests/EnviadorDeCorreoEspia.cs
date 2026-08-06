@@ -21,6 +21,10 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
 
     public IReadOnlyCollection<string> AvisosDeCuentaExistente => _avisos;
 
+    private readonly ConcurrentQueue<(string Destinatario, AvisoDeDenuncia Aviso)> _denuncias = new();
+
+    public IReadOnlyCollection<(string Destinatario, AvisoDeDenuncia Aviso)> AvisosDeDenuncia => _denuncias;
+
     public Task EnviarEnlaceDeAltaAsync(
         CorreoElectronico destinatario,
         string enlace,
@@ -44,6 +48,15 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
         CancellationToken cancelacion = default)
     {
         _enlacesDeContrasena.Enqueue((destinatario.Valor, enlace));
+        return Task.CompletedTask;
+    }
+
+    public Task EnviarAvisoDeDenunciaAsync(
+        CorreoElectronico destinatario,
+        AvisoDeDenuncia aviso,
+        CancellationToken cancelacion = default)
+    {
+        _denuncias.Enqueue((destinatario.Valor, aviso));
         return Task.CompletedTask;
     }
 

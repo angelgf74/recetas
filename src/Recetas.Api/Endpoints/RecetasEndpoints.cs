@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Recetas.Aplicacion.Moderacion;
 using Recetas.Aplicacion.Recetas;
 using Recetas.Contratos.Recetas;
 using Recetas.Contratos.Sesiones;
@@ -42,16 +43,23 @@ public static class RecetasEndpoints
         // receta entera podría publicarla sin querer. Compartir tiene que ser un
         // acto deliberado, que es lo que pide mission.md.
         grupo.MapPost("/{id:guid}/publicacion", (Guid id, ClaimsPrincipal usuario, GestionDeRecetas gestion,
-            CancellationToken cancelacion) => CambiarVisibilidadAsync(id, usuario, gestion, true, cancelacion));
+            CorreoDelResponsable responsable, CancellationToken cancelacion) =>
+            CambiarVisibilidadAsync(id, usuario, gestion, responsable, true, cancelacion));
 
+        // El DELETE lo usan dos actores distintos con la misma ruta: el autor, que
+        // deja de compartir su receta, y el responsable del servicio, que retira
+        // una ajena tras una denuncia. Es la misma operación —volver a privada— y
+        // no merece un endpoint de administración aparte.
         grupo.MapDelete("/{id:guid}/publicacion", (Guid id, ClaimsPrincipal usuario, GestionDeRecetas gestion,
-            CancellationToken cancelacion) => CambiarVisibilidadAsync(id, usuario, gestion, false, cancelacion));
+            CorreoDelResponsable responsable, CancellationToken cancelacion) =>
+            CambiarVisibilidadAsync(id, usuario, gestion, responsable, false, cancelacion));
     }
 
     private static async Task<IResult> CambiarVisibilidadAsync(
         Guid id,
         ClaimsPrincipal usuario,
         GestionDeRecetas gestion,
+        CorreoDelResponsable responsable,
         bool publicar,
         CancellationToken cancelacion)
     {
@@ -60,7 +68,12 @@ public static class RecetasEndpoints
             return Results.Unauthorized();
         }
 
-        var resultado = await gestion.CambiarVisibilidadAsync(usuarioId, id, publicar, cancelacion);
+        var resultado = await gestion.CambiarVisibilidadAsync(
+            usuarioId,
+            id,
+            publicar,
+            responsable.Es(usuario.ObtenerCorreo()),
+            cancelacion);
 
         return resultado is ResultadoDeReceta.Correcto ? Results.NoContent() : NoEncontrada();
     }

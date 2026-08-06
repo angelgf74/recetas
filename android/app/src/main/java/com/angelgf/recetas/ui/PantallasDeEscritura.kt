@@ -444,3 +444,89 @@ fun PantallaDeElegirContrasena(
         ) { Text(if (estado.cargando) "Guardando…" else "Continuar") }
     }
 }
+
+/** Los mismos valores que la lista cerrada del dominio. */
+private val MotivosDeDenuncia = listOf(
+    "NoEsUnaReceta" to "No es una receta",
+    "Ofensivo" to "Contenido ofensivo o de odio",
+    "Sexual" to "Contenido sexual",
+    "Violento" to "Contenido violento",
+    "Spam" to "Spam o publicidad",
+    "Derechos" to "Copia contenido de otra persona",
+    "Otro" to "Otro motivo"
+)
+
+/**
+ * Denunciar una receta ajena.
+ *
+ * Discreto a proposito: es una salida de emergencia, no una accion principal.
+ * Empieza plegado tras un enlace, porque un boton llamativo junto a una receta
+ * invita a pulsarlo por error.
+ *
+ * **Google Play lo exige** para publicar una aplicacion que permita compartir
+ * contenido entre usuarios, y sin el no se puede publicar. Ver la feature 015.
+ */
+@Composable
+fun DenunciarReceta(recetaId: String, modelo: AppViewModel, yaDenunciada: Boolean) {
+    var abierto by rememberSaveable(recetaId) { mutableStateOf(false) }
+    var motivo by rememberSaveable(recetaId) { mutableStateOf(MotivosDeDenuncia.first().first) }
+    var comentario by rememberSaveable(recetaId) { mutableStateOf("") }
+
+    Spacer(Modifier.height(12.dp))
+
+    when {
+        // Ya avisada: repetir la oferta transmitiria que la primera vez no valio.
+        yaDenunciada -> Text(
+            "Gracias. Hemos recibido tu aviso y lo revisaremos.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        !abierto -> TextButton(onClick = { abierto = true }) {
+            Text("Denunciar esta receta")
+        }
+
+        else -> Column {
+            Text(
+                "Cuentanos que pasa y la revisaremos. El autor no sabra quien ha avisado.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Desplegable(
+                etiqueta = "Motivo",
+                opciones = MotivosDeDenuncia,
+                seleccionada = motivo,
+                alElegir = { motivo = it }
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = comentario,
+                onValueChange = { if (it.length <= LongitudMaximaDelComentario) comentario = it },
+                label = { Text("Explicacion (opcional)") },
+                minLines = 2,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Button(onClick = {
+                    modelo.denunciar(recetaId, motivo, comentario)
+                    abierto = false
+                }) { Text("Enviar denuncia") }
+
+                Spacer(Modifier.width(8.dp))
+
+                TextButton(onClick = { abierto = false }) { Text("Cancelar") }
+            }
+        }
+    }
+}
+
+/** Debe coincidir con `Denuncia` en el dominio. */
+private const val LongitudMaximaDelComentario = 1_000
