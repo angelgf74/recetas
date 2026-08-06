@@ -158,7 +158,8 @@ repositorio**):
     -alias recetas
 ```
 
-**Configurar Gradle.** En `android/keystore.properties` (ignorado por git):
+**Configurar Gradle.** El `signingConfig` ya está cableado: solo falta crear
+`android/keystore.properties` (ignorado por git) con estas cuatro líneas.
 
 ```
 storeFile=C:/ruta/segura/recetas-release.jks
@@ -167,9 +168,12 @@ keyAlias=recetas
 keyPassword=…
 ```
 
-Dime cuando lo tengas y cableo el `signingConfig` en `build.gradle.kts`. **No me
-mandes las contraseñas por el chat**: quedarían escritas en el historial. Ponlas
-tú en el archivo.
+Las barras van hacia delante (`/`) incluso en Windows: en un archivo de
+propiedades de Java, `\` es un carácter de escape y una ruta con `\r` o `\n`
+dentro se lee mal.
+
+**No mandes las contraseñas por el chat**: quedarían escritas en el historial de
+la conversación. Ponlas tú en el archivo.
 
 **Generar el AAB:**
 
@@ -177,7 +181,41 @@ tú en el archivo.
 .\gradlew.bat bundleRelease
 ```
 
-Sale en `app/build/outputs/bundle/release/app-release.aab`.
+Sale en `app/build/outputs/bundle/release/app-release.aab`. Sin
+`keystore.properties` el paquete se genera igual pero **sin firmar**, y avisa al
+empaquetar.
+
+**Comprobar que va firmado** antes de subirlo:
+
+```powershell
+& "$env:ProgramFiles\Android\Android Studio\jbr\bin\jarsigner.exe" -verify `
+    app\build\outputs\bundle\release\app-release.aab
+```
+
+`jar verified` es lo que hay que ver. `no manifest` significa que salió sin
+firma.
+
+### Probar el paquete de publicación antes de subirlo · IMPORTANTE
+
+La compilación de publicación pasa por **R8**, que borra el código que cree que
+no se usa. `kotlinx.serialization` genera sus serializadores por reflexión, así
+que R8 no ve que se usan: hay reglas en `proguard-rules.pro` para protegerlos,
+pero **que compile no demuestra que funcionen**. El fallo típico aparece en
+ejecución, al leer la primera respuesta de la API, y no se reproduce en
+depuración.
+
+Instálalo y ábrelo antes de subir nada:
+
+```powershell
+.\gradlew.bat installRelease
+```
+
+Comprueba al menos: iniciar sesión, ver el recetario, abrir una receta y buscar.
+Si algo falla ahí, es R8, no el servidor.
+
+> **Ojo con los anuncios en esta prueba:** la compilación de publicación usa los
+> bloques **reales**. Míralos si quieres, pero **no los pulses**: pulsar tus
+> propios anuncios es tráfico inválido y AdMob suspende cuentas por ello.
 
 ---
 
