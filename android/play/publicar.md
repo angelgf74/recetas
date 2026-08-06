@@ -97,25 +97,16 @@ Eso borra también la sesión, así que habrá que iniciar sesión otra vez.
 
 ---
 
-## 2. ⚖ Identidad del responsable del tratamiento
+## 2. ~~⚖ Identidad del responsable del tratamiento~~ · HECHO
 
-**Por qué:** el RGPD exige que la política diga **quién** trata los datos, no solo
-cómo contactar. Hoy pone *"el titular del dominio angelgf.com.es"*, que es cierto
-pero incompleto.
+La política identifica como responsable a **Ángel Galán Fernández**, persona
+física, con `angelgf@gmail.com` como contacto para ejercer derechos.
 
-**Qué hay que decidir:** si Recetas lo explotas como **persona física** (lo
-normal en un proyecto personal) o a través de una **sociedad**. Cambia lo que hay
-que publicar:
-
-- Persona física: nombre y apellidos, y una forma de contacto. El domicilio no es
-  obligatorio publicarlo si hay otra vía de contacto efectiva.
-- Sociedad: denominación social, NIF y domicilio.
-
-**Dónde se cambia:** `src/Recetas.Web/wwwroot/privacidad.html`, en el apartado
-*"Quién trata tus datos"*. Dime el texto y lo pongo, o cámbialo tú y despliega.
-
-**Ojo con el momento:** en cuanto la aplicación esté en Play y la use gente que no
-seas tú, esto deja de ser un detalle.
+**Si Recetas dejara de ser un proyecto personal** —una sociedad, ingresos
+significativos por publicidad, usuarios más allá del círculo cercano—, conviene
+revisarlo con alguien que sepa: cambiaría lo que hay que publicar (denominación
+social, NIF, domicilio) y probablemente haga falta también un registro de
+actividades de tratamiento.
 
 ---
 
