@@ -141,7 +141,23 @@ hecho.
 
 ---
 
-## 5. Firmar la aplicación
+## 5. ~~Firmar la aplicación~~ · HECHO
+
+El almacén está en `C:/Desarrollo/Proyectos/keystores/recetas-release.jks`, las
+credenciales en `android/keystore.properties` (fuera de git) y el paquete
+firmado se genera con `gradlew bundleRelease`.
+
+**Comprobado el 6 de agosto de 2026** instalando la compilación de publicación
+en un teléfono real: iniciar sesión, recetario con miniaturas, ficha con foto,
+escalar raciones y buscar. Todo correcto.
+
+Esa prueba encontró un fallo que la compilación no daba: R8 borraba la base de
+datos Room de WorkManager —que llega con `play-services-ads`— y la aplicación
+moría al arrancar, sin haber emitido una sola advertencia al compilar. Está
+arreglado en `proguard-rules.pro`. **Repetir la prueba después de tocar
+dependencias o reglas de ProGuard.**
+
+Lo que sigue se conserva por si hay que rehacer el almacén.
 
 **Por qué:** Play solo acepta un AAB firmado, y **la firma es para siempre**: si
 pierdes el almacén de claves, no puedes volver a actualizar la aplicación nunca
@@ -226,14 +242,17 @@ aplicación gracias a `/.well-known/assetlinks.json`, que hoy solo lleva la huel
 del certificado de **depuración**. La aplicación descargada de Play tendrá otra
 firma, y **los enlaces dejarán de abrirla**.
 
-**Sacar la huella del certificado de publicación:**
+**La huella del certificado con el que se firma hoy** ya está sacada. Se lee del
+propio paquete, sin necesidad de la contraseña del almacén:
 
 ```powershell
 & "$env:ProgramFiles\Android\Android Studio\jbr\bin\keytool.exe" `
-    -list -v -keystore C:\ruta\segura\recetas-release.jks -alias recetas
+    -printcert -jarfile app\build\outputs\bundle\release\app-release.aab
 ```
 
-Copia la línea `SHA256:`.
+```
+73:F6:37:06:F1:C3:3A:6B:33:DD:67:6B:BB:D4:07:EA:95:EE:94:70:40:2F:0E:49:B3:67:76:C3:2D:76:32:8F
+```
 
 **Cuidado:** si activas la **firma de aplicaciones de Google Play** —lo habitual
 hoy—, la huella que importa es la que Play te muestra en *Configuración → Integridad
