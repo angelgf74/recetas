@@ -58,7 +58,14 @@ data class RespuestaDeReceta(
     val fotos: List<FotoRespuesta> = emptyList(),
     val esMia: Boolean = true,
     val raciones: Int? = null,
-    val racionesMostradas: Int? = null
+    val racionesMostradas: Int? = null,
+
+    /**
+     * Si quien pregunta puede retirar esta receta de la parte publica sin ser su
+     * autor: solo el responsable del servicio. Lo decide el servidor, porque
+     * quien modera es configuracion suya y esta aplicacion no la conoce.
+     */
+    val puedoRetirarla: Boolean = false
 )
 
 @Serializable

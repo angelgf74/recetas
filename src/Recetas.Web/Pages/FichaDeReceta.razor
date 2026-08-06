@@ -176,6 +176,24 @@
                    está en el servidor; esto solo evita ofrecer lo que va a fallar. *@
                 <p class="ayuda">Esta receta la ha compartido otra persona.</p>
 
+                @if (_receta.PuedoRetirarla)
+                {
+                    @* Solo lo ve el responsable del servicio, y solo sobre recetas
+                       ajenas ya publicadas. Lo decide el servidor: quién modera es
+                       configuración suya, no algo que este cliente pueda saber. *@
+                    <section class="moderacion">
+                        <h2 class="denuncia-titulo">Moderación</h2>
+                        <p class="ayuda">
+                            Retirarla la devuelve a privada. No se borra: su autor la conserva
+                            y puede volver a publicarla.
+                        </p>
+
+                        <Confirmacion Texto="Retirar de la parte pública"
+                                      Pregunta="¿Retirar esta receta? Dejará de verse, pero su autor la conserva."
+                                      AlConfirmar="RetirarAsync" />
+                    </section>
+                }
+
                 <section class="denuncia">
                     @if (_denunciada)
                     {
@@ -375,6 +393,23 @@
         else
         {
             _aviso = resultado;
+        }
+    }
+
+    /// <summary>
+    /// Retirada por moderación. Es el mismo endpoint que usa el autor para dejar
+    /// de compartir: la operación es idéntica —volver a privada— y lo único que
+    /// cambia es quién tiene derecho a pedirla.
+    /// </summary>
+    private async Task RetirarAsync()
+    {
+        _aviso = await Api.DespublicarAsync(Id);
+
+        if (_aviso.Correcta)
+        {
+            _aviso = ResultadoDeLlamada.Correcto(
+                "Receta retirada. Su autor la conserva y puede volver a publicarla.");
+            await RecargarAsync();
         }
     }
 

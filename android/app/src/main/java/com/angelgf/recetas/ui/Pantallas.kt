@@ -256,6 +256,20 @@ fun PantallaDeFicha(estado: EstadoDeLaApp, modelo: AppViewModel, alElegirFoto: (
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
+                if (receta.puedoRetirarla) {
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "Retirarla la devuelve a privada. No se borra: su autor la conserva.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    ConfirmarAccion(
+                        texto = "Retirar de la parte pública",
+                        pregunta = "¿Retirar esta receta? Dejará de verse, pero su autor la conserva.",
+                        alConfirmar = { modelo.cambiarVisibilidad(receta.id, publicar = false) }
+                    )
+                }
+
                 DenunciarReceta(receta.id, modelo, yaDenunciada = receta.id in estado.denunciadas)
             }
 

@@ -127,6 +127,47 @@ public class DenunciasTests(ApiConPostgresFixture api) : IClassFixture<ApiConPos
     }
 
     [Fact]
+    public async Task LaFicha_DiceSiQuienPreguntaPuedeRetirarla()
+    {
+        // Sin este campo la interfaz no puede ofrecer la retirada, y el endpoint
+        // existe pero no hay forma de llegar a él desde la aplicación. Pasó:
+        // la primera versión de la 015 dejó al responsable sin botón.
+        var ana = await ClienteAutenticadoAsync();
+        var bruno = await ClienteAutenticadoAsync();
+        var responsable = await ClienteAutenticadoAsync(ApiConPostgresFixture.CorreoDelResponsable);
+        var recetaId = await CrearPublicaAsync(ana);
+
+        var paraElResponsable = await responsable.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        var paraBruno = await bruno.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        var paraAna = await ana.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+
+        Assert.True(paraElResponsable!.PuedoRetirarla);
+        Assert.False(paraBruno!.PuedoRetirarla);
+
+        // Sobre la propia, no: para eso ya están las acciones de autor.
+        Assert.False(paraAna!.PuedoRetirarla);
+    }
+
+    [Fact]
+    public async Task LaFicha_NoOfreceRetirarLoQueYaEsPrivado()
+    {
+        var ana = await ClienteAutenticadoAsync();
+        var responsable = await ClienteAutenticadoAsync(ApiConPostgresFixture.CorreoDelResponsable);
+        var recetaId = await CrearPublicaAsync(ana);
+
+        await responsable.DeleteAsync($"/recetas/{recetaId}/publicacion");
+
+        // Ya retirada: el responsable no la ve, así que tampoco hay nada que
+        // ofrecer. Y la autora la conserva, sin oferta de retirada.
+        Assert.Equal(
+            HttpStatusCode.NotFound,
+            (await responsable.GetAsync($"/recetas/{recetaId}")).StatusCode);
+
+        var paraAna = await ana.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        Assert.False(paraAna!.PuedoRetirarla);
+    }
+
+    [Fact]
     public async Task Retirar_UnUsuarioCualquiera_NoPuede()
     {
         var ana = await ClienteAutenticadoAsync();

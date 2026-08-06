@@ -96,7 +96,21 @@ public sealed record RespuestaDeReceta(
     /// "estás viendo 6 raciones de una receta para 4" sin tener que acordarse de lo
     /// que pidió, y para que sepa que lo que lee no son las cantidades guardadas.
     /// </remarks>
-    int? RacionesMostradas = null);
+    int? RacionesMostradas = null,
+    /// <summary>
+    /// Si quien pregunta puede <b>retirar esta receta de la parte pública</b> sin ser
+    /// su autor: solo el responsable del servicio, y solo sobre recetas publicadas.
+    /// </summary>
+    /// <remarks>
+    /// Lo dice el servidor por el mismo motivo que <see cref="EsMia"/>: el cliente
+    /// no puede deducirlo. Quién modera es configuración del servidor, y un cliente
+    /// que corre en el navegador del usuario no debe conocerla ni decidir sobre ella.
+    /// <para>
+    /// Es solo para pintar la interfaz. La autorización de verdad la vuelve a hacer
+    /// el servidor al recibir la petición.
+    /// </para>
+    /// </remarks>
+    bool PuedoRetirarla = false);
 
 /// <summary>
 /// Receta en un listado: sin ingredientes ni elaboración.

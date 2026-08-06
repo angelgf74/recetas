@@ -779,3 +779,12 @@ a {
 .denuncia .acciones-fila .boton {
     width: auto;
 }
+
+/* Retirada por moderación. Comparte separador con la denuncia: las dos son
+   acciones excepcionales al pie de una receta ajena. */
+
+.moderacion {
+    margin-top: var(--espacio-5);
+    padding-top: var(--espacio-4);
+    border-top: 1px solid var(--color-borde);
+}

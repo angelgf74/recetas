@@ -162,6 +162,7 @@ public static class RecetasEndpoints
         Guid id,
         ClaimsPrincipal usuario,
         GestionDeRecetas gestion,
+        CorreoDelResponsable responsable,
         CancellationToken cancelacion,
         int? raciones = null)
     {
@@ -184,7 +185,7 @@ public static class RecetasEndpoints
         var (resultado, receta) = await gestion.ObtenerAsync(usuarioId, id, cancelacion);
 
         return resultado is ResultadoDeReceta.Correcto && receta is not null
-            ? Results.Ok(ARespuesta(receta, usuarioId, raciones))
+            ? Results.Ok(ARespuesta(receta, usuarioId, raciones, responsable.Es(usuario.ObtenerCorreo())))
             : NoEncontrada();
     }
 
@@ -335,10 +336,15 @@ public static class RecetasEndpoints
     /// Raciones a las que ajustar las cantidades, o <c>null</c> para devolverlas tal
     /// como están guardadas. La receta no se modifica en ningún caso.
     /// </param>
+    /// <param name="esResponsable">
+    /// Si quien pregunta es el responsable del servicio. Solo sirve para decirle al
+    /// cliente si ofrecer la retirada; el permiso se vuelve a comprobar al pedirla.
+    /// </param>
     private static RespuestaDeReceta ARespuesta(
         DominioReceta receta,
         Guid usuarioId,
-        int? racionesPedidas = null) =>
+        int? racionesPedidas = null,
+        bool esResponsable = false) =>
         new(
             receta.Id,
             receta.Nombre,
@@ -360,7 +366,11 @@ public static class RecetasEndpoints
                 .ToList(),
             receta.EsDe(usuarioId),
             receta.Raciones,
-            receta.RacionesMostradasPara(racionesPedidas));
+            receta.RacionesMostradasPara(racionesPedidas),
+
+            // Solo sobre lo ajeno y ya publicado: sobre lo propio ya están las
+            // acciones de siempre, y sobre lo privado no hay nada que retirar.
+            esResponsable && !receta.EsDe(usuarioId) && receta.EsPublica);
 
     private static IResult NoEncontrada() =>
         Results.Json(new RespuestaDeError(MensajeDeNoEncontrada), statusCode: StatusCodes.Status404NotFound);
