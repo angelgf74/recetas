@@ -9,11 +9,20 @@ hacerlo: hay cosas que son código y otras que exigen decisiones o una cuenta.
 
 ---
 
-## 1. Mensaje de consentimiento del RGPD en AdMob
+## 1. ~~Mensaje de consentimiento del RGPD en AdMob~~ · HECHO
 
-**Por qué:** sin él no se pueden servir anuncios personalizados a usuarios del
-Espacio Económico Europeo, Reino Unido y Suiza. Hoy los anuncios de prueba salen
-igual, así que **no bloquea el desarrollo, pero sí la publicación**.
+El mensaje está **creado y publicado**. Comprobado en el móvil: el formulario sale
+en español con las tres opciones (*Consentir*, *No consentir*, *Gestionar
+opciones*), y el registro pasó de `no form(s) configured` a
+`Consentimiento consultado`.
+
+> **Queda una decisión tuya:** el formulario dice que los datos podrán ser
+> consultados por **210 partners**. Es la selección amplia por defecto. Reducirla
+> baja los ingresos y baja también el número de empresas con datos de tus
+> usuarios. Se cambia en el mismo sitio (**Privacidad y mensajes → Reglamentos
+> europeos**) sin tocar código, y **hay que volver a publicar** el mensaje.
+
+Lo que sigue se conserva por si hay que rehacerlo.
 
 Datos que vas a necesitar a mano:
 
@@ -243,6 +252,10 @@ Con lo que la aplicación hace de verdad, las respuestas son:
 **Todo eso está respaldado por la política de privacidad publicada.** Si cambias
 una respuesta aquí, cambia también la política.
 
+La política ya describe la publicidad tal y como funciona hoy: qué trata AdMob,
+que la base legal es tu consentimiento, que implica transferencia fuera del EEE y
+que se revoca desde **Ajustes → Opciones de privacidad de los anuncios**.
+
 ---
 
 ## 10. Declarar que contiene anuncios
@@ -256,12 +269,11 @@ llevará reales. Declarar que no y luego mostrarlos es una infracción.
 
 ## Orden recomendado
 
-1. Mensaje de consentimiento en AdMob (1) — es lo único que ya deberías poder
-   hacer hoy, y desbloquea probar anuncios de verdad.
-2. Identidad del responsable (2) — cinco minutos, y sin ello la política está coja.
-3. Capturas (3).
-4. Almacén de claves y AAB (5), y con eso la huella (6).
-5. Todo lo de Play Console (4, 7, 8, 9, 10).
+Los pasos 1, 2 y 3 están hechos. Queda:
 
-Los pasos 1, 2 y 3 se pueden hacer ya. El resto depende de tener la cuenta de
-desarrollador y el certificado.
+1. Cuenta de desarrollador de Play (4), si no la tienes ya.
+2. Almacén de claves y AAB (5), y con eso la huella (6).
+3. Todo lo demás de Play Console (7, 8, 9, 10).
+
+De estos, el único que puede traer sorpresa es el **8**: hay contenido generado
+por usuarios y no existe mecanismo de denuncia.
