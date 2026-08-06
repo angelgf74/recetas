@@ -91,8 +91,17 @@ fun PrepararAnuncios(esDepuracion: Boolean, alEstarListo: () -> Unit) {
     DisposableEffect(Unit) {
         val actividad = contexto as? Activity
 
-        if (actividad != null && !Anuncios.listos) {
-            Anuncios.preparar(actividad, esDepuracion, alEstarListo)
+        if (actividad != null) {
+            // Si el SDK ya arrancó, hay que avisar igualmente. `Anuncios.listos`
+            // vive en el proceso y el estado del componible en la actividad, así
+            // que recrear la actividad sin matar el proceso —rotar la pantalla,
+            // salir con «atrás» y volver a entrar— los separa: el SDK sigue
+            // listo, pero la pantalla cree que no y no pinta el banner nunca más.
+            if (Anuncios.listos) {
+                alEstarListo()
+            } else {
+                Anuncios.preparar(actividad, esDepuracion, alEstarListo)
+            }
         }
 
         onDispose { }
