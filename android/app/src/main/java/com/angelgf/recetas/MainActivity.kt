@@ -31,6 +31,7 @@ import com.angelgf.recetas.datos.SesionLocal
 import com.angelgf.recetas.ui.AppViewModel
 import com.angelgf.recetas.ui.EstadoDeLaApp
 import com.angelgf.recetas.ui.Pantalla
+import com.angelgf.recetas.ui.PantallaDeAjustes
 import com.angelgf.recetas.ui.PantallaDeBusqueda
 import com.angelgf.recetas.ui.PantallaDeCorreo
 import com.angelgf.recetas.ui.PantallaDeElegirContrasena
@@ -136,6 +137,7 @@ private fun Aplicacion(modelo: AppViewModel, enlace: Uri?, alConsumirEnlace: () 
 
                 Pantalla.Recetario -> PantallaDeRecetario(estado, modelo, anunciosListos)
                 Pantalla.Busqueda -> PantallaDeBusqueda(estado, modelo, anunciosListos)
+                Pantalla.Ajustes -> PantallaDeAjustes(modelo)
 
                 is Pantalla.Formulario -> PantallaDeFormulario(estado, modelo, pantalla.recetaId)
 

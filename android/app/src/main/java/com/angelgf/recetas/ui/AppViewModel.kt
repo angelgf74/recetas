@@ -30,6 +30,7 @@ sealed interface Pantalla {
 
     data object Recetario : Pantalla
     data object Busqueda : Pantalla
+    data object Ajustes : Pantalla
     data class Ficha(val recetaId: String) : Pantalla
 
     /** Crear una receta, o editar una existente si trae identificador. */
@@ -168,6 +169,9 @@ class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
 
     fun irABuscar() =
         _estado.update { it.copy(pantalla = Pantalla.Busqueda, error = null, receta = null) }
+
+    fun irAAjustes() =
+        _estado.update { it.copy(pantalla = Pantalla.Ajustes, error = null, aviso = null) }
 
     fun irACrearReceta() =
         _estado.update {

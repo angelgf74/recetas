@@ -36,6 +36,35 @@ object Anuncios {
     val listos: Boolean get() = sePuedenPedir
 
     /**
+     * Si hay que ofrecer al usuario una forma de **revocar** el consentimiento.
+     *
+     * No es opcional: Google lo exige para publicar en Play una aplicación que
+     * muestre el mensaje de consentimiento. Un consentimiento que no se puede
+     * retirar tampoco sería válido bajo el RGPD, que da el mismo peso a darlo y a
+     * quitarlo.
+     */
+    fun hayQueOfrecerOpcionesDePrivacidad(actividad: Activity): Boolean =
+        UserMessagingPlatform.getConsentInformation(actividad)
+            .privacyOptionsRequirementStatus ==
+            ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+
+    /**
+     * Abre el formulario donde el usuario puede cambiar o retirar lo que consintió.
+     */
+    fun mostrarOpcionesDePrivacidad(actividad: Activity, alTerminar: () -> Unit = {}) {
+        UserMessagingPlatform.showPrivacyOptionsForm(actividad) { error ->
+            if (error != null) {
+                Log.i(ETIQUETA, "Opciones de privacidad: ${error.message}")
+            }
+
+            // Revocar el consentimiento puede dejar de permitir anuncios. Se
+            // recalcula en vez de dar por bueno el estado anterior.
+            sePuedenPedir = UserMessagingPlatform.getConsentInformation(actividad).canRequestAds()
+            alTerminar()
+        }
+    }
+
+    /**
      * Pide el consentimiento si hace falta y arranca el SDK.
      *
      * @param alEstarListo se invoca cuando ya se pueden cargar anuncios; no se

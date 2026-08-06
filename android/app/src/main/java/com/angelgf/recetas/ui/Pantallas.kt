@@ -498,7 +498,10 @@ fun Barra(titulo: String, modelo: AppViewModel, atras: (() -> Unit)? = null) {
         if (atras == null) {
             TextButton(onClick = { modelo.irACrearReceta() }) { Text("Nueva") }
             TextButton(onClick = { modelo.irABuscar() }) { Text("Buscar") }
-            TextButton(onClick = { modelo.cerrarSesion() }) { Text("Salir") }
+
+            // Cerrar sesión se movió a Ajustes para hacer sitio a las opciones de
+            // privacidad, que Google exige que sean accesibles desde la aplicación.
+            TextButton(onClick = { modelo.irAAjustes() }) { Text("Ajustes") }
         }
     }
 }
