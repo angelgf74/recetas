@@ -1,3 +1,5 @@
+import java.util.Properties
+
 // Sin `kotlin-android`: desde AGP 9 el soporte de Kotlin va integrado en el
 // complemento de Android, y aplicarlo aparte es un error.
 // ¿Se compila contra la API que corre en el equipo de desarrollo?
@@ -10,6 +12,18 @@
 //
 // Para desarrollar contra la API local: gradlew installDebug -PapiLocal
 val contraLaApiLocal = providers.gradleProperty("apiLocal").isPresent
+
+// Credenciales de firma, en android/keystore.properties y FUERA del control de
+// versiones: quien tenga ese archivo y el almacén puede publicar actualizaciones
+// en nombre del autor. Si falta, la compilación de publicación sale sin firmar y
+// Play la rechaza; el aviso está al final de este archivo para que se note al
+// compilar y no al subir.
+val credencialesDeFirma = Properties().apply {
+    val archivo = rootProject.file("keystore.properties")
+    if (archivo.exists()) archivo.inputStream().use { load(it) }
+}
+
+val hayFirmaDePublicacion = credencialesDeFirma.getProperty("storeFile") != null
 
 plugins {
     alias(libs.plugins.android.application)
@@ -28,10 +42,29 @@ android {
         // EncryptedSharedPreferences para el almacén de claves.
         minSdk = 26
         targetSdk = 37
+        // versionCode es lo que Play compara entre versiones: sube en cada subida
+        // y nunca baja ni se repite, aunque el versionName se quede igual.
         versionCode = 1
-        versionName = "0.1"
+        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (hayFirmaDePublicacion) {
+            create("publicacion") {
+                storeFile = file(credencialesDeFirma.getProperty("storeFile"))
+                storePassword = credencialesDeFirma.getProperty("storePassword")
+                keyAlias = credencialesDeFirma.getProperty("keyAlias")
+                keyPassword = credencialesDeFirma.getProperty("keyPassword")
+
+                // v1 (firma de JAR) no hace falta: el mínimo es Android 8, y desde
+                // Android 7 se verifica con v2. Dejarla activada solo alarga la
+                // compilación y agranda el paquete.
+                enableV1Signing = false
+                enableV2Signing = true
+            }
+        }
     }
 
     buildTypes {
@@ -77,6 +110,10 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
+            if (hayFirmaDePublicacion) {
+                signingConfig = signingConfigs.getByName("publicacion")
+            }
         }
     }
 
@@ -123,4 +160,19 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.kotlinx.coroutines.test)
+}
+
+// Sin esto, un `bundleRelease` sin credenciales produce un .aab que parece
+// correcto y que Play rechaza al subirlo, sin más explicación que "no está
+// firmado". Mejor enterarse aquí.
+tasks.matching { it.name.contains("Release") && it.name.startsWith("bundle") }.configureEach {
+    doFirst {
+        if (!hayFirmaDePublicacion) {
+            logger.warn(
+                "AVISO: falta android/keystore.properties. " +
+                    "El paquete saldrá SIN FIRMAR y Play Console lo rechazará. " +
+                    "Los pasos para crear el almacén están en android/play/publicar.md."
+            )
+        }
+    }
 }

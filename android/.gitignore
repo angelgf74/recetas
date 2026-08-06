@@ -6,3 +6,10 @@ local.properties
 .cxx/
 captures/
 .externalNativeBuild/
+
+# Credenciales de firma. Quien tenga esto puede publicar actualizaciones de la
+# aplicación en nombre del autor, así que no entra en el repositorio ni aunque
+# el repositorio sea privado.
+keystore.properties
+*.jks
+*.keystore
