@@ -189,11 +189,52 @@ El volcado de PostgreSQL **no incluye las fotos**: los binarios viven en
 `/apps/recetas/fotos` y la base de datos solo guarda la referencia. Una copia que
 cubra solo la base de datos restauraría las recetas con las imágenes rotas.
 
+**La base de datos ya está cubierta** por `/opt/scripts/pgbackup.sh`, que recorre
+todas las bases del servidor y rota siete días.
+
+**Las fotos las cubre `backup-ficheros.sh`**, en esta misma carpeta. Instalarlo:
+
 ```bash
-# Ambas cosas, no solo la primera.
-sudo -u webapps pg_dump recetas > recetas.sql
-tar -czf recetas-fotos.tar.gz -C /apps/recetas fotos
+sudo cp deploy/backup-ficheros.sh /opt/scripts/
+sudo chmod +x /opt/scripts/backup-ficheros.sh
 ```
+
+Y en el cron de root, media hora después del de PostgreSQL para no solaparlos:
+
+```
+30 2 * * * /opt/scripts/backup-ficheros.sh >> /var/log/backup-ficheros.log 2>&1
+```
+
+Sigue la convención de `pgbackup.sh` —un archivo por día de la semana, rotación
+de siete— y deja las copias en `/var/backups/ficheros`, con permisos `700` en el
+directorio y `600` en los archivos: llevan las fotos de los usuarios dentro.
+
+Hace tres cosas que el de PostgreSQL no hace, y que conviene mantener:
+
+- **Escribe en un `.parcial` y renombra al terminar.** Si el proceso muere a
+  medias, queda un archivo con nombre evidente y **no se ha destruido la copia
+  buena** de la semana anterior.
+- **Comprueba que el archivo se puede leer** (`tar -tzf`) antes de darlo por
+  bueno. Un disco lleno produce un `.tar.gz` corrupto que si no, nadie descubre
+  hasta el día que hace falta.
+- **Comprueba el espacio libre** antes de empezar. Una copia que llena el disco
+  tumba la aplicación que pretendía proteger.
+
+Que `tar` devuelva `1` no es un fallo: significa que un archivo cambió mientras
+se leía, normal con la aplicación en marcha. Se registra como aviso.
+
+#### Restaurar
+
+```bash
+sudo -u webapps psql recetas < Copia_recetas_N.sql
+sudo tar -xzf Copia_ficheros_recetas_N.tar.gz -C /apps/recetas
+sudo chown -R webapps:webapps /apps/recetas/fotos
+```
+
+**Probado el 7 de agosto de 2026**: copia de las 14 fotos de producción,
+restaurada en un directorio limpio y comparada con `diff -r` contra el original.
+Idénticas, miniaturas incluidas. Una copia que no se ha restaurado nunca no es
+una copia, así que **conviene repetir esta comprobación de vez en cuando**.
 
 ## Comprobación
 

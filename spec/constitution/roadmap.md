@@ -50,13 +50,11 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 _Con la aplicación publicada hay datos de otras personas dentro. Estas tres no
 añaden nada visible y son las que evitan perderlo todo._
 
-- **Copia de seguridad de verdad, con restauración probada.** `deploy/README.md`
-  explica que son **dos piezas** —el volcado de PostgreSQL y el directorio de
-  fotos— y da los comandos, pero **nadie los ejecuta**: no hay tarea programada
-  ni copia fuera del servidor. Y una copia que no se ha restaurado nunca no es
-  una copia, es una carpeta. La tarea incluye **restaurar en limpio y comprobar
-  que las fotos siguen enlazadas**, que es justo lo que falla si solo se guarda
-  la base de datos.
+- **Sacar las copias del servidor.** Ya hay copia automática de las dos piezas
+  —`pgbackup.sh` para las bases y `deploy/backup-ficheros.sh` para las fotos—, y
+  la restauración se ha probado comparando con el original. Pero **las dos viven
+  en el mismo disco que los datos**: cubren un borrado accidental, no que el
+  servidor se muera. Falta llevarlas fuera.
 
 - **El repositorio no tiene remoto.** `git remote -v` está vacío: todo el
   proyecto vive en un disco, y lo único que hay fuera son los `.tar.gz`
