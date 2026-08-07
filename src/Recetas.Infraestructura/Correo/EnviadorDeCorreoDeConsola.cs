@@ -51,6 +51,17 @@ public sealed class EnviadorDeCorreoDeConsola(ILogger<EnviadorDeCorreoDeConsola>
         return Task.CompletedTask;
     }
 
+    public Task EnviarConfirmacionDeBajaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default)
+    {
+        registro.LogInformation(
+            "[CORREO SIMULADO] Cuenta borrada: {Destinatario}.",
+            destinatario.Valor);
+
+        return Task.CompletedTask;
+    }
+
     public Task EnviarAvisoDeDenunciaAsync(
         CorreoElectronico destinatario,
         AvisoDeDenuncia aviso,

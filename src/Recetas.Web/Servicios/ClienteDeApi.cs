@@ -133,6 +133,18 @@ public sealed class ClienteDeApi(HttpClient http)
     public Task<ResultadoDeLlamada> DespublicarAsync(Guid id) =>
         EnviarAsync(HttpMethod.Delete, $"recetas/{id}/publicacion");
 
+    // -------------------------------------------------------------- Cuenta
+
+    public Task<(ResultadoDeLlamada Resultado, RespuestaDeIdentidad? Identidad)> ObtenerIdentidadAsync() =>
+        LeerAsync<RespuestaDeIdentidad>("yo");
+
+    /// <summary>
+    /// Borra la cuenta. La contraseña va en el cuerpo de un DELETE: en la URL
+    /// acabaría en los registros del servidor y en el historial del navegador.
+    /// </summary>
+    public Task<ResultadoDeLlamada> BorrarMiCuentaAsync(string contrasena) =>
+        EnviarAsync(HttpMethod.Delete, "yo", new PeticionDeBaja { Contrasena = contrasena });
+
     // ----------------------------------------------------------- Denuncias
 
     public Task<ResultadoDeLlamada> DenunciarAsync(Guid recetaId, string motivo, string? comentario) =>

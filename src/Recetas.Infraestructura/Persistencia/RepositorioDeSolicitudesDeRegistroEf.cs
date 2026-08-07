@@ -30,6 +30,12 @@ public sealed class RepositorioDeSolicitudesDeRegistroEf(RecetasDbContext contex
         await contexto.SaveChangesAsync(cancelacion);
     }
 
+    public Task BorrarPorCorreoAsync(CorreoElectronico correo, CancellationToken cancelacion = default) =>
+        // Borrado en el servidor: no hace falta traerlas para tirarlas.
+        contexto.SolicitudesDeRegistro
+            .Where(solicitud => solicitud.Correo == correo)
+            .ExecuteDeleteAsync(cancelacion);
+
     public Task GuardarCambiosAsync(CancellationToken cancelacion = default) =>
         contexto.SaveChangesAsync(cancelacion);
 }

@@ -137,7 +137,7 @@ private fun Aplicacion(modelo: AppViewModel, enlace: Uri?, alConsumirEnlace: () 
 
                 Pantalla.Recetario -> PantallaDeRecetario(estado, modelo, anunciosListos)
                 Pantalla.Busqueda -> PantallaDeBusqueda(estado, modelo, anunciosListos)
-                Pantalla.Ajustes -> PantallaDeAjustes(modelo)
+                Pantalla.Ajustes -> PantallaDeAjustes(estado, modelo)
 
                 is Pantalla.Formulario -> PantallaDeFormulario(estado, modelo, pantalla.recetaId)
 

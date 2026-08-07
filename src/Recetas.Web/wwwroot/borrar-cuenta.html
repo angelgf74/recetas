@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Borrar tu cuenta · Recetas</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="css/tokens.css" />
+
+    <!--
+        Página estática, fuera de la aplicación Blazor.
+
+        Google Play exige una URL donde se pueda pedir el borrado de la cuenta
+        SIN instalar la aplicación y SIN iniciar sesión. Si esto viviera dentro
+        de la aplicación WebAssembly, un revisor con JavaScript restringido se
+        encontraría una página en blanco. Mismo motivo que en privacidad.html.
+
+        Los `email_off` alrededor de la dirección tampoco son decorativos:
+        Cloudflare ofusca los correos del HTML y sustituye la dirección por un
+        script, con lo que un revisor sin JavaScript se quedaría sin ver a quién
+        escribir. Ese marcador excluye el fragmento.
+    -->
+    <style>
+        body {
+            max-width: 46rem;
+            margin: 0 auto;
+            padding: var(--espacio-5) var(--espacio-4) var(--espacio-7);
+            font-family: var(--fuente);
+            font-size: var(--texto-base);
+            line-height: var(--interlineado);
+            color: var(--color-texto);
+            background-color: var(--color-fondo);
+        }
+
+        h1 { font-size: var(--texto-titulo); margin-bottom: var(--espacio-2); }
+        h2 { margin-top: var(--espacio-6); font-size: 1.2rem; }
+
+        a { color: var(--color-acento); }
+
+        ol { padding-left: var(--espacio-5); }
+        li { margin-bottom: var(--espacio-2); }
+
+        .destacado {
+            padding: var(--espacio-4);
+            margin: var(--espacio-5) 0;
+            background-color: var(--color-superficie);
+            border: 1px solid var(--color-borde);
+            border-left: 4px solid var(--color-acento);
+            border-radius: var(--radio);
+        }
+
+        footer {
+            margin-top: var(--espacio-7);
+            padding-top: var(--espacio-4);
+            font-size: var(--texto-pequeno);
+            color: var(--color-texto-tenue);
+            border-top: 1px solid var(--color-borde);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Borrar tu cuenta de Recetas</h1>
+
+    <p>
+        Esta página explica cómo eliminar tu cuenta de <strong>Recetas</strong>
+        (<code>com.angelgf.recetas</code>) y todos los datos asociados.
+    </p>
+
+    <h2>Desde la aplicación</h2>
+
+    <ol>
+        <li>Abre <a href="https://recetas.angelgf.com.es">recetas.angelgf.com.es</a> o la aplicación de Android.</li>
+        <li>Inicia sesión.</li>
+        <li>Entra en <strong>Mi cuenta</strong> —en Android, en <strong>Ajustes</strong>—.</li>
+        <li>Pulsa <strong>Borrar mi cuenta</strong> y escribe tu contraseña para confirmar.</li>
+    </ol>
+
+    <div class="destacado">
+        <strong>Se borra todo y en el momento.</strong> Tu cuenta, tus recetas, tus fotos
+        y las recetas que hubieras compartido, que dejan de estar disponibles para los
+        demás usuarios. No hay periodo de gracia ni papelera: cuando confirmas, ya no
+        hay forma de recuperarlo.
+    </div>
+
+    <h2>Si no puedes entrar</h2>
+
+    <p>
+        Si has perdido el acceso a tu cuenta, escribe a
+        <!--email_off--><a href="mailto:angelgf@gmail.com">angelgf@gmail.com</a><!--/email_off-->
+        desde la dirección con la que te registraste y la borramos a mano. Se atiende
+        sin coste y en el plazo que marca la ley.
+    </p>
+
+    <h2>Qué se conserva después</h2>
+
+    <p>
+        <strong>Nada tuyo.</strong> No se guarda ninguna marca de que esa dirección tuvo
+        cuenta: conservarla sería quedarse con un dato personal de quien acaba de pedir
+        justo lo contrario. Por eso el correo queda libre y puedes volver a registrarte
+        con él cuando quieras, con una cuenta vacía.
+    </p>
+
+    <p>
+        Los ingredientes que hubieras usado siguen en el catálogo común —"patata",
+        "aceite de oliva"—, porque son de todos y no dicen nada de ti.
+    </p>
+
+    <footer>
+        <p>
+            <a href="https://recetas.angelgf.com.es">Recetas</a> ·
+            <a href="privacidad.html">Política de privacidad</a>
+        </p>
+    </footer>
+</body>
+
+</html>

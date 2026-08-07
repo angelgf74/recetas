@@ -89,6 +89,31 @@ internal static class MensajesDeCorreo
         Si no reconoces el intento, puedes ignorar este mensaje.
         """;
 
+    public const string AsuntoDeBaja = "Tu cuenta de Recetas se ha borrado";
+
+    public static string CuerpoDeBaja() =>
+        """
+        <p>Hola:</p>
+        <p>Tu cuenta de Recetas se ha borrado, junto con tus recetas y tus fotos. No queda nada nuestro con tus datos.</p>
+        <p>Si algún día quieres volver, puedes crear una cuenta nueva con esta misma dirección.</p>
+        <p><strong>Si no has sido tú</strong>, escríbenos respondiendo a este mensaje: para borrarla hacía falta tu contraseña, así que conviene que la cambies en cualquier otro sitio donde uses esa misma.</p>
+        """;
+
+    public static string TextoDeBaja() =>
+        """
+        Hola:
+
+        Tu cuenta de Recetas se ha borrado, junto con tus recetas y tus fotos. No
+        queda nada nuestro con tus datos.
+
+        Si algun dia quieres volver, puedes crear una cuenta nueva con esta misma
+        direccion.
+
+        Si no has sido tu, escribenos respondiendo a este mensaje: para borrarla
+        hacia falta tu contrasena, asi que conviene que la cambies en cualquier
+        otro sitio donde uses esa misma.
+        """;
+
     public const string AsuntoDeDenuncia = "Han denunciado una receta pública en Recetas";
 
     /// <summary>

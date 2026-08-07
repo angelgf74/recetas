@@ -788,3 +788,20 @@ a {
     padding-top: var(--espacio-4);
     border-top: 1px solid var(--color-borde);
 }
+
+/* Zona peligrosa: borrar la cuenta -----------------------------------------
+   Separada del resto con un borde de error, no por dramatismo sino porque es
+   la única acción del producto que no se puede deshacer. */
+
+.zona-peligrosa {
+    margin-top: var(--espacio-6);
+    padding: var(--espacio-4);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radio-pequeno);
+}
+
+.zona-peligrosa h2 {
+    margin: 0 0 var(--espacio-3);
+    font-size: var(--texto-base);
+    color: var(--color-error);
+}

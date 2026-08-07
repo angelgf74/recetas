@@ -1,0 +1,103 @@
+@page "/mi-cuenta"
+@using Recetas.Contratos.Sesiones
+@using Recetas.Web.Componentes
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+@inject EstadoDeSesion Sesion
+@inject NavigationManager Navegacion
+
+<PageTitle>Mi cuenta · Recetas</PageTitle>
+
+<RutaProtegida>
+    <h1>Mi cuenta</h1>
+
+    @if (_cargando)
+    {
+        <p class="ayuda">Cargando…</p>
+    }
+    else if (_identidad is null)
+    {
+        <div class="aviso aviso-error" role="alert">
+            @(_resultado?.Mensaje ?? "No se han podido cargar tus datos.")
+        </div>
+    }
+    else
+    {
+        <p>Has iniciado sesión como <strong>@_identidad.Correo</strong>.</p>
+
+        @if (_aviso is not null)
+        {
+            <div class="aviso aviso-error" role="alert">@_aviso.Mensaje</div>
+        }
+
+        <section class="zona-peligrosa">
+            <h2>Borrar mi cuenta</h2>
+
+            @*
+                Se dice qué se pierde con números concretos. "Esta acción es
+                irreversible" se lee en todas partes y no frena a nadie; "se
+                borrarán 23 recetas y 41 fotos" sí frena a quien se ha
+                equivocado de botón.
+            *@
+            <p>
+                Se borrará tu cuenta y todo lo que tienes dentro:
+                <strong>@Recuento(_identidad.Recetas, "receta", "recetas")</strong>
+                y <strong>@Recuento(_identidad.Fotos, "foto", "fotos")</strong>.
+                Las que hayas compartido dejarán de verlas los demás.
+            </p>
+
+            <p class="ayuda">
+                No se puede deshacer y no hay periodo de gracia. Si algún día quieres volver,
+                podrás crear una cuenta nueva con este mismo correo, pero vacía.
+            </p>
+
+            <label class="campo">
+                <span>Escribe tu contraseña para confirmar</span>
+                <input type="password" @bind="_contrasena" autocomplete="current-password" />
+            </label>
+
+            <Confirmacion Texto="Borrar mi cuenta"
+                          Pregunta="¿Seguro? Se borrarán tu cuenta, tus recetas y tus fotos. No se puede deshacer."
+                          AlConfirmar="BorrarAsync" />
+        </section>
+    }
+</RutaProtegida>
+
+@code {
+    private RespuestaDeIdentidad? _identidad;
+    private ResultadoDeLlamada? _resultado;
+    private ResultadoDeLlamada? _aviso;
+    private bool _cargando = true;
+    private string _contrasena = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        (_resultado, _identidad) = await Api.ObtenerIdentidadAsync();
+        _cargando = false;
+    }
+
+    private static string Recuento(int cuantas, string singular, string plural) =>
+        cuantas == 1 ? $"1 {singular}" : $"{cuantas} {plural}";
+
+    private async Task BorrarAsync()
+    {
+        if (string.IsNullOrEmpty(_contrasena))
+        {
+            _aviso = ResultadoDeLlamada.Fallido("Escribe tu contraseña para confirmar.");
+            return;
+        }
+
+        var resultado = await Api.BorrarMiCuentaAsync(_contrasena);
+
+        if (!resultado.Correcta)
+        {
+            _aviso = resultado;
+            return;
+        }
+
+        // La sesión que queda apunta a una cuenta que ya no existe: el token sigue
+        // firmado hasta que caduque, pero no queda nada suyo que leer.
+        await Sesion.CerrarAsync();
+        Navegacion.NavigateTo("/", forceLoad: true);
+    }
+}

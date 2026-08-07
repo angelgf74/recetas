@@ -6,7 +6,9 @@ public sealed record RespuestaDeInicioDeSesion(string Token, DateTimeOffset Cadu
 
 /// <param name="Id">Identificador del usuario autenticado.</param>
 /// <param name="Correo">Su correo electrónico.</param>
-public sealed record RespuestaDeIdentidad(Guid Id, string Correo);
+/// <param name="Recetas">Cuántas recetas tiene. Lo usa la pantalla de baja para decir qué se pierde.</param>
+/// <param name="Fotos">Cuántas fotos hay repartidas entre ellas.</param>
+public sealed record RespuestaDeIdentidad(Guid Id, string Correo, int Recetas = 0, int Fotos = 0);
 
 /// <summary>Error uniforme de la API. Un solo mensaje legible, sin detalles que ayuden a sondear.</summary>
 /// <param name="Mensaje">Texto para mostrar al usuario.</param>

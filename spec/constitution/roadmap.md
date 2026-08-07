@@ -33,6 +33,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 15. **[015 · Denunciar contenido](../features/015-denunciar-contenido/spec.md)** — denunciar una receta pública ajena, con aviso por correo al responsable y retirada por su parte. Sale de una exigencia concreta: Play no publica una aplicación donde los usuarios comparten contenido si no hay forma de denunciarlo **y** de actuar. Estrena una tercera pregunta de permisos —quién modera— que deliberadamente **no** vive en el dominio y solo abre despublicar.
 
+16. **[016 · Darse de baja](../features/016-darse-de-baja/spec.md)** — borrar la cuenta desde la aplicación, con la contraseña como confirmación, más la página pública que Play exige. El borrado lo orquesta la aplicación y no la base de datos: `recetas.autor_id` no tiene clave foránea, así que borrar al usuario dejaría sus recetas vivas y sin dueño, y ninguna cascada habría tocado los archivos del disco.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -43,11 +45,7 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 
 ## Backlog / ideas 💡
 
-- **Darse de baja** — borrar la cuenta desde la aplicación, más una **página web pública** donde pedirlo sin tener que instalar nada. **Bloquea la publicación en Play**, igual que bloqueaba la 015: Google lo exige a toda aplicación con cuentas. La política de privacidad ya reconoce que hoy se hace escribiendo un correo, y eso deja de valer al publicar.
-
-  Dos cosas que hay que resolver en la spec y no sobre la marcha: **la cascada de PostgreSQL borra filas, no archivos**, así que las fotos del disco hay que recorrerlas aparte —son justo el dato más personal—, y hay que decidir explícitamente **qué pasa con sus recetas públicas** y decírselo antes de confirmar.
-
-- **Publicar en Google Play** — lo único que queda es de consola, no de código: cuenta de desarrollador, ficha de la tienda, clasificación de contenido, seguridad de los datos y declarar que contiene anuncios. El paquete firmado ya se genera y está probado en un teléfono real. Pasos en `android/play/publicar.md`. **Antes hace falta la baja de usuario**, arriba.
+- **Publicar en Google Play** — lo único que queda es de consola, no de código: cuenta de desarrollador, ficha de la tienda, clasificación de contenido, seguridad de los datos, declarar que contiene anuncios y dar la URL de baja (`/borrar-cuenta.html`, que llegó con la 016). El paquete firmado ya se genera y está probado en un teléfono real. Pasos en `android/play/publicar.md`.
 - **Avisar al autor de que su receta ha sido retirada** — hoy se entera al mirarla. Necesita decidir qué se le cuenta —sin exponer quién denunció— y si puede recurrir. Sale de la 015.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.

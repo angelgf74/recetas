@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.angelgf.recetas.datos.ClienteDeApi
 import com.angelgf.recetas.datos.PeticionDeReceta
+import com.angelgf.recetas.datos.RespuestaDeIdentidad
 import com.angelgf.recetas.datos.RespuestaDeImportacion
 import com.angelgf.recetas.datos.Resultado
 import com.angelgf.recetas.datos.RespuestaDeReceta
@@ -64,7 +65,10 @@ data class EstadoDeLaApp(
      * es cortesía con el usuario, no una regla. Al reabrir la aplicación se
      * vuelve a ofrecer, y denunciar otra vez no hace daño.
      */
-    val denunciadas: Set<String> = emptySet()
+    val denunciadas: Set<String> = emptySet(),
+
+    /** Quién ha iniciado sesión y cuánto tiene dentro. Lo usa la pantalla de Ajustes. */
+    val identidad: RespuestaDeIdentidad? = null
 )
 
 class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
@@ -115,6 +119,34 @@ class AppViewModel(private val api: ClienteDeApi) : ViewModel() {
 
     fun volverAlLogin() =
         _estado.update { it.copy(pantalla = Pantalla.Sesion, error = null, aviso = null) }
+
+    /** Cuántas recetas y fotos hay dentro, para decir qué se pierde antes de borrar. */
+    fun cargarResumenDeLaCuenta() {
+        lanzar {
+            when (val resultado = api.yo()) {
+                is Resultado.Correcto -> _estado.update { it.copy(identidad = resultado.valor) }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
+
+    fun borrarMiCuenta(contrasena: String) {
+        lanzar {
+            when (val resultado = api.borrarMiCuenta(contrasena)) {
+                is Resultado.Correcto -> {
+                    // La cuenta ya no existe: el testigo que queda apunta a nada.
+                    api.cerrarSesion()
+                    _estado.value = EstadoDeLaApp(
+                        pantalla = Pantalla.Sesion,
+                        aviso = "Tu cuenta se ha borrado."
+                    )
+                }
+                is Resultado.Fallo -> _estado.update { it.copy(error = resultado.mensaje) }
+                Resultado.SesionCaducada -> volverAlInicioDeSesion(null)
+            }
+        }
+    }
 
     fun solicitarAlta(correo: String) = pedirYAvisar { api.solicitarAlta(correo.trim()) }
 

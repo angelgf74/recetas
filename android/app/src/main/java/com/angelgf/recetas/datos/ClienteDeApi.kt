@@ -146,6 +146,22 @@ class ClienteDeApi(
     suspend fun despublicar(id: String): Resultado<Unit> =
         envolver { sinContenido(http.delete("recetas/$id/publicacion")) }
 
+    // ----------------------------------------------------------- Cuenta
+
+    /**
+     * Borra la cuenta. La contrasena va en el cuerpo de un DELETE: en la URL
+     * acabaria en los registros del servidor.
+     */
+    suspend fun borrarMiCuenta(contrasena: String): Resultado<Unit> =
+        envolver {
+            val respuesta = http.delete("yo") {
+                contentType(ContentType.Application.Json)
+                setBody(PeticionDeBaja(contrasena))
+            }
+
+            sinContenido(respuesta)
+        }
+
     // -------------------------------------------------------- Denuncias
 
     suspend fun denunciar(recetaId: String, motivo: String, comentario: String?): Resultado<Unit> =

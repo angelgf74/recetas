@@ -36,6 +36,17 @@ public sealed class RepositorioDeUsuariosEnMemoria : IRepositorioDeUsuarios
     /// <summary>Los objetos son los mismos que guarda la lista: mutarlos ya los "persiste".</summary>
     public Task ActualizarAsync(Usuario usuario, CancellationToken cancelacion = default) =>
         Task.CompletedTask;
+
+    /// <summary>
+    /// Borra solo al usuario. Igual que el repositorio real, <b>no arrastra sus
+    /// recetas</b>: si este doble las borrara, un test pasaría con una
+    /// implementación que deja recetas huérfanas.
+    /// </summary>
+    public Task BorrarAsync(Usuario usuario, CancellationToken cancelacion = default)
+    {
+        _usuarios.Remove(usuario);
+        return Task.CompletedTask;
+    }
 }
 
 public sealed class RepositorioDeSolicitudesDeContrasenaEnMemoria : IRepositorioDeSolicitudesDeContrasena
@@ -87,6 +98,12 @@ public sealed class RepositorioDeSolicitudesEnMemoria : IRepositorioDeSolicitude
         return Task.CompletedTask;
     }
 
+    public Task BorrarPorCorreoAsync(CorreoElectronico correo, CancellationToken cancelacion = default)
+    {
+        _solicitudes.RemoveAll(solicitud => solicitud.Correo.Equals(correo));
+        return Task.CompletedTask;
+    }
+
     public Task GuardarCambiosAsync(CancellationToken cancelacion = default) => Task.CompletedTask;
 }
 
@@ -130,6 +147,21 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
         CancellationToken cancelacion = default)
     {
         EnlacesDeContrasena.Add((destinatario.Valor, enlace));
+        return Task.CompletedTask;
+    }
+
+    public List<string> ConfirmacionesDeBaja { get; } = [];
+
+    public Task EnviarConfirmacionDeBajaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default)
+    {
+        if (FallaAlEnviar)
+        {
+            throw new InvalidOperationException("Fallo simulado del envío de correo.");
+        }
+
+        ConfirmacionesDeBaja.Add(destinatario.Valor);
         return Task.CompletedTask;
     }
 

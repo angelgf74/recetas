@@ -28,4 +28,11 @@ public sealed class RepositorioDeUsuariosEf(RecetasDbContext contexto) : IReposi
     public Task ActualizarAsync(Usuario usuario, CancellationToken cancelacion = default) =>
         // El usuario ya lo rastrea el contexto; basta con volcar los cambios.
         contexto.SaveChangesAsync(cancelacion);
+
+    public Task BorrarAsync(Usuario usuario, CancellationToken cancelacion = default)
+    {
+        contexto.Usuarios.Remove(usuario);
+
+        return contexto.SaveChangesAsync(cancelacion);
+    }
 }

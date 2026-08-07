@@ -25,7 +25,14 @@ data class PeticionDeInicioDeSesion(val correo: String, val contrasena: String)
 data class RespuestaDeInicioDeSesion(val token: String, val caduca: String? = null)
 
 @Serializable
-data class RespuestaDeIdentidad(val id: String, val correo: String)
+data class RespuestaDeIdentidad(
+    val id: String,
+    val correo: String,
+
+    /** Cuantas recetas y fotos tiene. La pantalla de baja dice con esto que se pierde. */
+    val recetas: Int = 0,
+    val fotos: Int = 0
+)
 
 @Serializable
 data class ResumenDeReceta(
@@ -127,3 +134,6 @@ data class PeticionDeRestablecerContrasena(val token: String, val contrasena: St
  */
 @Serializable
 data class PeticionDeDenuncia(val motivo: String, val comentario: String? = null)
+
+@Serializable
+data class PeticionDeBaja(val contrasena: String)

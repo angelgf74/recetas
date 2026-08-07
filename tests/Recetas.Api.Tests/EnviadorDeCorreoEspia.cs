@@ -60,6 +60,18 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
         return Task.CompletedTask;
     }
 
+    private readonly ConcurrentQueue<string> _bajas = new();
+
+    public IReadOnlyCollection<string> ConfirmacionesDeBaja => _bajas;
+
+    public Task EnviarConfirmacionDeBajaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default)
+    {
+        _bajas.Enqueue(destinatario.Valor);
+        return Task.CompletedTask;
+    }
+
     /// <summary>Extrae el token del último enlace de alta enviado a ese destinatario.</summary>
     public string TokenEnviadoA(string destinatario) =>
         TokenDe(_enlaces, destinatario);

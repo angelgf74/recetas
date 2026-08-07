@@ -44,6 +44,19 @@ public interface IEnviadorDeCorreo
         CorreoElectronico destinatario,
         AvisoDeDenuncia aviso,
         CancellationToken cancelacion = default);
+
+    /// <summary>
+    /// Confirmación de que la cuenta se ha borrado.
+    /// </summary>
+    /// <remarks>
+    /// Es el último mensaje que recibe esa dirección. Va después del borrado, así
+    /// que cuando llega ya no queda nada suyo: si alguien lo recibe sin haberlo
+    /// pedido, el aviso llega tarde para impedirlo pero a tiempo para que sepa que
+    /// su contraseña estaba comprometida.
+    /// </remarks>
+    Task EnviarConfirmacionDeBajaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default);
 }
 
 /// <param name="RecetaId">Identificador de la receta, para poder localizarla.</param>
