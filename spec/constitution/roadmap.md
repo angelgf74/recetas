@@ -45,6 +45,56 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 
 ## Backlog / ideas 💡
 
+### Antes que ninguna feature nueva ⚠️
+
+_Con la aplicación publicada hay datos de otras personas dentro. Estas tres no
+añaden nada visible y son las que evitan perderlo todo._
+
+- **Copia de seguridad de verdad, con restauración probada.** `deploy/README.md`
+  explica que son **dos piezas** —el volcado de PostgreSQL y el directorio de
+  fotos— y da los comandos, pero **nadie los ejecuta**: no hay tarea programada
+  ni copia fuera del servidor. Y una copia que no se ha restaurado nunca no es
+  una copia, es una carpeta. La tarea incluye **restaurar en limpio y comprobar
+  que las fotos siguen enlazadas**, que es justo lo que falla si solo se guarda
+  la base de datos.
+
+- **El repositorio no tiene remoto.** `git remote -v` está vacío: todo el
+  proyecto vive en un disco, y lo único que hay fuera son los `.tar.gz`
+  desplegados, que no llevan historia. Un repositorio privado en cualquier sitio
+  cuesta cinco minutos.
+
+- **Enterarse de que el servicio está caído sin que lo diga un usuario.** Hoy
+  nadie vigila: si Kestrel muere de madrugada, se descubre al entrar. Basta con
+  algo externo que pida `/salud` cada pocos minutos y avise. Externo a propósito:
+  un vigilante en la misma máquina se cae con ella.
+
+### Calidad
+
+_Las dos primeras salen de fallos que ya han ocurrido en este proyecto, no de
+buenas prácticas en abstracto._
+
+- **Meter `Recetas.Web` en la cadena de verificación.** `dotnet test` no la
+  compila, así que un error suyo **no aparece hasta publicar**. Pasó en la 016:
+  un `using` que faltaba llegó al commit y reventó el despliegue. Basta con
+  compilarla en el mismo paso que los tests.
+
+- **Tests de interfaz para lo que la interfaz decide.** En la 015 se implementó
+  la retirada por moderación con sus tests en verde… y sin ningún botón que la
+  invocara: los tests comprobaban que el endpoint **autorizaba** bien, no que
+  hubiera **manera de llegar a él**. bUnit para los componentes de Blazor donde
+  una condición decide qué acciones se ofrecen.
+
+- **Integración continua.** No hay ninguna: la suite se ejecuta cuando alguien se
+  acuerda. Depende de tener un remoto (arriba).
+
+- **Comprobar que el límite de peticiones distingue de verdad a los usuarios.**
+  `LimitesDePeticiones` reparte por dirección de origen, y el propio código
+  advierte de que tras el túnel de Cloudflare puede llegar siempre la misma IP.
+  Se configuró `UseForwardedHeaders`, pero **no se ha comprobado en producción**:
+  si no funciona, todos comparten cubo y basta uno para dejar fuera a los demás.
+
+### Producto y mantenimiento
+
 - **Publicar en Google Play** — lo único que queda es de consola, no de código: cuenta de desarrollador, ficha de la tienda, clasificación de contenido, seguridad de los datos, declarar que contiene anuncios y dar la URL de baja (`/borrar-cuenta.html`, que llegó con la 016). El paquete firmado ya se genera y está probado en un teléfono real. Pasos en `android/play/publicar.md`.
 - **Avisar al autor de que su receta ha sido retirada** — hoy se entera al mirarla. Necesita decidir qué se le cuenta —sin exponer quién denunció— y si puede recurrir. Sale de la 015.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
@@ -55,6 +105,27 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 - **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).
 - **Importar también la foto de la receta** — descargar y republicar la imagen de un tercero tiene más aristas que el texto; quedó fuera de la 011.
 - **Más formatos de marcado al importar** (microdatos, RDFa) y páginas que montan la receta con JavaScript. Hoy solo se lee JSON-LD.
+
+- **Android sin conexión.** Es la mejora de producto con más recorrido: un
+  recetario se usa **en la cocina**, que es donde peor llega el wifi, y hoy sin
+  red no se ve ni una receta ya consultada. Guardar en el dispositivo lo que se
+  ha abierto —texto y miniatura— cubre el caso real sin sincronización completa.
+  Obliga a decidir qué se enseña cuando lo local está desactualizado.
+
+- **Exportar tus datos.** Es el derecho de portabilidad del RGPD, que la 016
+  dejó fuera a propósito: hoy se atiende escribiendo un correo y a mano. Un
+  archivo con las recetas y las fotos, pedido desde la misma pantalla que la
+  baja, lo resuelve. Conviene tenerlo **antes** de que alguien lo pida.
+
+- **La clave primaria se llama `"Id"` y el resto de columnas van en snake_case.**
+  La configuración de EF renombró todo menos la clave, así que PostgreSQL la
+  creó entrecomillada y es sensible a mayúsculas: cualquier consulta escrita a
+  mano falla con `column "id" does not exist`, que no explica por qué. A EF le da
+  igual —siempre entrecomilla—, pero muerde a quien entra por `psql`. Arreglarlo
+  es una migración de renombrado, y **no se hace justo antes de publicar**.
+
+- **Paginar la búsqueda.** Hoy hay un tope de 50 resultados y un aviso de que se
+  recortó, que es la mitad barata del problema. Entra cuando ese tope moleste.
 - **Favoritos privados** — marcar una receta ajena publicada para volver a encontrarla. **Privado: solo lo ve quien lo marca**, no cuenta nada al autor ni se agrega en ninguna puntuación.
 
   Nació como "valorar recetas de 0 a 5 estrellas" y se cambió a esto a propósito. `mission.md` descarta las valoraciones por su nombre, y el motivo está en la frase siguiente: *"público significa consultable, no conversable"*. Una nota numérica, aunque no lleve texto, convierte el recetario en algo comparable y hace competir a las recetas entre sí. Los favoritos resuelven el caso de uso real —volver a lo bueno que te encontraste— sin nada de eso.
