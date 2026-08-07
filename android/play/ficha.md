@@ -6,6 +6,11 @@ que impone Play; entre paréntesis, lo que ocupa cada texto.
 > **Antes de publicar, leer la sección "Lo que falta" del final.** Hay cosas que
 > no son texto ni imágenes y sin las cuales la ficha no se puede enviar.
 
+> **Esta ficha describe la aplicación completa** (features 014, 015 y 016): crea,
+> edita, comparte y borra. La versión anterior de este archivo decía que la
+> aplicación "solo lee", que era cierto en la 012 y dejó de serlo en la 014.
+> **Prometer de menos también engaña**, y además contradice lo que el revisor ve.
+
 ---
 
 ## Datos de la aplicación
@@ -15,10 +20,11 @@ que impone Play; entre paréntesis, lo que ocupa cada texto.
 | Nombre del paquete | `com.angelgf.recetas` |
 | Categoría | Comida y bebida |
 | Tipo | Aplicación (no juego) |
-| Precio | Gratuita |
-| Contiene anuncios | **Sí** — declarar que sí, porque AdMob está previsto |
+| Precio | Gratuita — **no se puede cambiar después** |
+| Contiene anuncios | **Sí** |
 | Compras en la aplicación | No |
 | Política de privacidad | `https://recetas.angelgf.com.es/privacidad.html` |
+| Eliminación de la cuenta | `https://recetas.angelgf.com.es/borrar-cuenta.html` |
 | Correo de contacto | `angelgf@gmail.com` |
 | Sitio web | `https://recetas.angelgf.com.es` |
 
@@ -40,7 +46,7 @@ Recetas: tu recetario privado
 Tu recetario personal: privado por defecto y siempre a mano en la cocina.
 ```
 
-(72)
+(73)
 
 ---
 
@@ -53,68 +59,78 @@ cuando las necesitas y tenlas a mano mientras cocinas.
 Nació de un problema concreto: las recetas acaban repartidas entre libretas,
 capturas de pantalla y enlaces guardados, y justo cuando quieres una no aparece.
 
-QUÉ HACE ESTA APLICACIÓN
+QUÉ PUEDES HACER
 
-• Consulta tu recetario completo, con la foto de cada receta.
-• Abre una receta y léela cómoda mientras cocinas: la pantalla no se apaga sola,
+• Guarda tus recetas con ingredientes, pasos y fotos.
+• Búscalas por nombre o por ingredientes, combinando criterios: sirve para
+  decidir qué hacer con lo que te queda en la nevera.
+• Ajusta las cantidades a los comensales que seas. No es una multiplicación
+  seca: redondea a cantidades que se puedan medir de verdad en una cocina.
+• Importa una receta pegando la dirección de una página web. Se rellena el
+  formulario y tú revisas antes de guardar.
+• Lee la receta con la pantalla encendida: no se apaga sola mientras cocinas,
   así no tienes que desbloquear el móvil con las manos llenas de harina.
-• Busca por nombre o por ingredientes. Combina criterios para afinar: puedes
-  buscar qué hacer con lo que te queda en la nevera.
-• Tu sesión se recuerda: abres y estás dentro.
 
 TUS RECETAS SON TUYAS
 
-Toda receta nace privada y solo la ves tú. Publicarla es una decisión explícita
+Toda receta nace privada y solo la ves tú. Compartirla es una decisión explícita
 y reversible, y solo la hace visible para otras personas registradas en Recetas,
 nunca para internet abierto ni para buscadores.
 
-Cuando publicas una receta, los demás ven su contenido, nunca tu correo.
+Cuando compartes una receta, los demás ven su contenido, nunca tu correo.
 
 PENSADO PARA LA COCINA
 
 Pocas pantallas, texto legible y sin florituras. Lo importante es encontrar la
 receta correcta y poder leerla con las manos ocupadas.
 
-PRIVACIDAD DE VERDAD
+PRIVACIDAD
 
-• Solo se pide un correo y una contraseña. Nada más.
-• Sin analítica, sin cookies de seguimiento y sin perfilado.
-• Las fotos se limpian de metadatos al subirlas: las coordenadas GPS que tu móvil
-  incrusta en cada foto —normalmente las de tu casa— se borran antes de guardar
-  nada.
-• Los datos están en un servidor en España.
+• Para tener cuenta solo se pide un correo y una contraseña. Nada más.
+• Sin analítica de uso ni cookies de seguimiento.
+• Las fotos se limpian de metadatos al subirlas: las coordenadas GPS que tu
+  móvil incrusta en cada foto —normalmente las de tu casa— se borran antes de
+  guardar nada.
+• Tus recetas y tus fotos están en un servidor en España.
+• Puedes borrar tu cuenta entera desde Ajustes, en el momento y sin pedir
+  permiso a nadie.
 
-IMPORTANTE: ESTA VERSIÓN SOLO LEE
+PUBLICIDAD
 
-Esta primera versión de la aplicación sirve para CONSULTAR tu recetario. Para
-crear recetas, editarlas, subir fotos o compartirlas, entra desde el navegador en
-recetas.angelgf.com.es, que funciona igual de bien en el móvil.
+La aplicación muestra anuncios al pie del recetario y de la búsqueda. No hay
+anuncios mientras lees una receta, que es la pantalla que se usa cocinando, ni
+anuncios a pantalla completa en ninguna parte.
 
-Se dice aquí y no en la letra pequeña para que nadie se la descargue esperando
-otra cosa. Crear y editar desde la aplicación llegará más adelante.
+La primera vez te preguntamos si aceptas la publicidad personalizada. Puedes
+decir que no, y cambiar de opinión cuando quieras desde Ajustes: la aplicación
+hace exactamente lo mismo en ambos casos.
 
 HACE FALTA CUENTA
 
 Recetas es una comunidad cerrada: no hay acceso anónimo a ningún contenido. La
-cuenta se crea gratis desde recetas.angelgf.com.es y requiere verificar tu correo.
+cuenta se crea gratis desde la propia aplicación y requiere verificar tu correo.
+
+También puedes usar Recetas desde el navegador, con la misma cuenta, en
+recetas.angelgf.com.es
 ```
 
-(≈1 900)
+(2 528)
 
 ---
 
 ## Novedades de la versión (máx. 500)
 
 ```
-Primera versión.
+Primera versión pública.
 
-Consulta tu recetario, abre cualquier receta y búscala por nombre o por
-ingredientes. La pantalla no se apaga mientras lees una receta.
+Crea y edita recetas, añade fotos, compártelas y búscalas por nombre o por
+ingredientes. Ajusta las cantidades a los comensales que seas, e importa una
+receta pegando la dirección de una página web.
 
-Para crear y editar recetas, de momento entra desde recetas.angelgf.com.es
+Puedes borrar tu cuenta desde Ajustes cuando quieras.
 ```
 
-(≈240)
+(279)
 
 ---
 
@@ -133,6 +149,12 @@ El icono y el gráfico destacado se generan con el programa que hay en
 `herramientas/graficos-de-play/`, a partir de la misma figura que el favicon de la
 web, para que la tienda, el lanzador y el sitio no parezcan tres productos
 distintos.
+
+> **Las capturas no llevan el banner de anuncios.** Se hicieron antes de la 013 y
+> en un teléfono con un bloqueador de DNS que impide cargarlos. Play no exige que
+> aparezcan —los anuncios se declaran aparte—, pero si algún día se rehacen, hay
+> que decidir si se enseñan: una captura con el anuncio de prueba de Google
+> ("This is a 320x50 test ad") sería peor que ninguna.
 
 ### Cómo se hicieron, por si hay que rehacerlas
 
@@ -156,21 +178,23 @@ subirlas.
 ## Lo que falta antes de poder publicar
 
 Ninguno de estos puntos es texto ni imagen, y sin ellos Play no deja enviar la
-ficha:
+ficha. Los pasos detallados están en `publicar.md`.
 
-- [ ] **Rehacer las capturas** con recetas y fotos reales (ver arriba).
-- [ ] **Cuestionario de clasificación de contenido.** Lo rellena una persona; para
-      una aplicación así, la respuesta a todo suele ser "no".
-- [ ] **Sección de seguridad de los datos.** Hay que declarar que se recogen
-      correo electrónico y contenido del usuario (recetas y fotos), que van
-      cifrados en tránsito y que el borrado se solicita por correo. La política de
-      privacidad publicada da todas las respuestas.
-- [ ] **Declarar que la aplicación contiene anuncios**, aunque todavía no los
-      muestre, porque AdMob está previsto. Si se declara que no y luego se añaden,
-      es una infracción.
-- [ ] **Firma de la aplicación**: generar el almacén de claves de publicación y
-      compilar un AAB firmado. Ese almacén **no va al repositorio**.
+- [x] ~~Capturas con recetas y fotos reales.~~
+- [x] ~~Firma de la aplicación y AAB.~~ Generado, firmado y probado en un
+      teléfono real. El almacén de claves **no está en el repositorio**.
 - [ ] **Cuenta de desarrollador de Google Play** con la cuota pagada.
-- [ ] Decidir si se publica con la aplicación tal como está —solo lectura— o se
-      espera a que pueda crear y editar. La descripción actual es honesta al
-      respecto, pero es una decisión de producto.
+- [ ] **Cuestionario de clasificación de contenido.** Ojo con una pregunta:
+      *"¿La aplicación permite que los usuarios intercambien contenido?"* La
+      respuesta es **sí** —las recetas compartidas las ven otros usuarios— y eso
+      exige poder denunciar y actuar, que es lo que trajo la feature 015.
+- [ ] **Sección de seguridad de los datos.** Se recogen correo electrónico y
+      contenido del usuario (recetas y fotos), van cifrados en tránsito, se
+      comparten con la red publicitaria los identificadores de AdMob, y la cuenta
+      se puede borrar desde la aplicación. Las respuestas están en `publicar.md`.
+- [ ] **Declarar que la aplicación contiene anuncios.** Ya los muestra.
+- [ ] **URL de eliminación de la cuenta**: `https://recetas.angelgf.com.es/borrar-cuenta.html`
+- [ ] **Países.** Empezar solo por **España**: el mensaje de consentimiento de
+      AdMob está configurado para el Espacio Económico Europeo, la política habla
+      de RGPD y la AEPD, y toda la aplicación está en español. Ampliar después es
+      inmediato; quitar un país ya publicado, no.
