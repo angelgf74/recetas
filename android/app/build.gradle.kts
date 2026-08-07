@@ -44,7 +44,10 @@ android {
         targetSdk = 37
         // versionCode es lo que Play compara entre versiones: sube en cada subida
         // y nunca baja ni se repite, aunque el versionName se quede igual.
-        versionCode = 1
+        //
+        // El 1 lo consumió el paquete que se subió para que Play generase la clave
+        // de firma. Reutilizarlo hace que la consola rechace el AAB.
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
