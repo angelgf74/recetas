@@ -43,7 +43,11 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 
 ## Backlog / ideas 💡
 
-- **Publicar en Google Play** — lo único que queda es de consola, no de código: cuenta de desarrollador, ficha de la tienda, clasificación de contenido, seguridad de los datos y declarar que contiene anuncios. El paquete firmado ya se genera y está probado en un teléfono real. Pasos en `android/play/publicar.md`.
+- **Darse de baja** — borrar la cuenta desde la aplicación, más una **página web pública** donde pedirlo sin tener que instalar nada. **Bloquea la publicación en Play**, igual que bloqueaba la 015: Google lo exige a toda aplicación con cuentas. La política de privacidad ya reconoce que hoy se hace escribiendo un correo, y eso deja de valer al publicar.
+
+  Dos cosas que hay que resolver en la spec y no sobre la marcha: **la cascada de PostgreSQL borra filas, no archivos**, así que las fotos del disco hay que recorrerlas aparte —son justo el dato más personal—, y hay que decidir explícitamente **qué pasa con sus recetas públicas** y decírselo antes de confirmar.
+
+- **Publicar en Google Play** — lo único que queda es de consola, no de código: cuenta de desarrollador, ficha de la tienda, clasificación de contenido, seguridad de los datos y declarar que contiene anuncios. El paquete firmado ya se genera y está probado en un teléfono real. Pasos en `android/play/publicar.md`. **Antes hace falta la baja de usuario**, arriba.
 - **Avisar al autor de que su receta ha sido retirada** — hoy se entera al mirarla. Necesita decidir qué se le cuenta —sin exponer quién denunció— y si puede recurrir. Sale de la 015.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
@@ -53,5 +57,17 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 - **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).
 - **Importar también la foto de la receta** — descargar y republicar la imagen de un tercero tiene más aristas que el texto; quedó fuera de la 011.
 - **Más formatos de marcado al importar** (microdatos, RDFa) y páginas que montan la receta con JavaScript. Hoy solo se lee JSON-LD.
+- **Favoritos privados** — marcar una receta ajena publicada para volver a encontrarla. **Privado: solo lo ve quien lo marca**, no cuenta nada al autor ni se agrega en ninguna puntuación.
 
+  Nació como "valorar recetas de 0 a 5 estrellas" y se cambió a esto a propósito. `mission.md` descarta las valoraciones por su nombre, y el motivo está en la frase siguiente: *"público significa consultable, no conversable"*. Una nota numérica, aunque no lleve texto, convierte el recetario en algo comparable y hace competir a las recetas entre sí. Los favoritos resuelven el caso de uso real —volver a lo bueno que te encontraste— sin nada de eso.
+
+  Con ellas se cayó también **"3 recetas con 4 o más estrellas no ven publicidad"**: atar la monetización a una puntuación pública la vuelve falsificable con un par de cuentas, porque el alta solo pide un correo.
+
+- **Enviar sugerencias** — desde la aplicación a `POST https://gestorsugerencias-api.angelgf.com.es/api/sugerencias`. Tres decisiones antes de escribir código: **quién llama** (si el cliente, ese servicio necesita CORS; si la API, es una dependencia saliente y hay que decidir qué pasa cuando esté caída), **qué se envía** (si va el correo del usuario, es un tercero nuevo que entra en la tabla de la política de privacidad) y **cómo se autentica**, porque un buzón de sugerencias abierto es spam ajeno.
+
+- **Exención de publicidad por recetas compartidas** — quien tenga diez recetas públicas deja de ver anuncios. **Se puede hacer sin tocar la API**: Android ya recibe la visibilidad de cada receta en `GET /recetas` y puede contarlas él, así que `tech-stack.md` sigue intacto.
+
+  Dos objeciones antes de hacerla: premiar por **cantidad** empuja a publicar por publicar, que es justo el contenido que la 015 obliga a moderar; y si alguien despublica una receta y baja de diez, **le vuelven los anuncios**, que se lee como castigo y no hay forma de explicarlo bien en la interfaz.
+
+- **Exención de publicidad manual (`SinPublicidad` en `usuarios`)** — marcar cuentas concretas que no ven anuncios. **Choca con `tech-stack.md`**, que dice que la API no se entera de que hay publicidad: no hay forma elegante de esquivarlo, porque es un campo sobre publicidad en el contrato, y ponerle un nombre neutro solo escondería la excepción. Hacerla es **cambiar la constitución**, no añadir una feature. Antes conviene concretar para quién es: si son unas pocas cuentas conocidas, puede que no haga falta el campo.
 > Cada feature nueva se crea como `features/NNN-nombre-feature/` con `spec.md`, `plan.md` y `tasks.md` antes de tocar código.
