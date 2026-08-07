@@ -281,10 +281,21 @@ cambiarla: prometer de más infringe las políticas de Play.
 contenido**.
 
 Para una aplicación así, las respuestas suelen ser "no" a todo: sin violencia, sin
-sexo, sin drogas, sin juego, sin compras. **Sí** hay contenido generado por
-usuarios (las recetas públicas), y eso puede pedir que declares que existe un
-mecanismo de moderación o denuncia. Hoy **no lo hay**, así que prepárate para
-responder a eso; puede que te obliguen a añadirlo.
+sexo, sin drogas, sin juego, sin compras.
+
+**La que no es "no" es la de contenido generado por usuarios.** La pregunta suena
+así: *"¿La aplicación permite de forma nativa que los usuarios interactúen o
+intercambien contenido con otros usuarios?"* La respuesta es **sí**: una receta
+publicada la ven los demás usuarios al buscar, con su texto y sus fotos.
+Responder "no" sería falso y se comprueba en un minuto con la cuenta de
+demostración.
+
+Esa respuesta activa la política de contenido generado por usuarios, que exige
+poder **denunciar** y poder **actuar**. Las dos cosas existen desde la feature
+015: hay un enlace para denunciar en la ficha de cualquier receta ajena —web y
+Android—, la denuncia avisa por correo al responsable, y este puede retirarla de
+la parte pública desde la propia ficha. Retirar la devuelve a privada; no borra
+nada del autor.
 
 ---
 
@@ -295,18 +306,41 @@ datos**.
 
 Con lo que la aplicación hace de verdad, las respuestas son:
 
-| Pregunta | Respuesta |
-| --- | --- |
-| ¿Recoge datos? | Sí |
-| Correo electrónico | Sí, para gestión de la cuenta. Obligatorio. |
-| Contenido del usuario (recetas y fotos) | Sí, funcionalidad de la aplicación. Obligatorio. |
-| ¿Se comparte con terceros? | Sí, con la red publicitaria |
-| ¿Cifrado en tránsito? | Sí |
-| ¿Se puede solicitar el borrado? | Sí, escribiendo al correo de contacto |
-| Identificadores publicitarios | Sí, por AdMob |
-| Ubicación, contactos, agenda, micrófono | No |
+| Categoría de Play | Recogido | Compartido | Obligatorio | Para qué |
+| --- | --- | --- | --- | --- |
+| Información personal → **Correo electrónico** | Sí | No | **Sí** | Gestión de la cuenta |
+| Fotos y vídeos → **Fotos** | Sí | No | No | Funciones de la aplicación |
+| **Otros datos** (recetas: nombre, ingredientes, pasos) | Sí | No | No | Funciones de la aplicación |
+| ID de dispositivo → **ID de publicidad** | Sí | **Sí** | No | Publicidad o marketing |
+| Ubicación, contactos, agenda, micrófono | No | — | — | — |
 
-**Todo eso está respaldado por la política de privacidad publicada.** Si cambias
+| Pregunta transversal | Respuesta |
+| --- | --- |
+| ¿Se cifran los datos en tránsito? | **Sí**, todo va por HTTPS |
+| ¿Puede el usuario pedir que se eliminen? | **Sí** |
+| ¿Hay forma de eliminar la cuenta? | **Sí**, desde la aplicación y desde la web (feature 016) |
+| URL de eliminación | `https://recetas.angelgf.com.es/borrar-cuenta.html` |
+
+### Tres cosas que se responden mal con facilidad
+
+**"Compartido" no significa "lo ve un tercero".** Google excluye a los
+proveedores que procesan por cuenta del desarrollador. Brevo ve el correo para
+poder entregarlo y Cloudflare ve la conexión, pero ambos son proveedores de
+servicio y **no se declaran como compartidos**. AdMob sí: usa el identificador
+para su propio negocio publicitario.
+
+**Casi nada es obligatorio.** Solo el correo. Las fotos y las recetas las pone el
+usuario si quiere, y el identificador publicitario **se puede rechazar** desde el
+formulario de consentimiento sin perder ninguna función.
+
+**La dirección IP de los registros del servidor es el caso dudoso.** La política
+la menciona. Google exime los datos de procesamiento efímero, pero los registros
+de `journald` persisten, así que "efímero" es discutible. La lectura conservadora
+—no declararla— se sostiene en que no la recoge la aplicación: la recibe el
+servidor por el hecho de la conexión y solo sirve para limitar abusos. Si se
+quiere declarar, la categoría es *Actividad de la aplicación → Otras acciones*.
+
+**Todo esto está respaldado por la política de privacidad publicada.** Si cambias
 una respuesta aquí, cambia también la política.
 
 La política ya describe la publicidad tal y como funciona hoy: qué trata AdMob,
