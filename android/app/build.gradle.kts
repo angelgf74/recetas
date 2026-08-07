@@ -47,7 +47,7 @@ android {
         //
         // El 1 lo consumió el paquete que se subió para que Play generase la clave
         // de firma. Reutilizarlo hace que la consola rechace el AAB.
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
