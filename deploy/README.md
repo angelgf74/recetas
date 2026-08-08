@@ -223,6 +223,40 @@ Hace tres cosas que el de PostgreSQL no hace, y que conviene mantener:
 Que `tar` devuelva `1` no es un fallo: significa que un archivo cambió mientras
 se leía, normal con la aplicación en marcha. Se registra como aviso.
 
+#### Fuera del servidor
+
+Una copia en el mismo disco que los datos cubre un borrado accidental, no que la
+máquina se muera. Las dos piezas se sincronizan con OneDrive por `rclone`, cada
+una en su línea del cron de root:
+
+```
+37 2 * * * rclone sync /var/backups/postgresql onedrive:/Backups/postgresql --config /home/angel/.config/rclone/rclone.conf --log-file=/var/log/rclone_backup_2.log
+45 2 * * * rclone sync /var/backups/ficheros   onedrive:/Backups/ficheros   --config /home/angel/.config/rclone/rclone.conf --log-file=/var/log/rclone_backup_ficheros.log
+```
+
+Tres detalles que no son casuales:
+
+- **`--config` explícito.** El cron corre como root, y `rclone` buscaría su
+  configuración en `/root/.config`, donde no está: la cuenta está autorizada en
+  el perfil de `angel`. Sin esa opción, `rclone` arranca con los valores por
+  defecto y no encuentra ningún remoto.
+- **Las 2:45.** La copia de ficheros termina a las 2:30 y la sincronización de
+  PostgreSQL arranca a las 2:37. Dos `rclone` simultáneos contra la misma cuenta
+  pueden estorbarse al refrescar el testigo de acceso.
+- **`sync`, no `copy`.** Refleja el origen, así que la rotación de siete días se
+  mantiene también en OneDrive en vez de acumular archivos para siempre.
+
+  **El precio de `sync` es que borra en destino lo que no esté en origen.** Si un
+  día la copia local fallara y dejara el directorio vacío, la sincronización se
+  llevaría por delante la copia remota. Por eso `backup-ficheros.sh` descarta los
+  archivos incompletos en lugar de dejarlos a medias, y no toca la copia del día
+  anterior hasta tener la nueva verificada.
+
+> **Lo que sube a OneDrive son fotos de las casas de los usuarios.** Va sin
+> cifrar, en una cuenta personal. Si algún día eso deja de ser suficiente,
+> `rclone` tiene un remoto `crypt` que cifra en origen y no cambia nada más del
+> procedimiento.
+
 #### Restaurar
 
 ```bash

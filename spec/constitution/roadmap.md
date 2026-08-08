@@ -50,11 +50,12 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 _Con la aplicación publicada hay datos de otras personas dentro. Estas tres no
 añaden nada visible y son las que evitan perderlo todo._
 
-- **Sacar las copias del servidor.** Ya hay copia automática de las dos piezas
-  —`pgbackup.sh` para las bases y `deploy/backup-ficheros.sh` para las fotos—, y
-  la restauración se ha probado comparando con el original. Pero **las dos viven
-  en el mismo disco que los datos**: cubren un borrado accidental, no que el
-  servidor se muera. Falta llevarlas fuera.
+- ~~**Copias de seguridad.**~~ **Hecho.** Las dos piezas —bases con
+  `pgbackup.sh`, fotos con `deploy/backup-ficheros.sh`—, automáticas por cron,
+  con restauración probada contra el original y sincronizadas a OneDrive con
+  `rclone`. Queda una comprobación pendiente: **restaurar alguna vez desde la
+  copia de OneDrive**, no solo desde la local. Una copia remota que nunca se ha
+  bajado tiene el mismo problema que una copia que nunca se ha restaurado.
 
 - **El repositorio no tiene remoto.** `git remote -v` está vacío: todo el
   proyecto vive en un disco, y lo único que hay fuera son los `.tar.gz`

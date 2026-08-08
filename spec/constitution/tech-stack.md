@@ -21,7 +21,7 @@ _Cómo está construido el proyecto y las reglas que todo el código debe respet
 
 _Acceso a las fotos detrás de un puerto de dominio (`IAlmacenDeFotos` o equivalente): el dominio no sabe que hay un sistema de archivos detrás. Si algún día se pasa a MinIO o S3, se cambia el adaptador y nada más._
 
-_La copia de seguridad tiene **dos piezas**: el volcado de PostgreSQL y la carpeta de fotos. Un backup que solo cubra la base de datos deja las recetas sin imágenes. Ambas están automatizadas por cron —`pgbackup.sh` y `deploy/backup-ficheros.sh`— y **viven en el mismo disco que los datos**: cubren un borrado accidental, no la muerte del servidor._
+_La copia de seguridad tiene **dos piezas**: el volcado de PostgreSQL y la carpeta de fotos. Un backup que solo cubra la base de datos deja las recetas sin imágenes. Ambas están automatizadas por cron —`pgbackup.sh` y `deploy/backup-ficheros.sh`— y se sincronizan a OneDrive con `rclone`, porque una copia en el mismo disco que los datos cubre un borrado accidental pero no la muerte del servidor._
 
 ### App web
 
