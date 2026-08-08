@@ -122,6 +122,8 @@ buenas prácticas en abstracto._
   igual —siempre entrecomilla—, pero muerde a quien entra por `psql`. Arreglarlo
   es una migración de renombrado, y **no se hace justo antes de publicar**.
 
+- **Actualizar ImageSharp a la 4.0, cuando llegue la licencia comunitaria.** Solicitada el 8 de agosto de 2026; hay clave de prueba hasta el **6 de noviembre**. **No migrar antes de tener la definitiva**: la 4.0 no compila sin clave, así que hacerlo con la de prueba pone fecha de caducidad al build. Sin urgencia, además: la 3.1 sigue recibiendo parches de seguridad. Cuando toque, la clave va fuera del control de versiones —el repositorio es público— y hay que revisar los cambios de API.
+
 - **Paginar la búsqueda.** Hoy hay un tope de 50 resultados y un aviso de que se
   recortó, que es la mitad barata del problema. Entra cuando ese tope moleste.
 - **Favoritos privados** — marcar una receta ajena publicada para volver a encontrarla. **Privado: solo lo ve quien lo marca**, no cuenta nada al autor ni se agrega en ninguna puntuación.

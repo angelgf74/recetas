@@ -10,7 +10,11 @@ _Cómo está construido el proyecto y las reglas que todo el código debe respet
 - **Framework / runtime:** ASP.NET Core con endpoints mínimos; Entity Framework Core para la persistencia
 - **Base de datos:** PostgreSQL
 - **Almacenamiento de fotos:** carpeta en el disco del servidor. PostgreSQL guarda solo la referencia; el binario nunca entra en la BD.
-- **Proceso de imágenes:** **SixLabors.ImageSharp, fijado en la 3.1**. Limpia los metadatos EXIF al subir y genera las miniaturas. **La 4.0 exige clave de licencia en tiempo de compilación**: actualizar no rompe la licencia, rompe el build.
+- **Proceso de imágenes:** **SixLabors.ImageSharp, fijado en la 3.1**. Limpia los metadatos EXIF al subir y genera las miniaturas. Esa rama es Apache 2.0 y sigue recibiendo parches de seguridad.
+
+  **La 4.0 exige clave de licencia en tiempo de compilación**: actualizar sin ella no rompe la licencia, rompe el build. Six Labors concede **licencia comunitaria gratuita** a proyectos con el código disponible, entidades sin ánimo de lucro y empresas por debajo de un millón de dólares de ingresos anuales; este proyecto encaja por partida doble. **Solicitada el 8 de agosto de 2026**, con clave de prueba **válida hasta el 6 de noviembre de 2026** mientras la revisan.
+
+  **No actualizar a la 4.0 hasta tener la licencia definitiva.** Migrar con la de prueba deja el proyecto sin compilar el día que caduque, y eso no avisa antes: falla el build entero, no una función. Cuando llegue, la clave es una credencial y vive **fuera del control de versiones**, como el almacén de firma de Android — más aún ahora que el repositorio es público.
 - **Envío de correo:** **Brevo**, vía su API HTTP de correo transaccional (no el relé SMTP: mejores errores y no depende de puertos salientes). Detrás de un puerto de dominio (`IEnviadorDeCorreo`): el caso de uso de registro no sabe quién entrega el mensaje.
 - **Tests:** xUnit. Dos niveles: **unitarios de dominio** (sin infraestructura, con dobles de los puertos) e **integración de endpoints** contra PostgreSQL real levantado con Testcontainers. Requiere Docker en la máquina de desarrollo.
 - **Despliegue:** `agfserver-angel` en la red local, expuesto por túnel de Cloudflare. Kestrel en `127.0.0.1:54009` bajo systemd (`recetas-api`), con nginx delante. En producción PostgreSQL se conecta por **socket Unix con autenticación `peer`** como usuario `webapps`: sin contraseña, pero el servicio debe correr con ese usuario exacto.
@@ -194,4 +198,4 @@ _Paleta y tipografías se fijaron en la 002 y viven en `src/Recetas.Web/wwwroot/
 - **Nunca validar una dirección de destino resolviendo el nombre.** El filtro de la importación comprueba **la IP a la que se conecta**, en el `ConnectCallback`: validar al resolver deja abierto el DNS rebinding. Cada redirección se vuelve a comprobar, y **cualquier cambio en la lista de rangos va con test**.
 - **Nunca distinguir en el error "dirección interna", "no responde" y "no existe"** al importar. Si distinguiera, el endpoint sería un escáner de la red del servidor.
 - **Nunca generar una miniatura antes de comprobar `PuedeVerla`.** La generación perezosa de las fotos anteriores a la 009 sería, si no, una puerta trasera a las fotos privadas ajenas.
-- **No actualizar ImageSharp más allá de la 3.1** sin decidir antes lo de la licencia: la 4.0 no compila sin clave.
+- **No actualizar ImageSharp más allá de la 3.1 mientras la única licencia sea la de prueba.** La 4.0 no compila sin clave, y una clave que caduca convierte eso en una bomba de relojería con fecha: 6 de noviembre de 2026.
