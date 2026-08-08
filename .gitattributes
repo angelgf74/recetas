@@ -10,6 +10,11 @@
 deploy/nginx/* text eol=lf
 deploy/systemd/* text eol=lf
 
+# Los flujos de trabajo se ejecutan en runners Linux, y sus bloques `run:` son
+# scripts de shell: con CRLF fallan igual que un .sh. `text=auto` ya lo
+# resolvería, pero conviene que no dependa de la configuración de cada máquina.
+.github/workflows/* text eol=lf
+
 # El envoltorio de Gradle es el mismo caso: `gradlew` no lleva extensión .sh pero
 # es un script de shell, y con CRLF no arranca en Linux ni en macOS. `gradlew.bat`
 # es lo contrario y necesita CRLF.

@@ -1,0 +1,77 @@
+# Verificación automática en cada cambio.
+#
+# Existe porque hasta ahora la suite se ejecutaba cuando alguien se acordaba, y
+# el proyecto ya ha visto dos veces lo que eso permite: un `using` que faltaba
+# llegó al commit (016) y un endpoint sin botón llegó a producción (015).
+#
+# No despliega nada. Desplegar sigue siendo un acto deliberado con
+# `deploy/publish.ps1`, que además exige el árbol de trabajo limpio para que la
+# release sea reproducible desde git.
+
+name: Verificar
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+  # Permite lanzarlo a mano desde la pestaña Actions, útil para comprobar que
+  # algo externo no se ha roto sin haber tocado el código.
+  workflow_dispatch:
+
+jobs:
+  dotnet:
+    name: Solución .NET
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restaurar
+        run: dotnet restore Recetas.slnx
+
+      - name: Compilar
+        run: dotnet build Recetas.slnx --configuration Release --no-restore
+
+      # Los tests de integración levantan PostgreSQL de verdad con
+      # Testcontainers, y el runner de Ubuntu ya trae Docker. Por eso se ejecuta
+      # la suite entera y no solo la parte que no lo necesita: el filtro
+      # `Categoria!=Integracion` existe para máquinas sin Docker, no para aquí.
+      - name: Probar
+        run: dotnet test Recetas.slnx --configuration Release --no-build --verbosity normal
+
+  android:
+    name: Aplicación Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # JDK 17 y no 21: es lo que declara `compileOptions` del módulo. En el
+      # equipo de desarrollo se usa el JDK que trae Android Studio; aquí basta
+      # con uno que cumpla lo que pide Gradle.
+      - name: Preparar JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # Solo la compilación de depuración. La de publicación necesita el almacén
+      # de firma, que **no está en el repositorio** y no debe estarlo: quien lo
+      # tenga puede publicar actualizaciones en nombre del autor.
+      - name: Compilar
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Probar
+        working-directory: android
+        run: ./gradlew testDebugUnitTest --no-daemon
