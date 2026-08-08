@@ -16,7 +16,17 @@ appsettings.Local.json
 !.env.example
 
 ## Almacenamiento de fotos en desarrollo (feature 004)
-fotos/
+#
+# Anclada a la ruta exacta, y NO como `fotos/` a secas. Esa regla suelta se
+# aplicaba a cualquier carpeta con ese nombre a cualquier profundidad, y en
+# Windows git no distingue mayúsculas: dejó fuera del repositorio los ocho
+# archivos de `src/Recetas.Infraestructura/Fotos/` y `tests/.../Fotos/` —el
+# almacén en disco, la limpieza de EXIF y el escalado de miniaturas— sin que
+# `git status` dijera nada, porque un archivo ignorado no aparece como pendiente.
+#
+# Lo destapó la primera ejecución de la integración continua, al compilar en una
+# máquina que solo tenía lo que hay en git.
+/src/Recetas.Api/fotos/
 
 ## Paquetes de despliegue
 artifacts/
