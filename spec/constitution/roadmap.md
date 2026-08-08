@@ -35,6 +35,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 16. **[016 · Darse de baja](../features/016-darse-de-baja/spec.md)** — borrar la cuenta desde la aplicación, con la contraseña como confirmación, más la página pública que Play exige. El borrado lo orquesta la aplicación y no la base de datos: `recetas.autor_id` no tiene clave foránea, así que borrar al usuario dejaría sus recetas vivas y sin dueño, y ninguna cascada habría tocado los archivos del disco.
 
+17. **[017 · Salud del almacenamiento](../features/017-salud-del-almacenamiento/spec.md)** — `GET /salud` comprueba también el disco de las fotos, no solo la base de datos, y dice qué pieza falla. Es lo que hace útil una sonda externa: un monitor que mira el código HTTP no puede saber nada del disco por su cuenta. De paso destapó que el almacén de fotos no creaba su directorio al arrancar —los *singleton* se construyen perezosamente—, así que `/salud` habría dado un falso positivo tras cada despliegue.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -63,10 +65,12 @@ añaden nada visible y son las que evitan perderlo todo._
   desplegados, que no llevan historia. Un repositorio privado en cualquier sitio
   cuesta cinco minutos.
 
-- **Enterarse de que el servicio está caído sin que lo diga un usuario.** Hoy
-  nadie vigila: si Kestrel muere de madrugada, se descubre al entrar. Basta con
-  algo externo que pida `/salud` cada pocos minutos y avise. Externo a propósito:
-  un vigilante en la misma máquina se cae con ella.
+- **Dar de alta el monitor externo.** La parte de código está hecha (017):
+  `/salud` comprueba base de datos y disco, y responde `503` diciendo cuál falla.
+  Falta lo que no es código — apuntar un monitor gratuito a
+  `https://recetas-api.angelgf.com.es/salud` cada pocos minutos. **Externo a
+  propósito**: un vigilante en la misma máquina se cae con ella. Sin esto, la 017
+  no sirve de nada: alguien tiene que mirar.
 
 ### Calidad
 

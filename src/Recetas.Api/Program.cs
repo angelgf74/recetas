@@ -8,7 +8,7 @@ using Recetas.Aplicacion;
 using Recetas.Aplicacion.Moderacion;
 using Recetas.Aplicacion.Salud;
 using Recetas.Contratos.Salud;
-using Recetas.Dominio.Salud;
+using Recetas.Dominio.Puertos;
 using Recetas.Infraestructura;
 using Recetas.Infraestructura.Seguridad;
 
@@ -92,6 +92,16 @@ constructor.Services.Configure<ForwardedHeadersOptions>(opciones =>
 
 var aplicacion = constructor.Build();
 
+// Se instancia el almacén de fotos aquí, en el arranque, aunque nadie lo pida
+// todavía: su constructor es quien crea el directorio.
+//
+// Los servicios registrados como singleton se construyen de forma perezosa, en
+// la primera resolución. Sin esta línea, la carpeta no existiría hasta que
+// alguien subiera o consultara una foto, y `GET /salud` respondería degradado
+// desde el arranque hasta ese momento: un falso positivo en cada despliegue,
+// que es la mejor forma de que nadie vuelva a leer los avisos del monitor.
+aplicacion.Services.GetRequiredService<IAlmacenDeFotos>();
+
 // Lo primero de la cadena: todo lo que venga después (CORS, limitador,
 // autenticación, logs) debe ver ya la IP y el esquema reales.
 aplicacion.UseForwardedHeaders();
@@ -104,15 +114,17 @@ aplicacion.UseAuthorization();
 aplicacion.MapGet("/salud", async (ConsultarSalud consultarSalud, CancellationToken cancelacion) =>
 {
     var estado = await consultarSalud.EjecutarAsync(cancelacion);
-    var correcto = estado == EstadoDeSalud.Correcto;
 
     var respuesta = new RespuestaDeSalud(
-        Estado: correcto ? "correcto" : "degradado",
-        BaseDeDatos: correcto);
+        Estado: estado.EsCorrecto ? "correcto" : "degradado",
+        BaseDeDatos: estado.BaseDeDatos,
+        Almacenamiento: estado.Almacenamiento);
 
-    // 503 en lugar de 200 cuando la base de datos no responde: así el túnel,
-    // una sonda externa o un despliegue pueden distinguir "vivo" de "operativo".
-    return correcto
+    // 503 en lugar de 200 cuando alguna dependencia falla: así el túnel, una
+    // sonda externa o un despliegue pueden distinguir "vivo" de "operativo".
+    // El cuerpo dice cuál de las dos, para no obligar a entrar en el servidor
+    // a averiguarlo.
+    return estado.EsCorrecto
         ? Results.Ok(respuesta)
         : Results.Json(respuesta, statusCode: StatusCodes.Status503ServiceUnavailable);
 });

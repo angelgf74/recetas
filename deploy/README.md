@@ -285,6 +285,21 @@ nunca se ha bajado tampoco. **Conviene repetir esta comprobación de vez en
 cuando**: lo que se estropea en silencio no suele ser el script, sino el testigo
 de acceso a OneDrive, que caduca sin avisar a nadie.
 
+## Vigilancia
+
+`GET /salud` responde `200` solo si **la base de datos responde y el disco de las
+fotos acepta escrituras con espacio suficiente**; si algo falla, `503` y el cuerpo
+dice qué pieza. Está pensado para una sonda externa: apunta un monitor
+—UptimeRobot, Better Stack o equivalente— a
+`https://recetas-api.angelgf.com.es/salud` cada pocos minutos.
+
+**Externo, no en el servidor.** Un vigilante que vive en la máquina que vigila se
+cae con ella, que es justo cuando hace falta.
+
+El umbral de espacio libre es `Fotos:MinimoDeEspacioLibreEnMb`, 200 MB por
+defecto. Ese disco lo comparten ahora las fotos y las copias de seguridad de
+todas las aplicaciones del servidor.
+
 ## Comprobación
 
 ```bash
