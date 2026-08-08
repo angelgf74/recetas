@@ -267,8 +267,23 @@ sudo chown -R webapps:webapps /apps/recetas/fotos
 
 **Probado el 7 de agosto de 2026**: copia de las 14 fotos de producción,
 restaurada en un directorio limpio y comparada con `diff -r` contra el original.
-Idénticas, miniaturas incluidas. Una copia que no se ha restaurado nunca no es
-una copia, así que **conviene repetir esta comprobación de vez en cuando**.
+Idénticas, miniaturas incluidas.
+
+**Y el 8 de agosto, el ciclo completo pasando por OneDrive:**
+
+```bash
+sudo rclone copy onedrive:/Backups/ficheros/Copia_ficheros_recetas_6.tar.gz /tmp/desde-onedrive/ \
+    --config /home/angel/.config/rclone/rclone.conf
+sudo rm -rf /tmp/verifica && sudo mkdir -p /tmp/verifica
+sudo tar -xzf /tmp/desde-onedrive/Copia_ficheros_recetas_6.tar.gz -C /tmp/verifica
+sudo diff -r /apps/recetas/fotos /tmp/verifica/fotos && echo "IDENTICAS"
+sudo rm -rf /tmp/desde-onedrive /tmp/verifica
+```
+
+Una copia que no se ha restaurado nunca no es una copia, y una copia remota que
+nunca se ha bajado tampoco. **Conviene repetir esta comprobación de vez en
+cuando**: lo que se estropea en silencio no suele ser el script, sino el testigo
+de acceso a OneDrive, que caduca sin avisar a nadie.
 
 ## Comprobación
 
