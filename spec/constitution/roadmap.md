@@ -89,8 +89,11 @@ buenas prácticas en abstracto._
   proyecto de tests que referencia la web— era exactamente lo que hacía falta
   para la segunda.
 
-- **Integración continua.** No hay ninguna: la suite se ejecuta cuando alguien se
-  acuerda. Depende de tener un remoto (arriba).
+- ~~**Integración continua.**~~ **Hecha.** `.github/workflows/verificar.yml`, en
+  cada empujón y en cada solicitud de cambios: la solución .NET —con la suite
+  entera, porque el runner trae Docker— y la aplicación Android en depuración.
+  **No despliega nada**: desplegar sigue siendo deliberado con `publish.ps1`, que
+  además exige el árbol limpio para que la release sea reproducible desde git.
 
 - **Comprobar que el límite de peticiones distingue de verdad a los usuarios.**
   `LimitesDePeticiones` reparte por dirección de origen, y el propio código
