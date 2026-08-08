@@ -37,8 +37,8 @@ _Checklist accionable derivada del `plan.md`. Tareas pequeñas y concretas; marc
 - [x] Documentar el umbral en `appsettings.Example.json` y en `deploy/README.md`.
 - [x] Validar contra los criterios de aceptación de `spec.md`.
 - [x] Mover la feature a "Hecho" en `../../constitution/roadmap.md`.
-- [ ] Desplegar y comprobar `/salud` contra producción.
-- [ ] **Dar de alta el monitor externo** apuntando a `/salud`. Sin él, esta feature no sirve de nada: alguien tiene que mirar.
+- [x] Desplegar y comprobar `/salud` contra producción.
+- [x] **Dar de alta el monitor externo** apuntando a `/salud`. Sin él, esta feature no sirve de nada: alguien tiene que mirar.
 
 ## Mantenimiento (checklist recurrente)
 

@@ -47,10 +47,13 @@ _La web se parte en dos a propósito: la **002** levanta el esqueleto porque el 
 
 ## Backlog / ideas 💡
 
-### Antes que ninguna feature nueva ⚠️
+### Antes que ninguna feature nueva ⚠️ · las tres hechas
 
 _Con la aplicación publicada hay datos de otras personas dentro. Estas tres no
-añaden nada visible y son las que evitan perderlo todo._
+añadían nada visible y eran las que evitan perderlo todo. Se cerraron el 7 y 8 de
+agosto de 2026; se dejan aquí, tachadas, porque lo que hay que **mantener** vivo
+—restaurar de vez en cuando, no ignorar los avisos— se olvida antes si el motivo
+desaparece de la lista._
 
 - ~~**Copias de seguridad.**~~ **Hecho y probado de extremo a extremo.** Las dos
   piezas —bases con `pgbackup.sh`, fotos con `deploy/backup-ficheros.sh`—,
@@ -60,17 +63,19 @@ añaden nada visible y son las que evitan perderlo todo._
   Conviene repetirlo de vez en cuando: lo que se estropea en silencio no es el
   script, es el testigo de acceso a OneDrive.
 
-- **El repositorio no tiene remoto.** `git remote -v` está vacío: todo el
-  proyecto vive en un disco, y lo único que hay fuera son los `.tar.gz`
-  desplegados, que no llevan historia. Un repositorio privado en cualquier sitio
-  cuesta cinco minutos.
+- ~~**El repositorio no tiene remoto.**~~ **Hecho.** Está en
+  [github.com/angelgf74/recetas](https://github.com/angelgf74/recetas), público y
+  con `README`. Se comprobó antes de subirlo que ni el almacén de firma, ni las
+  credenciales de Brevo, ni ninguna contraseña habían entrado nunca en la
+  historia. **Lo que sigue viviendo solo en un disco es el almacén de firma de
+  Android** (`recetas-release.jks`), y con razón: quien lo tenga puede publicar
+  actualizaciones en tu nombre. Guardarlo aparte es cosa tuya, no del
+  repositorio.
 
-- **Dar de alta el monitor externo.** La parte de código está hecha (017):
-  `/salud` comprueba base de datos y disco, y responde `503` diciendo cuál falla.
-  Falta lo que no es código — apuntar un monitor gratuito a
-  `https://recetas-api.angelgf.com.es/salud` cada pocos minutos. **Externo a
-  propósito**: un vigilante en la misma máquina se cae con ella. Sin esto, la 017
-  no sirve de nada: alguien tiene que mirar.
+- ~~**Vigilancia del servicio.**~~ **Hecho.** `/salud` comprueba base de datos y
+  disco (017), y un monitor de UptimeRobot lo consulta cada cinco minutos desde
+  fuera del servidor, avisando por correo si deja de responder `200`. Externo a
+  propósito: un vigilante en la misma máquina se cae con ella.
 
 ### Calidad
 
