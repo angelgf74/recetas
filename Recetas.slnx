@@ -13,5 +13,6 @@
     <Project Path="tests/Recetas.Arquitectura.Tests/Recetas.Arquitectura.Tests.csproj" />
     <Project Path="tests/Recetas.Dominio.Tests/Recetas.Dominio.Tests.csproj" />
     <Project Path="tests/Recetas.Infraestructura.Tests/Recetas.Infraestructura.Tests.csproj" />
+    <Project Path="tests/Recetas.Web.Tests/Recetas.Web.Tests.csproj" />
   </Folder>
 </Solution>

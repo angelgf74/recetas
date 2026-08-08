@@ -37,6 +37,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 17. **[017 · Salud del almacenamiento](../features/017-salud-del-almacenamiento/spec.md)** — `GET /salud` comprueba también el disco de las fotos, no solo la base de datos, y dice qué pieza falla. Es lo que hace útil una sonda externa: un monitor que mira el código HTTP no puede saber nada del disco por su cuenta. De paso destapó que el almacén de fotos no creaba su directorio al arrancar —los *singleton* se construyen perezosamente—, así que `/salud` habría dado un falso positivo tras cada despliegue.
 
+18. **[018 · Tests de la web](../features/018-tests-de-la-web/spec.md)** — bUnit para los componentes donde una condición decide qué acciones se ofrecen, que es donde ha fallado dos veces. Y de rebote lo que más urgía: al referenciar `Recetas.Web`, **`dotnet test` por fin la compila**. Antes no lo hacía, comprobado rompiéndola a propósito: 540 pruebas en verde y salida `0`. Un test de arquitectura vigila que esa referencia no desaparezca.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -82,16 +84,10 @@ desaparece de la lista._
 _Las dos primeras salen de fallos que ya han ocurrido en este proyecto, no de
 buenas prácticas en abstracto._
 
-- **Meter `Recetas.Web` en la cadena de verificación.** `dotnet test` no la
-  compila, así que un error suyo **no aparece hasta publicar**. Pasó en la 016:
-  un `using` que faltaba llegó al commit y reventó el despliegue. Basta con
-  compilarla en el mismo paso que los tests.
-
-- **Tests de interfaz para lo que la interfaz decide.** En la 015 se implementó
-  la retirada por moderación con sus tests en verde… y sin ningún botón que la
-  invocara: los tests comprobaban que el endpoint **autorizaba** bien, no que
-  hubiera **manera de llegar a él**. bUnit para los componentes de Blazor donde
-  una condición decide qué acciones se ofrecen.
+- ~~**Meter `Recetas.Web` en la cadena de verificación** y **tests de interfaz.**~~
+  Las dos con la **018**: resultó que el arreglo natural de la primera —un
+  proyecto de tests que referencia la web— era exactamente lo que hacía falta
+  para la segunda.
 
 - **Integración continua.** No hay ninguna: la suite se ejecuta cuando alguien se
   acuerda. Depende de tener un remoto (arriba).

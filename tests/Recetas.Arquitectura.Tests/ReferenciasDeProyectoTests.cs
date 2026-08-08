@@ -66,6 +66,45 @@ public class ReferenciasDeProyectoTests
             $"Recetas.Contratos debe poder publicarse solo. Encontrado: {string.Join(", ", referencias)}.");
     }
 
+    [Fact]
+    public void Web_NoReferenciaAInfraestructuraNiALaApi()
+    {
+        // El cliente Blazor habla HTTP con la API y comparte los contratos. Si
+        // acabara referenciando la infraestructura, se llevaría EF Core y las
+        // credenciales al navegador del usuario.
+        var referencias = ProyectosReferenciadosPor("src/Recetas.Web/Recetas.Web.csproj");
+
+        Assert.DoesNotContain("Recetas.Infraestructura", referencias);
+        Assert.DoesNotContain("Recetas.Api", referencias);
+        Assert.DoesNotContain("Recetas.Dominio", referencias);
+    }
+
+    [Fact]
+    public void LaWeb_EntraEnLaCadenaDeCompilacionDeLosTests()
+    {
+        // `dotnet test` solo construye los proyectos que alcanzan los de prueba.
+        // Mientras ninguno referenciaba a Recetas.Web, sus errores de compilación
+        // no aparecían hasta el despliegue: pasó en la 016, y en agosto de 2026 se
+        // comprobó rompiéndola a propósito — 540 pruebas en verde y salida 0.
+        //
+        // Este test vigila que esa referencia siga existiendo. Da igual desde qué
+        // proyecto de prueba: lo que importa es que alguien la construya.
+        var proyectosDePrueba = Directory.GetFiles(
+            Path.Combine(RaizDelRepositorio(), "tests"),
+            "*.csproj",
+            SearchOption.AllDirectories);
+
+        var laReferencian = proyectosDePrueba
+            .Where(ruta => ProyectosReferenciadosPor(ruta).Contains("Recetas.Web"))
+            .Select(Path.GetFileNameWithoutExtension)
+            .ToArray();
+
+        Assert.True(
+            laReferencian.Length > 0,
+            "Ningún proyecto de tests referencia Recetas.Web, así que `dotnet test` no la compila " +
+            "y un error suyo no aparecerá hasta desplegar.");
+    }
+
     private static string[] PaquetesDe(string rutaRelativa) =>
         DocumentoDe(rutaRelativa)
             .Descendants("PackageReference")
@@ -79,8 +118,12 @@ public class ReferenciasDeProyectoTests
                 elemento.Attribute("Include")?.Value ?? string.Empty))
             .ToArray();
 
-    private static XDocument DocumentoDe(string rutaRelativa) =>
-        XDocument.Load(Path.Combine(RaizDelRepositorio(), rutaRelativa));
+    /// <summary>
+    /// Admite ruta relativa a la raíz del repositorio o absoluta: <c>Path.Combine</c>
+    /// devuelve la segunda tal cual si ya lo es.
+    /// </summary>
+    private static XDocument DocumentoDe(string ruta) =>
+        XDocument.Load(Path.Combine(RaizDelRepositorio(), ruta));
 
     /// <summary>
     /// Sube desde el directorio de salida hasta encontrar el archivo de solución.

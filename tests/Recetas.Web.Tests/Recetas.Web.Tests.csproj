@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bunit" Version="1.40.0" />
+
+    <!--
+      AngleSharp llega como dependencia de bUnit, y la versión que arrastra
+      (1.2.0) tiene un aviso de seguridad de gravedad moderada: CVE-2026-54570,
+      un XSS mutado que permite esquivar sanitizadores de HTML. Se corrige en la
+      1.5.0, que es la que se fija aquí.
+
+      Explotarlo exige analizar HTML de origen no confiable. Aquí solo se analiza
+      el que renderizan los propios componentes, así que el riesgo real es nulo
+      — pero un aviso de seguridad que se ignora se convierte en costumbre, y la
+      próxima vez el paquete afectado puede estar en producción.
+    -->
+    <PackageReference Include="AngleSharp" Version="1.5.0" />
+
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <!--
+    La referencia a Recetas.Web no es solo para poder renderizar sus componentes:
+    es lo que mete la web en la cadena de compilación de `dotnet test`. Sin ningún
+    proyecto de test que la referencie, nadie la construye, y un error de
+    compilación suyo no aparece hasta el despliegue. Pasó en la 016.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Recetas.Web\Recetas.Web.csproj" />
+  </ItemGroup>
+
+</Project>

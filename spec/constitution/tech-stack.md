@@ -28,7 +28,11 @@ _La copia de seguridad tiene **dos piezas**: el volcado de PostgreSQL y la carpe
 - **Lenguaje:** C#
 - **Framework / runtime:** Blazor WebAssembly (.NET 10). Cliente estático: no renderiza en servidor ni mantiene conexión SignalR.
 - **Base de datos:** ninguna propia. Todo el estado vive en la API; la web no habla con PostgreSQL.
-- **Tests:** **hoy ninguno.** La cobertura vive en la API, y la web no contiene reglas de negocio. Pero eso dejó pasar un fallo real: la 015 implementó la retirada por moderación con los tests en verde **y sin ningún botón que la invocara**. Donde una condición decide qué acciones se ofrecen, hace falta bUnit. Está en el backlog.
+- **Tests:** **bUnit**, en `tests/Recetas.Web.Tests`. No se busca cubrirlo todo: se prueban los componentes donde **una condición decide qué acciones se ofrecen**, que es donde ha fallado. La 015 implementó la retirada por moderación con los tests en verde **y sin ningún botón que la invocara**, porque los tests comprobaban que el endpoint autorizaba bien y no que hubiera manera de llegar a él.
+
+  Las aserciones van sobre **texto visible**, nunca sobre clases CSS: si el botón de editar pasa a ser un icono, el test debe fallar y obligar a mirar si sigue habiendo forma de editar.
+
+  **Ese proyecto es además lo que mete la web en `dotnet test`.** Antes ningún proyecto de prueba la referenciaba, así que nadie la compilaba y un error suyo no aparecía hasta desplegar (016). Hay un test de arquitectura que vigila que esa referencia siga existiendo.
 - **Despliegue:** servidor en la red local, expuesto a internet por túnel de Cloudflare. Despliegue por SSH.
 - **Páginas estáticas fuera de Blazor:** `privacidad.html` y `borrar-cuenta.html` son HTML servido tal cual. **Google Play exige que se abran sin instalar nada y sin sesión**, y un revisor con JavaScript restringido vería una página en blanco si vivieran dentro de la aplicación WebAssembly.
 
@@ -79,7 +83,6 @@ _Creada en la feature 001._
 - `tests/` — un proyecto de test por capa; los de integración levantan PostgreSQL con Testcontainers. `Recetas.Arquitectura.Tests` vigila la regla de dependencias con **dos enfoques que se complementan**: uno inspecciona el ensamblado compilado y otro lee los `.csproj`, porque el primero no ve un paquete declarado y todavía sin usar. **Al añadir un proyecto a la solución hay que extender los dos.**
 - `deploy/` — todo el despliegue, versionado: `publish.ps1` (local), `remote-activate.sh` (viaja dentro del paquete), `backup-ficheros.sh` (copia de las fotos), `nginx/recetas`, `systemd/recetas-api.service` y el `README.md` con los pasos que exigen `sudo`.
 
-**`Recetas.Web` no entra en `dotnet test`**, así que un error de compilación suyo no aparece hasta publicar. Ya pasó en la 016. Está en el backlog.
 
 **Regla de dependencias:** las flechas apuntan siempre hacia dentro. `Api` → `Aplicacion` → `Dominio`; `Infraestructura` → `Dominio` (implementa sus puertos). El dominio no apunta a nadie.
 
