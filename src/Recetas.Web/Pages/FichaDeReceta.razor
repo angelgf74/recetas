@@ -122,6 +122,23 @@
                 }
             </section>
 
+            @*
+                El favorito va antes de las acciones de autor y fuera de ellas:
+                está para todo el que pueda ver la receta, incluida la propia.
+                Con texto y no solo un corazón: un corazón suelto se lee como "me
+                gusta", y esto no le cuenta nada a nadie.
+            *@
+            <section class="favorito">
+                <button type="button"
+                        class="@(EsFavorita ? "boton boton-secundario" : "boton")"
+                        disabled="@_cambiandoFavorito"
+                        @onclick="AlternarFavoritoAsync">
+                    @(EsFavorita ? "Quitar de favoritos" : "Guardar en favoritos")
+                </button>
+
+                <p class="ayuda">Tus favoritos son privados: nadie más los ve.</p>
+            </section>
+
             @if (EsMia)
             {
                 @*
@@ -267,6 +284,10 @@
     /// <summary>Lo dice la propia respuesta: una sola llamada para pintar la ficha.</summary>
     private bool EsMia => _receta?.EsMia == true;
 
+    private bool EsFavorita => _receta?.EsFavorita == true;
+
+    private bool _cambiandoFavorito;
+
     protected override async Task OnParametersSetAsync()
     {
         _cargando = true;
@@ -411,6 +432,35 @@
                 "Receta retirada. Su autor la conserva y puede volver a publicarla.");
             await RecargarAsync();
         }
+    }
+
+    /// <summary>
+    /// Marca o desmarca, según cómo esté.
+    /// </summary>
+    /// <remarks>
+    /// El estado se relee de la respuesta en lugar de darlo la vuelta aquí: si la
+    /// llamada falla, el botón no puede quedarse diciendo lo contrario de lo que
+    /// hay guardado.
+    /// </remarks>
+    private async Task AlternarFavoritoAsync()
+    {
+        _cambiandoFavorito = true;
+        _aviso = null;
+
+        var resultado = EsFavorita
+            ? await Api.DesmarcarFavoritaAsync(Id)
+            : await Api.MarcarFavoritaAsync(Id);
+
+        if (resultado.Correcta)
+        {
+            await RecargarAsync();
+        }
+        else
+        {
+            _aviso = resultado;
+        }
+
+        _cambiandoFavorito = false;
     }
 
     // ------------------------------------------------------------- Denuncias

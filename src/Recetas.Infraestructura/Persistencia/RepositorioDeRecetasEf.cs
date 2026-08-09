@@ -42,6 +42,26 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
             .OrderByDescending(receta => receta.FechaDeModificacion)
             .ToListAsync(cancelacion);
 
+    public async Task<IReadOnlyCollection<Receta>> ListarFavoritasAsync(
+        Guid usuarioId,
+        CancellationToken cancelacion = default) =>
+        // Se parte de los favoritos y se une con las recetas, en lugar de traer las
+        // marcas y luego las recetas: una consulta, y el filtro de visibilidad
+        // aplicado por la base de datos.
+        //
+        // Ese filtro es lo que impide que los favoritos sirvan para seguir viendo
+        // algo que su autor dejó de compartir —o que se retiró por moderación—: la
+        // marca sobrevive al cambio de visibilidad a propósito, así que si no se
+        // comprobara aquí, no se comprobaría en ninguna parte.
+        await (from favorito in contexto.Favoritos
+               where favorito.UsuarioId == usuarioId
+               join receta in contexto.Recetas.Include(receta => receta.Fotos)
+                   on favorito.RecetaId equals receta.Id
+               where receta.AutorId == usuarioId || receta.Visibilidad == Visibilidad.Publica
+               orderby favorito.FechaDeMarca descending
+               select receta)
+            .ToListAsync(cancelacion);
+
     public async Task<IReadOnlyCollection<Receta>> BuscarAsync(
         Guid usuarioId,
         CriteriosDeBusqueda criterios,

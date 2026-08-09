@@ -110,7 +110,18 @@ public sealed record RespuestaDeReceta(
     /// el servidor al recibir la petición.
     /// </para>
     /// </remarks>
-    bool PuedoRetirarla = false);
+    bool PuedoRetirarla = false,
+    /// <summary>
+    /// Si <b>quien pregunta</b> tiene esta receta en sus favoritos.
+    /// </summary>
+    /// <remarks>
+    /// Es un dato de quien mira, no de la receta: el mismo identificador devuelve
+    /// <c>true</c> a uno y <c>false</c> a otro. Por eso va aquí y no hay ningún
+    /// campo que diga cuántas veces se ha marcado ni quién lo hizo — ese hueco es
+    /// deliberado, y `mission.md` explica por qué: un recuento haría competir a las
+    /// recetas entre sí, que es lo que las valoraciones descartadas hacían.
+    /// </remarks>
+    bool EsFavorita = false);
 
 /// <summary>
 /// Receta en un listado: sin ingredientes ni elaboración.

@@ -49,6 +49,22 @@ public interface IRepositorioDeRecetas
         int maximo,
         CancellationToken cancelacion = default);
 
+    /// <summary>
+    /// Recetas que ese usuario tiene marcadas como favoritas <b>y todavía puede
+    /// ver</b>, de la más recientemente marcada a la más antigua. Sin ingredientes,
+    /// como el resto de listados.
+    /// </summary>
+    /// <remarks>
+    /// El filtro de visibilidad va <b>dentro de la consulta</b>, igual que en
+    /// <see cref="BuscarAsync"/> y por una razón más fuerte: la marca sobrevive a
+    /// que el autor despublique, así que sin ese filtro los favoritos serían una
+    /// forma de seguir viendo lo que alguien dejó de compartir — o lo que se
+    /// retiró por moderación.
+    /// </remarks>
+    Task<IReadOnlyCollection<Receta>> ListarFavoritasAsync(
+        Guid usuarioId,
+        CancellationToken cancelacion = default);
+
     Task AnadirAsync(Receta receta, CancellationToken cancelacion = default);
 
     Task BorrarAsync(Receta receta, CancellationToken cancelacion = default);

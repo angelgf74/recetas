@@ -90,6 +90,34 @@ public class FichaDeRecetaTests : ContextoDeWeb
         Assert.DoesNotContain("Denunciar esta receta", pantalla.Markup);
     }
 
+    [Fact]
+    public void SinMarcar_OfreceGuardarEnFavoritos()
+    {
+        var pantalla = Pintar(Receta(esMia: false, esFavorita: false));
+
+        Assert.Contains("Guardar en favoritos", pantalla.Markup);
+        Assert.DoesNotContain("Quitar de favoritos", pantalla.Markup);
+    }
+
+    [Fact]
+    public void Marcada_OfreceQuitarla()
+    {
+        var pantalla = Pintar(Receta(esMia: false, esFavorita: true));
+
+        Assert.Contains("Quitar de favoritos", pantalla.Markup);
+        Assert.DoesNotContain("Guardar en favoritos", pantalla.Markup);
+    }
+
+    [Fact]
+    public void RecetaPropia_TambienSePuedeGuardar()
+    {
+        // La regla es "lo que puedas ver". Si el botón desapareciera sobre lo
+        // propio, la interfaz tendría una excepción que la API no tiene.
+        var pantalla = Pintar(Receta(esMia: true));
+
+        Assert.Contains("Guardar en favoritos", pantalla.Markup);
+    }
+
     // ------------------------------------------------------------- Auxiliares
 
     private IRenderedComponent<FichaDeReceta> Pintar(RespuestaDeReceta receta)
@@ -106,7 +134,10 @@ public class FichaDeRecetaTests : ContextoDeWeb
         return pantalla;
     }
 
-    private static RespuestaDeReceta Receta(bool esMia, bool puedoRetirarla = false) =>
+    private static RespuestaDeReceta Receta(
+        bool esMia,
+        bool puedoRetirarla = false,
+        bool esFavorita = false) =>
         new(
             Id,
             "Tortilla de patatas",
@@ -120,5 +151,6 @@ public class FichaDeRecetaTests : ContextoDeWeb
             esMia,
             Raciones: null,
             RacionesMostradas: null,
-            PuedoRetirarla: puedoRetirarla);
+            PuedoRetirarla: puedoRetirarla,
+            EsFavorita: esFavorita);
 }

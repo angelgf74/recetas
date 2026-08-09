@@ -1,0 +1,77 @@
+@page "/favoritos"
+@using Recetas.Contratos.Recetas
+@using Recetas.Web.Componentes
+@using Recetas.Web.Servicios
+@inject ClienteDeApi Api
+
+<PageTitle>Mis favoritos · Recetas</PageTitle>
+
+<RutaProtegida>
+    <div class="cabecera-de-pagina">
+        <h1>Mis favoritos</h1>
+    </div>
+
+    @if (_cargando)
+    {
+        <p class="ayuda">Cargando…</p>
+    }
+    else if (_resultado is { Correcta: false })
+    {
+        <div class="aviso aviso-error" role="alert">@_resultado.Mensaje</div>
+    }
+    else if (_recetas is { Count: 0 })
+    {
+        <div class="vacio">
+            <p>Todavía no has guardado ninguna receta en favoritos.</p>
+            <p class="ayuda">
+                Cuando encuentres una receta a la que quieras volver —tuya o compartida
+                por otra persona—, guárdala desde su ficha. Solo la ves tú.
+            </p>
+            <a class="boton" href="/buscar">Buscar recetas</a>
+        </div>
+    }
+    else
+    {
+        @* Sin marca de "favorita" en cada tarjeta: aquí lo son todas. *@
+        <ul class="lista-de-recetas">
+            @foreach (var receta in _recetas!)
+            {
+                <li>
+                    <a href="@($"/recetas/{receta.Id}")">
+                        <PortadaDeReceta RecetaId="receta.Id" FotoId="receta.FotoDePortadaId" />
+                        <span class="datos">
+                            <span class="nombre">@receta.Nombre</span>
+                            <span class="meta">
+                                @Etiquetas.DeTipo(receta.TipoDePlato)
+                                @if (!receta.EsMia)
+                                {
+                                    <span class="marca">De otra persona</span>
+                                }
+                            </span>
+                        </span>
+                    </a>
+                </li>
+            }
+        </ul>
+
+        @* Lo que falta también hay que explicarlo: una receta ajena que su autor
+           deja de compartir desaparece de aquí sin avisar, y sin esta línea
+           parecería que se ha perdido la marca. *@
+        <p class="ayuda">
+            Si una receta compartida por otra persona deja de estar pública, no aparece
+            en esta lista mientras siga así.
+        </p>
+    }
+</RutaProtegida>
+
+@code {
+    private List<ResumenDeReceta>? _recetas;
+    private ResultadoDeLlamada? _resultado;
+    private bool _cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        (_resultado, _recetas) = await Api.ListarFavoritasAsync();
+        _cargando = false;
+    }
+}

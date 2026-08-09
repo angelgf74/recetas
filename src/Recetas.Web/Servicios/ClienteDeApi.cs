@@ -134,6 +134,21 @@ public sealed class ClienteDeApi(HttpClient http)
     public Task<ResultadoDeLlamada> DespublicarAsync(Guid id) =>
         EnviarAsync(HttpMethod.Delete, $"recetas/{id}/publicacion");
 
+    // ----------------------------------------------------------- Favoritos
+
+    /// <summary>
+    /// Mis favoritas <b>que todavía puedo ver</b>. Lo segundo lo decide el
+    /// servidor: una receta marcada y luego despublicada no vuelve en esta lista.
+    /// </summary>
+    public Task<(ResultadoDeLlamada Resultado, List<ResumenDeReceta>? Recetas)> ListarFavoritasAsync() =>
+        LeerAsync<List<ResumenDeReceta>>("recetas/favoritas");
+
+    public Task<ResultadoDeLlamada> MarcarFavoritaAsync(Guid id) =>
+        EnviarAsync(HttpMethod.Put, $"recetas/{id}/favorito");
+
+    public Task<ResultadoDeLlamada> DesmarcarFavoritaAsync(Guid id) =>
+        EnviarAsync(HttpMethod.Delete, $"recetas/{id}/favorito");
+
     // -------------------------------------------------------------- Cuenta
 
     public Task<(ResultadoDeLlamada Resultado, RespuestaDeIdentidad? Identidad)> ObtenerIdentidadAsync() =>

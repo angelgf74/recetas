@@ -1,3 +1,4 @@
+using Recetas.Dominio.Favoritos;
 using Recetas.Dominio.Puertos;
 using Recetas.Dominio.Recetas;
 
@@ -8,7 +9,13 @@ namespace Recetas.Aplicacion.Tests.Dobles;
 /// guarda el identificador en la línea; en el repositorio real la relación la
 /// resuelve EF, y aquí hay que dársela.
 /// </param>
-public sealed class RepositorioDeRecetasEnMemoria(RepositorioDeIngredientesEnMemoria? catalogo = null)
+/// <param name="favoritos">
+/// Marcas para poder listar las favoritas. En el repositorio real la unión la
+/// hace la consulta; aquí hay que dársela igual que el catálogo.
+/// </param>
+public sealed class RepositorioDeRecetasEnMemoria(
+    RepositorioDeIngredientesEnMemoria? catalogo = null,
+    RepositorioDeFavoritosEnMemoria? favoritos = null)
     : IRepositorioDeRecetas
 {
     private readonly List<Receta> _recetas = [];
@@ -76,6 +83,27 @@ public sealed class RepositorioDeRecetasEnMemoria(RepositorioDeIngredientesEnMem
                 .ToList());
     }
 
+    /// <summary>
+    /// Reproduce el filtro de visibilidad del repositorio real, y por el mismo
+    /// motivo: la marca sobrevive a que el autor despublique, así que si el doble
+    /// devolviera todo lo marcado, los tests pasarían con una implementación que
+    /// enseña recetas retiradas.
+    /// </summary>
+    public Task<IReadOnlyCollection<Receta>> ListarFavoritasAsync(
+        Guid usuarioId,
+        CancellationToken cancelacion = default)
+    {
+        var marcadas = favoritos?.Todos.Where(favorito => favorito.UsuarioId == usuarioId)
+            .OrderByDescending(favorito => favorito.FechaDeMarca)
+            .ToList() ?? [];
+
+        return Task.FromResult<IReadOnlyCollection<Receta>>(
+            marcadas
+                .Select(favorito => _recetas.FirstOrDefault(receta => receta.Id == favorito.RecetaId))
+                .Where(receta => receta is not null && receta.PuedeVerla(usuarioId))
+                .ToList()!);
+    }
+
     public Task AnadirAsync(Receta receta, CancellationToken cancelacion = default)
     {
         _recetas.Add(receta);
@@ -85,6 +113,36 @@ public sealed class RepositorioDeRecetasEnMemoria(RepositorioDeIngredientesEnMem
     public Task BorrarAsync(Receta receta, CancellationToken cancelacion = default)
     {
         _recetas.Remove(receta);
+        return Task.CompletedTask;
+    }
+
+    public Task GuardarCambiosAsync(CancellationToken cancelacion = default) => Task.CompletedTask;
+}
+
+public sealed class RepositorioDeFavoritosEnMemoria : IRepositorioDeFavoritos
+{
+    private readonly List<Favorito> _favoritos = [];
+
+    public IReadOnlyList<Favorito> Todos => _favoritos;
+
+    public Task<bool> EstaMarcadaAsync(
+        Guid usuarioId,
+        Guid recetaId,
+        CancellationToken cancelacion = default) =>
+        Task.FromResult(_favoritos.Any(
+            favorito => favorito.UsuarioId == usuarioId && favorito.RecetaId == recetaId));
+
+    public Task AnadirAsync(Favorito favorito, CancellationToken cancelacion = default)
+    {
+        _favoritos.Add(favorito);
+        return Task.CompletedTask;
+    }
+
+    public Task QuitarAsync(Guid usuarioId, Guid recetaId, CancellationToken cancelacion = default)
+    {
+        _favoritos.RemoveAll(
+            favorito => favorito.UsuarioId == usuarioId && favorito.RecetaId == recetaId);
+
         return Task.CompletedTask;
     }
 

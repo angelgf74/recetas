@@ -43,6 +43,12 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 20. **[020 · Aviso de retirada](../features/020-aviso-de-retirada/spec.md)** — cuando el responsable retira una receta de la parte pública, su autor recibe un correo: qué receta, que no se ha borrado nada y a quién escribir. Es lo que separa moderar de censurar, y la 015 lo dejó anotado a propósito. De paso saca la retirada de `GestionDeRecetas`: mientras era idéntica a que el autor dejara de compartir, un parámetro `esResponsable` bastaba; en cuanto una avisa por correo y la otra no, dejaron de ser la misma operación y comparten solo la ruta.
 
+21. **[021 · Favoritos privados](../features/021-favoritos-privados/spec.md)** — marcar una receta para volver a encontrarla, y una pantalla con lo marcado. **Solo lo ve quien lo marca**: no hay recuento ni forma de que el autor se entere, y ese hueco en el contrato es la feature, no un detalle.
+
+    Nació como "valorar recetas de 0 a 5 estrellas" y se cambió a propósito. `mission.md` descarta las valoraciones por su nombre, y el motivo está en la frase siguiente: *"público significa consultable, no conversable"*. Una nota numérica, aunque no lleve texto, hace competir a las recetas entre sí. Los favoritos resuelven el caso de uso real —volver a lo bueno que te encontraste— sin nada de eso. Con las estrellas se cayó también **"3 recetas con 4 o más estrellas no ven publicidad"**: atar la monetización a una puntuación pública la vuelve falsificable con un par de cuentas, porque el alta solo pide un correo.
+
+    La marca **sobrevive a que la receta deje de ser visible, pero la lista no la enseña**: el filtro de visibilidad va en la consulta, o los favoritos serían una forma de seguir viendo lo que alguien dejó de compartir.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -154,11 +160,7 @@ buenas prácticas en abstracto._
 
 - **Paginar la búsqueda.** Hoy hay un tope de 50 resultados y un aviso de que se
   recortó, que es la mitad barata del problema. Entra cuando ese tope moleste.
-- **Favoritos privados** — marcar una receta ajena publicada para volver a encontrarla. **Privado: solo lo ve quien lo marca**, no cuenta nada al autor ni se agrega en ninguna puntuación.
-
-  Nació como "valorar recetas de 0 a 5 estrellas" y se cambió a esto a propósito. `mission.md` descarta las valoraciones por su nombre, y el motivo está en la frase siguiente: *"público significa consultable, no conversable"*. Una nota numérica, aunque no lleve texto, convierte el recetario en algo comparable y hace competir a las recetas entre sí. Los favoritos resuelven el caso de uso real —volver a lo bueno que te encontraste— sin nada de eso.
-
-  Con ellas se cayó también **"3 recetas con 4 o más estrellas no ven publicidad"**: atar la monetización a una puntuación pública la vuelve falsificable con un par de cuentas, porque el alta solo pide un correo.
+- **Exportar los favoritos con el resto de los datos (019)** — hoy el paquete no los lleva. Un favorito ajeno es una referencia a contenido de otra persona: exportar solo identificadores no sirve de nada, y exportar los nombres metería contenido ajeno en el paquete de uno. Sale de la 021.
 
 - **Enviar sugerencias** — desde la aplicación a `POST https://gestorsugerencias-api.angelgf.com.es/api/sugerencias`. Tres decisiones antes de escribir código: **quién llama** (si el cliente, ese servicio necesita CORS; si la API, es una dependencia saliente y hay que decidir qué pasa cuando esté caída), **qué se envía** (si va el correo del usuario, es un tercero nuevo que entra en la tabla de la política de privacidad) y **cómo se autentica**, porque un buzón de sugerencias abierto es spam ajeno.
 

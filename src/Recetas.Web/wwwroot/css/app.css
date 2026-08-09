@@ -748,6 +748,24 @@ a {
     border: 0;
 }
 
+/* Favoritos ----------------------------------------------------------------
+   El botón no ocupa el ancho completo como en los formularios: aquí es una
+   acción entre otras, no el final de una tarea. */
+
+.favorito {
+    margin-top: var(--espacio-5);
+    padding-top: var(--espacio-4);
+    border-top: 1px solid var(--color-borde);
+}
+
+.favorito .boton {
+    width: auto;
+}
+
+.favorito .ayuda {
+    margin-top: var(--espacio-2);
+}
+
 /* Denunciar una receta ajena ----------------------------------------------
    Discreto a propósito: es una salida de emergencia, no una acción principal.
    Un botón llamativo junto a una receta invita a usarlo por error. */

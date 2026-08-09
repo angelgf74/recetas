@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Recetas.Aplicacion.Favoritos;
 using Recetas.Aplicacion.Moderacion;
 using Recetas.Aplicacion.Recetas;
 using Recetas.Contratos.Recetas;
@@ -29,6 +30,9 @@ public static class RecetasEndpoints
         // Antes que "/{id:guid}" no hace falta por el restrictor de ruta, pero se
         // declara aquí junto al listado porque son las dos consultas de conjunto.
         grupo.MapGet("/busqueda", BuscarAsync);
+        // Aquí y no en /yo porque devuelve recetas: va con las otras consultas de
+        // conjunto. El restrictor de "/{id:guid}" impide que choquen.
+        grupo.MapGet("/favoritas", ListarFavoritasAsync);
         // Un recurso propio y no un verbo colgando de /recetas: esto NO crea una
         // receta, devuelve un borrador que el usuario aún tiene que revisar.
         grupo.MapPost("/importaciones", ImportarAsync)
@@ -51,6 +55,63 @@ public static class RecetasEndpoints
         // merece un endpoint de administración aparte, pero por dentro son casos
         // de uso distintos: la retirada avisa por correo al autor (020).
         grupo.MapDelete("/{id:guid}/publicacion", DespublicarAsync);
+
+        // PUT y DELETE, al revés que la publicación, que es POST: publicar es un
+        // acto que ocurre una vez y marcar es un estado que se fija. Que repetir la
+        // llamada responda igual no es una concesión, es lo que significa PUT.
+        grupo.MapPut("/{id:guid}/favorito", MarcarFavoritaAsync);
+        grupo.MapDelete("/{id:guid}/favorito", DesmarcarFavoritaAsync);
+    }
+
+    private static async Task<IResult> ListarFavoritasAsync(
+        ClaimsPrincipal usuario,
+        GestionDeFavoritos favoritos,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var recetas = await favoritos.ListarMisFavoritasAsync(usuarioId, cancelacion);
+
+        return Results.Ok(recetas.Select(receta => AResumen(receta, usuarioId)));
+    }
+
+    private static async Task<IResult> MarcarFavoritaAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        GestionDeFavoritos favoritos,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var resultado = await favoritos.MarcarAsync(usuarioId, id, cancelacion);
+
+        return resultado is ResultadoDeFavorito.Correcto ? Results.NoContent() : NoEncontrada();
+    }
+
+    /// <summary>
+    /// Quita la marca. Responde <c>204</c> aunque no estuviera marcada, e incluso
+    /// aunque la receta ya no exista: el estado final es el que se pedía.
+    /// </summary>
+    private static async Task<IResult> DesmarcarFavoritaAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        GestionDeFavoritos favoritos,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        await favoritos.DesmarcarAsync(usuarioId, id, cancelacion);
+
+        return Results.NoContent();
     }
 
     private static async Task<IResult> CambiarVisibilidadAsync(
@@ -188,6 +249,7 @@ public static class RecetasEndpoints
         Guid id,
         ClaimsPrincipal usuario,
         GestionDeRecetas gestion,
+        GestionDeFavoritos favoritos,
         CorreoDelResponsable responsable,
         CancellationToken cancelacion,
         int? raciones = null)
@@ -210,9 +272,22 @@ public static class RecetasEndpoints
 
         var (resultado, receta) = await gestion.ObtenerAsync(usuarioId, id, cancelacion);
 
-        return resultado is ResultadoDeReceta.Correcto && receta is not null
-            ? Results.Ok(ARespuesta(receta, usuarioId, raciones, responsable.Es(usuario.ObtenerCorreo())))
-            : NoEncontrada();
+        if (resultado is not ResultadoDeReceta.Correcto || receta is null)
+        {
+            return NoEncontrada();
+        }
+
+        // Después de comprobar que puede verla, nunca antes: preguntando por el
+        // favorito de una receta que no se puede ver no se aprende nada, pero es
+        // una consulta que no hay motivo para hacer.
+        var esFavorita = await favoritos.EsFavoritaAsync(usuarioId, id, cancelacion);
+
+        return Results.Ok(ARespuesta(
+            receta,
+            usuarioId,
+            raciones,
+            responsable.Es(usuario.ObtenerCorreo()),
+            esFavorita));
     }
 
     /// <summary>
@@ -366,11 +441,13 @@ public static class RecetasEndpoints
     /// Si quien pregunta es el responsable del servicio. Solo sirve para decirle al
     /// cliente si ofrecer la retirada; el permiso se vuelve a comprobar al pedirla.
     /// </param>
+    /// <param name="esFavorita">Si quien pregunta la tiene marcada. Dato suyo, no de la receta.</param>
     private static RespuestaDeReceta ARespuesta(
         DominioReceta receta,
         Guid usuarioId,
         int? racionesPedidas = null,
-        bool esResponsable = false) =>
+        bool esResponsable = false,
+        bool esFavorita = false) =>
         new(
             receta.Id,
             receta.Nombre,
@@ -396,7 +473,8 @@ public static class RecetasEndpoints
 
             // Solo sobre lo ajeno y ya publicado: sobre lo propio ya están las
             // acciones de siempre, y sobre lo privado no hay nada que retirar.
-            esResponsable && !receta.EsDe(usuarioId) && receta.EsPublica);
+            esResponsable && !receta.EsDe(usuarioId) && receta.EsPublica,
+            esFavorita);
 
     private static IResult NoEncontrada() =>
         Results.Json(new RespuestaDeError(MensajeDeNoEncontrada), statusCode: StatusCodes.Status404NotFound);
