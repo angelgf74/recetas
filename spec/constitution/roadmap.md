@@ -103,7 +103,9 @@ buenas prácticas en abstracto._
 
 ### Producto y mantenimiento
 
-- **Publicar en Google Play** — lo único que queda es de consola, no de código: cuenta de desarrollador, ficha de la tienda, clasificación de contenido, seguridad de los datos, declarar que contiene anuncios y dar la URL de baja (`/borrar-cuenta.html`, que llegó con la 016). El paquete firmado ya se genera y está probado en un teléfono real. Pasos en `android/play/publicar.md`.
+- ~~**Publicar en Google Play**~~ — **hecho el 7 de agosto de 2026**, en producción y solo para España: [com.angelgf.recetas](https://play.google.com/store/apps/details?id=com.angelgf.recetas). El camino completo, con lo que exigió cada declaración, queda en `android/play/publicar.md`.
+
+  **Queda una comprobación que no se podía hacer antes de publicar:** que los enlaces del correo de alta y de recuperar contraseña abran la aplicación instalada **desde la tienda**. Dependen de que la huella de `assetlinks.json` sea la del certificado con el que Play refirma, no la de subida. El JSON está bien servido; falta verlo funcionar.
 - **Avisar al autor de que su receta ha sido retirada** — hoy se entera al mirarla. Necesita decidir qué se le cuenta —sin exponer quién denunció— y si puede recurrir. Sale de la 015.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.

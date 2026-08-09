@@ -3,8 +3,8 @@
 Recetario personal en la nube. Guarda tus recetas, encuéntralas cuando las
 necesitas y tenlas a mano mientras cocinas.
 
-**Web:** [recetas.angelgf.com.es](https://recetas.angelgf.com.es) · Aplicación
-Android en camino a Google Play
+**Web:** [recetas.angelgf.com.es](https://recetas.angelgf.com.es) ·
+**Android:** [en Google Play](https://play.google.com/store/apps/details?id=com.angelgf.recetas)
 
 <p>
   <img src="android/play/capturas/1-recetario.png" width="200" alt="Recetario con miniaturas" />
