@@ -98,6 +98,9 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
         // valor de producción los tests que encadenan varias chocarían con el 429.
         constructor.UseSetting("Limites:DenunciasPorVentana", "500");
 
+        // Y la de exportaciones también, que en producción son tres por hora.
+        constructor.UseSetting("Limites:ExportacionesPorVentana", "500");
+
         // Quién modera. Un test que quiera retirar contenido ajeno registra un
         // usuario con exactamente este correo.
         constructor.UseSetting("Moderacion:CorreoDelResponsable", CorreoDelResponsable);

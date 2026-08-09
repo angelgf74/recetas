@@ -18,6 +18,18 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
             .Include(receta => receta.Fotos)
             .FirstOrDefaultAsync(receta => receta.Id == id, cancelacion);
 
+    public async Task<IReadOnlyCollection<Receta>> ListarCompletasPorAutorAsync(
+        Guid autorId,
+        CancellationToken cancelacion = default) =>
+        // Todo cargado: esto alimenta la exportación de datos, donde una receta a
+        // medias es una receta perdida para quien se la lleva.
+        await contexto.Recetas
+            .Include(receta => receta.Ingredientes)
+            .ThenInclude(linea => linea.Ingrediente)
+            .Include(receta => receta.Fotos)
+            .Where(receta => receta.AutorId == autorId)
+            .ToListAsync(cancelacion);
+
     public async Task<IReadOnlyCollection<Receta>> ListarPorAutorAsync(
         Guid autorId,
         CancellationToken cancelacion = default) =>

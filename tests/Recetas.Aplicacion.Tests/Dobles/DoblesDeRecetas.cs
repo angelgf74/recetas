@@ -25,6 +25,16 @@ public sealed class RepositorioDeRecetasEnMemoria(RepositorioDeIngredientesEnMem
             _recetas.Where(receta => receta.AutorId == autorId).ToList());
 
     /// <summary>
+    /// En memoria las entidades ya están completas, así que devuelve lo mismo.
+    /// La diferencia entre los dos métodos existe en el repositorio real, donde
+    /// uno omite los ingredientes para no leer filas de más.
+    /// </summary>
+    public Task<IReadOnlyCollection<Receta>> ListarCompletasPorAutorAsync(
+        Guid autorId,
+        CancellationToken cancelacion = default) =>
+        ListarPorAutorAsync(autorId, cancelacion);
+
+    /// <summary>
     /// Reproduce el filtro de visibilidad y los criterios del repositorio real.
     /// </summary>
     /// <remarks>

@@ -140,6 +140,38 @@ public sealed class ClienteDeApi(HttpClient http)
         LeerAsync<RespuestaDeIdentidad>("yo");
 
     /// <summary>
+    /// Descarga el paquete con los datos del usuario.
+    /// </summary>
+    /// <remarks>
+    /// Lo pide este cliente y no un enlace del navegador porque una descarga
+    /// iniciada por el navegador no lleva la cabecera de autorización, y meter el
+    /// testigo en la dirección lo dejaría escrito en los registros del servidor y
+    /// en el historial.
+    /// </remarks>
+    public async Task<(ResultadoDeLlamada Resultado, Stream? Contenido)> DescargarMisDatosAsync()
+    {
+        try
+        {
+            // Sin esperar al cuerpo entero: el paquete puede pesar y no hay razón
+            // para tenerlo dos veces en memoria.
+            var respuesta = await http.GetAsync(
+                "yo/datos",
+                HttpCompletionOption.ResponseHeadersRead);
+
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                return (await TraducirErrorAsync(respuesta), null);
+            }
+
+            return (ResultadoDeLlamada.Correcto(), await respuesta.Content.ReadAsStreamAsync());
+        }
+        catch (HttpRequestException)
+        {
+            return (ResultadoDeLlamada.Fallido(MensajeDeRedCaida), null);
+        }
+    }
+
+    /// <summary>
     /// Borra la cuenta. La contraseña va en el cuerpo de un DELETE: en la URL
     /// acabaría en los registros del servidor y en el historial del navegador.
     /// </summary>

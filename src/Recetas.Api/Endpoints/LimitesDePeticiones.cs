@@ -27,6 +27,13 @@ public static class LimitesDePeticiones
     /// </summary>
     public const string Denuncia = "denuncia";
 
+    /// <summary>
+    /// Exportar los datos lee del disco todas las fotos del usuario y las
+    /// comprime. Es la petición más cara del producto, y una que en la vida de
+    /// una cuenta se hace una vez o ninguna.
+    /// </summary>
+    public const string Exportacion = "exportacion";
+
     public static void AnadirLimitesDePeticiones(this IServiceCollection servicios, IConfiguration configuracion)
     {
         // Configurables para que los tests puedan elevarlos y no chocar con el
@@ -35,6 +42,7 @@ public static class LimitesDePeticiones
         var maximoDeInicios = configuracion.GetValue("Limites:IniciosDeSesionPorVentana", 10);
         var maximoDeImportaciones = configuracion.GetValue("Limites:ImportacionesPorVentana", 20);
         var maximoDeDenuncias = configuracion.GetValue("Limites:DenunciasPorVentana", 10);
+        var maximoDeExportaciones = configuracion.GetValue("Limites:ExportacionesPorVentana", 3);
 
         servicios.AddRateLimiter(opciones =>
         {
@@ -78,6 +86,18 @@ public static class LimitesDePeticiones
                         // hace una vez, no diez veces por hora. La ventana es larga
                         // porque cada denuncia cuesta un correo.
                         PermitLimit = maximoDeDenuncias,
+                        Window = TimeSpan.FromMinutes(60)
+                    }));
+
+            opciones.AddPolicy(Exportacion, contexto =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    ClaveDeParticion(contexto),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        // Tres por hora: suficiente para reintentar si la descarga
+                        // se corta, y lejos de permitir que alguien use el
+                        // endpoint para hacer trabajar al disco sin parar.
+                        PermitLimit = maximoDeExportaciones,
                         Window = TimeSpan.FromMinutes(60)
                     }));
         });

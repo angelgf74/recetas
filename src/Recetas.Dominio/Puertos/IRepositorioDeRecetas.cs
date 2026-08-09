@@ -19,6 +19,19 @@ public interface IRepositorioDeRecetas
     Task<IReadOnlyCollection<Receta>> ListarPorAutorAsync(Guid autorId, CancellationToken cancelacion = default);
 
     /// <summary>
+    /// Todas las recetas del autor <b>con sus ingredientes y sus fotos</b>.
+    /// </summary>
+    /// <remarks>
+    /// Separado de <see cref="ListarPorAutorAsync"/> a propósito: aquel omite los
+    /// ingredientes porque el listado no los pinta y traerlos multiplicaría las
+    /// filas leídas. Aquí hacen falta todos, y quien exporta no puede enterarse
+    /// por las malas de que faltaba la mitad de cada receta.
+    /// </remarks>
+    Task<IReadOnlyCollection<Receta>> ListarCompletasPorAutorAsync(
+        Guid autorId,
+        CancellationToken cancelacion = default);
+
+    /// <summary>
     /// Busca entre lo que ese usuario puede ver: sus recetas —privadas o
     /// públicas— y las publicadas por otros.
     /// </summary>

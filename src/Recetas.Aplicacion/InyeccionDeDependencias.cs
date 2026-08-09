@@ -29,6 +29,7 @@ public static class InyeccionDeDependencias
         servicios.AddScoped<GestionDeDenuncias>();
         servicios.AddScoped<BorrarCuenta>();
         servicios.AddScoped<ConsultarResumenDeLaCuenta>();
+        servicios.AddScoped<ExportarMisDatos>();
 
         return servicios;
     }

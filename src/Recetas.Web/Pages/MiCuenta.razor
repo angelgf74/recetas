@@ -5,6 +5,7 @@
 @inject ClienteDeApi Api
 @inject EstadoDeSesion Sesion
 @inject NavigationManager Navegacion
+@inject IJSRuntime Js
 
 <PageTitle>Mi cuenta · Recetas</PageTitle>
 
@@ -29,6 +30,43 @@
         {
             <div class="aviso aviso-error" role="alert">@_aviso.Mensaje</div>
         }
+
+        @*
+            Antes de la zona de baja, no después: quien vaya a irse debería
+            encontrarse primero la forma de llevarse sus cosas.
+        *@
+        <section>
+            <h2>Descargar mis datos</h2>
+
+            <p>
+                Un archivo con <strong>todas tus recetas</strong> —ingredientes, elaboración
+                y raciones— y <strong>tus fotos</strong> tal como las subiste. También te dice
+                cuáles habías compartido.
+            </p>
+
+            <p class="ayuda">
+                Se descarga en formato <code>.zip</code>. Dentro hay un archivo de texto que
+                explica qué es cada cosa. Ojo: lleva tus fotos y tu correo, así que guárdalo
+                donde guardarías cualquier cosa personal.
+            </p>
+
+            @*
+                Botón y no enlace, aunque un enlace sería más simple.
+
+                Una descarga iniciada por el navegador no pasa por el manejador
+                que añade la cabecera de autorización, así que un `<a href>`
+                obligaría a meter el testigo de sesión en la dirección. Ahí
+                acabaría en los registros del servidor y en el historial del
+                navegador, que es exactamente lo que `tech-stack.md` prohíbe.
+
+                Así, la petición la hace el cliente autenticado y el archivo se
+                entrega al navegador ya descargado.
+            *@
+            <button type="button" class="boton boton-secundario"
+                    disabled="@_descargando" @onclick="DescargarAsync">
+                @(_descargando ? "Preparando el archivo…" : "Descargar mis datos")
+            </button>
+        </section>
 
         <section class="zona-peligrosa">
             <h2>Borrar mi cuenta</h2>
@@ -68,7 +106,36 @@
     private ResultadoDeLlamada? _resultado;
     private ResultadoDeLlamada? _aviso;
     private bool _cargando = true;
+    private bool _descargando;
     private string _contrasena = string.Empty;
+
+    private async Task DescargarAsync()
+    {
+        _descargando = true;
+        _aviso = null;
+
+        try
+        {
+            var (resultado, contenido) = await Api.DescargarMisDatosAsync();
+
+            if (!resultado.Correcta || contenido is null)
+            {
+                _aviso = resultado;
+                return;
+            }
+
+            using var referencia = new DotNetStreamReference(contenido);
+
+            await Js.InvokeVoidAsync(
+                "descargarArchivo",
+                $"recetas-{DateTime.Now:yyyy-MM-dd}.zip",
+                referencia);
+        }
+        finally
+        {
+            _descargando = false;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -39,6 +39,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 18. **[018 · Tests de la web](../features/018-tests-de-la-web/spec.md)** — bUnit para los componentes donde una condición decide qué acciones se ofrecen, que es donde ha fallado dos veces. Y de rebote lo que más urgía: al referenciar `Recetas.Web`, **`dotnet test` por fin la compila**. Antes no lo hacía, comprobado rompiéndola a propósito: 540 pruebas en verde y salida `0`. Un test de arquitectura vigila que esa referencia no desaparezca.
 
+19. **[019 · Exportar mis datos](../features/019-exportar-mis-datos/spec.md)** — descargar en un `.zip` todas tus recetas y tus fotos, con un `datos.json` legible y un `LEEME.txt` que lo explica. Es el derecho de portabilidad del RGPD que la 016 dejó fuera, y la otra mitad de "el autor manda sobre sus datos": irse sin poder llevarse nada es una puerta cerrada con llave. El paquete se escribe sobre la respuesta según se genera, sin cargar las fotos en memoria.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
