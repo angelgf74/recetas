@@ -53,7 +53,7 @@ fallan `AlCambiar_AvisaPorCorreoALaCuenta` (aplicación) y
 - [x] Actualizar la lista de endpoints en `CLAUDE.md`.
 - [x] Quitar la entrada del backlog en `roadmap.md` y añadir la feature a "Hecho".
 - [ ] Desplegar.
-- [ ] Mirarlo en pantalla: los dos campos, el mensaje de éxito, y que llega el correo real (en desarrollo, el `[CORREO SIMULADO]` del log). **No hecho en esta pasada.**
+- [x] Mirarlo en pantalla: comprobado en un dispositivo real el 9 de agosto de 2026. No se ha enviado el formulario contra la cuenta de producción, para no tocar una contraseña en uso.
 
 ## Mantenimiento (checklist recurrente)
 

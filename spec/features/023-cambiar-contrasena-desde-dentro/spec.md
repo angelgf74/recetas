@@ -28,9 +28,11 @@ salir de la sesión, pedir un enlace y volver a entrar por el correo.
 - [x] Superar el límite de peticiones responde `429`: es una superficie para probar contraseñas, igual que el inicio de sesión.
 - [x] La pantalla de "Mi cuenta" ofrece cambiar la contraseña, con dos campos: la actual y la nueva.
 
-**No se ha visto en un navegador.** La sección de "Mi cuenta" está escrita y
-compila, pero solo se ha comprobado por lectura de código: no hay test de
-bUnit para ella (no lo pedía `plan.md`) ni se ha abierto en un dispositivo.
+**Visto en pantalla en un dispositivo real** el 9 de agosto de 2026: la
+sección aparece bien colocada, con los dos campos, la ayuda de longitud
+mínima y separada de "Borrar mi cuenta". **No se ha completado el formulario
+con datos reales** contra la cuenta de producción, para no tocar una
+contraseña en uso; el envío no tiene test de bUnit (no lo pedía `plan.md`).
 
 ## Decisiones
 
