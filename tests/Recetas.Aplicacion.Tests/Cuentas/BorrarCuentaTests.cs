@@ -42,7 +42,7 @@ public class BorrarCuentaTests
             NullLogger<BorrarCuenta>.Instance);
 
     private GestionDeRecetas RecetasDe =>
-        new(_recetas, new ResolverIngredientes(_ingredientes), _almacen, _reloj);
+        new(_recetas, new ResolverIngredientes(_ingredientes), new ResolverEtiquetas(new RepositorioDeEtiquetasEnMemoria()), _almacen, _reloj);
 
     private GestionDeFotos Fotos =>
         new(_recetas, _almacen, new LimpiadorQueNoTocaNada(), new EscaladorFalso(), _reloj);

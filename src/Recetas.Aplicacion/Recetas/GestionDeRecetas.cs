@@ -8,12 +8,17 @@ namespace Recetas.Aplicacion.Recetas;
 /// <param name="Elaboracion">Pasos de elaboración.</param>
 /// <param name="Ingredientes">Líneas de ingrediente, al menos una.</param>
 /// <param name="Raciones">Para cuántas raciones son las cantidades, o <c>null</c> si no se sabe.</param>
+/// <param name="Etiquetas">
+/// Palabras libres, tal como las escribió el usuario. Puede estar vacía: son un
+/// complemento de <paramref name="TipoDePlato"/>, no una obligación.
+/// </param>
 public sealed record DatosDeReceta(
     string Nombre,
     TipoDePlato TipoDePlato,
     string Elaboracion,
     IReadOnlyCollection<LineaDeIngrediente> Ingredientes,
-    int? Raciones = null);
+    int? Raciones = null,
+    IReadOnlyCollection<string> Etiquetas = null!);
 
 /// <summary>
 /// Resultado de las operaciones que pueden fallar por permisos o por datos.
@@ -42,6 +47,7 @@ public enum ResultadoDeReceta
 public sealed class GestionDeRecetas(
     IRepositorioDeRecetas recetas,
     ResolverIngredientes resolverIngredientes,
+    ResolverEtiquetas resolverEtiquetas,
     IAlmacenDeFotos almacenDeFotos,
     IReloj reloj)
 {
@@ -57,6 +63,13 @@ public sealed class GestionDeRecetas(
             return (ResultadoDeReceta.DatosNoValidos, null);
         }
 
+        var etiquetaIds = await resolverEtiquetas.EjecutarAsync(datos.Etiquetas ?? [], cancelacion);
+
+        if (etiquetaIds is null)
+        {
+            return (ResultadoDeReceta.DatosNoValidos, null);
+        }
+
         Receta receta;
 
         try
@@ -66,6 +79,7 @@ public sealed class GestionDeRecetas(
             receta = Receta.Crear(
                 autorId, datos.Nombre, datos.TipoDePlato, datos.Elaboracion, reloj.Ahora, datos.Raciones);
             receta.ReemplazarIngredientes(lineas);
+            receta.ReemplazarEtiquetas(etiquetaIds);
         }
         catch (ArgumentException)
         {
@@ -140,11 +154,19 @@ public sealed class GestionDeRecetas(
             return ResultadoDeReceta.DatosNoValidos;
         }
 
+        var etiquetaIds = await resolverEtiquetas.EjecutarAsync(datos.Etiquetas ?? [], cancelacion);
+
+        if (etiquetaIds is null)
+        {
+            return ResultadoDeReceta.DatosNoValidos;
+        }
+
         try
         {
             receta.Actualizar(
                 datos.Nombre, datos.TipoDePlato, datos.Elaboracion, reloj.Ahora, datos.Raciones);
             receta.ReemplazarIngredientes(lineas);
+            receta.ReemplazarEtiquetas(etiquetaIds);
         }
         catch (ArgumentException)
         {

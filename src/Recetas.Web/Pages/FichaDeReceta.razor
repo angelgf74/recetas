@@ -36,6 +36,16 @@
                         <span class="marca">Privada</span>
                     }
                 </p>
+
+                @if (_receta.Etiquetas is { Count: > 0 })
+                {
+                    <ul class="etiquetas-de-receta">
+                        @foreach (var etiqueta in _receta.Etiquetas)
+                        {
+                            <li>@etiqueta</li>
+                        }
+                    </ul>
+                }
             </header>
 
             @if (_aviso is not null)

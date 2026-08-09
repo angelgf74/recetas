@@ -133,4 +133,60 @@ public class RecetaTests
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             receta.ReemplazarIngredientes([(Guid.NewGuid(), (decimal?)cantidad, Unidad.Gramo)]));
     }
+
+    [Fact]
+    public void ReemplazarEtiquetas_ListaVacia_EsValida()
+    {
+        // A diferencia de los ingredientes, las etiquetas no son obligatorias.
+        var receta = Crear();
+
+        receta.ReemplazarEtiquetas([]);
+
+        Assert.Empty(receta.Etiquetas);
+    }
+
+    [Fact]
+    public void ReemplazarEtiquetas_SustituyeLaListaEntera()
+    {
+        var receta = Crear();
+        var rapido = Guid.NewGuid();
+        var sinGluten = Guid.NewGuid();
+        var abuela = Guid.NewGuid();
+
+        receta.ReemplazarEtiquetas([rapido, sinGluten]);
+        receta.ReemplazarEtiquetas([rapido, abuela]);
+
+        Assert.Equal(2, receta.Etiquetas.Count);
+        Assert.DoesNotContain(receta.Etiquetas, vinculo => vinculo.EtiquetaId == sinGluten);
+        Assert.Contains(receta.Etiquetas, vinculo => vinculo.EtiquetaId == abuela);
+    }
+
+    [Fact]
+    public void ReemplazarEtiquetas_RechazaLaMismaEtiquetaDosVeces()
+    {
+        var receta = Crear();
+        var rapido = Guid.NewGuid();
+
+        Assert.Throws<ArgumentException>(() => receta.ReemplazarEtiquetas([rapido, rapido]));
+    }
+
+    [Fact]
+    public void ReemplazarEtiquetas_RechazaPasarseDelTope()
+    {
+        var receta = Crear();
+        var demasiadas = Enumerable.Range(0, Receta.MaximoDeEtiquetas + 1).Select(_ => Guid.NewGuid());
+
+        Assert.Throws<ArgumentException>(() => receta.ReemplazarEtiquetas(demasiadas));
+    }
+
+    [Fact]
+    public void ReemplazarEtiquetas_ExactamenteElTope_EsValido()
+    {
+        var receta = Crear();
+        var justas = Enumerable.Range(0, Receta.MaximoDeEtiquetas).Select(_ => Guid.NewGuid()).ToList();
+
+        receta.ReemplazarEtiquetas(justas);
+
+        Assert.Equal(Receta.MaximoDeEtiquetas, receta.Etiquetas.Count);
+    }
 }

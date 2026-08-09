@@ -22,6 +22,8 @@ public class RecetasDbContext(DbContextOptions<RecetasDbContext> opciones) : DbC
 
     public DbSet<Ingrediente> Ingredientes => Set<Ingrediente>();
 
+    public DbSet<Etiqueta> Etiquetas => Set<Etiqueta>();
+
     public DbSet<Denuncia> Denuncias => Set<Denuncia>();
 
     public DbSet<Favorito> Favoritos => Set<Favorito>();

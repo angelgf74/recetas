@@ -90,5 +90,16 @@ public sealed class ConfiguracionDeReceta : IEntityTypeConfiguration<Receta>
             .WithOne()
             .HasForeignKey(foto => foto.RecetaId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        constructor.Metadata
+            .FindNavigation(nameof(Receta.Etiquetas))!
+            .SetPropertyAccessMode(PropertyAccessMode.Field);
+
+        // Cascada hacia el vínculo, nunca hacia el catálogo: borrar la receta
+        // borra sus filas de etiquetas_de_receta, no las etiquetas compartidas.
+        constructor.HasMany(receta => receta.Etiquetas)
+            .WithOne()
+            .HasForeignKey(vinculo => vinculo.RecetaId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

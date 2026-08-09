@@ -13,8 +13,16 @@ public sealed class Receta
     /// <summary>Tope alto pero finito: evita factores absurdos al escalar.</summary>
     public const int RacionesMaximas = 100;
 
+    /// <summary>
+    /// Tope de etiquetas por receta. Sin él, el campo sería una forma de meter
+    /// texto libre sin límite, que es justo lo que ya cubre la elaboración con
+    /// su propio tope.
+    /// </summary>
+    public const int MaximoDeEtiquetas = 10;
+
     private readonly List<IngredienteDeReceta> _ingredientes = [];
     private readonly List<Foto> _fotos = [];
+    private readonly List<EtiquetaDeReceta> _etiquetas = [];
 
     private Receta(
         Guid id,
@@ -89,6 +97,12 @@ public sealed class Receta
     public DateTimeOffset FechaDeModificacion { get; private set; }
 
     public IReadOnlyCollection<IngredienteDeReceta> Ingredientes => _ingredientes;
+
+    /// <summary>
+    /// Etiquetas libres. Complemento de <see cref="TipoDePlato"/>, no sustituto:
+    /// puede estar vacía, a diferencia de los ingredientes.
+    /// </summary>
+    public IReadOnlyCollection<EtiquetaDeReceta> Etiquetas => _etiquetas;
 
     /// <summary>
     /// Fotos de la receta. No tienen permisos propios: heredan los de la receta,
@@ -293,6 +307,35 @@ public sealed class Receta
 
         _ingredientes.Clear();
         _ingredientes.AddRange(nuevas);
+    }
+
+    /// <summary>
+    /// Sustituye por completo la lista de etiquetas. Una lista vacía es válida:
+    /// a diferencia de los ingredientes, las etiquetas no son obligatorias.
+    /// </summary>
+    public void ReemplazarEtiquetas(IEnumerable<Guid> etiquetaIds)
+    {
+        ArgumentNullException.ThrowIfNull(etiquetaIds);
+
+        var lista = etiquetaIds.ToList();
+
+        if (lista.Count > MaximoDeEtiquetas)
+        {
+            throw new ArgumentException(
+                $"Una receta no puede llevar más de {MaximoDeEtiquetas} etiquetas.", nameof(etiquetaIds));
+        }
+
+        // Mismo criterio que ReemplazarIngredientes: un duplicado no significa
+        // nada y además rompería la clave compuesta al guardar. En la práctica
+        // no debería llegar hasta aquí —ResolverEtiquetas ya deduplica por
+        // nombre— pero el dominio no confía en que quien lo llame lo haga bien.
+        if (lista.Distinct().Count() != lista.Count)
+        {
+            throw new ArgumentException("La receta repite alguna etiqueta.", nameof(etiquetaIds));
+        }
+
+        _etiquetas.Clear();
+        _etiquetas.AddRange(lista.Select(id => EtiquetaDeReceta.Crear(Id, id)));
     }
 
     public Foto AnadirFoto(TipoDeImagen tipo, long tamanoEnBytes, DateTimeOffset ahora)

@@ -16,6 +16,9 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
             // necesita, igual que el borrado, que debe conocerlas para borrar sus
             // archivos del disco.
             .Include(receta => receta.Fotos)
+            // Y las etiquetas, que la ficha muestra junto al tipo de plato.
+            .Include(receta => receta.Etiquetas)
+            .ThenInclude(vinculo => vinculo.Etiqueta)
             .FirstOrDefaultAsync(receta => receta.Id == id, cancelacion);
 
     public async Task<IReadOnlyCollection<Receta>> ListarCompletasPorAutorAsync(
@@ -99,6 +102,16 @@ public sealed class RepositorioDeRecetasEf(RecetasDbContext contexto) : IReposit
 
             consulta = consulta.Where(receta => receta.Ingredientes
                 .Any(linea => linea.Ingrediente!.NombreParaBusqueda.Contains(buscado)));
+        }
+
+        // Mismo patrón que los ingredientes: un Where por etiqueta pedida, no un
+        // único Any con la lista entera, para exigir que estén todas.
+        foreach (var etiqueta in criterios.Etiquetas)
+        {
+            var buscada = etiqueta;
+
+            consulta = consulta.Where(receta => receta.Etiquetas
+                .Any(vinculo => vinculo.Etiqueta!.NombreParaBusqueda.Contains(buscada)));
         }
 
         return await consulta

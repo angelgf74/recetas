@@ -160,6 +160,56 @@ public class RecetasTests(ApiConPostgresFixture api) : IClassFixture<ApiConPostg
             (await cliente.PostAsJsonAsync("/recetas", peticion)).StatusCode);
     }
 
+    // ------------------------------------------------------------ Etiquetas
+
+    [Fact]
+    public async Task Etiquetas_IdaYVueltaPorLaApi()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+
+        var peticion = Peticion();
+        peticion.Etiquetas = ["Rápido", "Sin gluten"];
+
+        var creada = await (await cliente.PostAsJsonAsync("/recetas", peticion))
+            .Content.ReadFromJsonAsync<RespuestaDeReceta>();
+
+        // Ya en minúsculas, como el resto de nombres del catálogo.
+        Assert.Equal(["rápido", "sin gluten"], creada!.Etiquetas!.OrderBy(e => e, StringComparer.Ordinal));
+
+        var editada = Peticion("Con menos etiquetas");
+        editada.Etiquetas = ["Rápido"];
+
+        await cliente.PutAsJsonAsync($"/recetas/{creada.Id}", editada);
+
+        var reLeida = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{creada.Id}");
+        Assert.Equal(["rápido"], reLeida!.Etiquetas);
+    }
+
+    [Fact]
+    public async Task SinEtiquetas_EsValido()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+
+        var creacion = await cliente.PostAsJsonAsync("/recetas", Peticion());
+
+        Assert.Equal(HttpStatusCode.Created, creacion.StatusCode);
+        var creada = await creacion.Content.ReadFromJsonAsync<RespuestaDeReceta>();
+        Assert.Empty(creada!.Etiquetas!);
+    }
+
+    [Fact]
+    public async Task MasEtiquetasQueElTope_Responde400()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        var peticion = Peticion();
+        peticion.Etiquetas = Enumerable.Range(0, PeticionDeReceta.MaximoDeEtiquetas + 1)
+            .Select(numero => $"etiqueta-{numero}")
+            .ToList();
+
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await cliente.PostAsJsonAsync("/recetas", peticion)).StatusCode);
+    }
+
     // -------------------------------------------------------- Persistencia
 
     [Fact]

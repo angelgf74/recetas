@@ -228,10 +228,12 @@ public static class RecetasEndpoints
             tipoDePlato = valor;
         }
 
-        // `ingrediente` se repite en la consulta: ?ingrediente=tomate&ingrediente=albahaca
+        // `ingrediente` y `etiqueta` se repiten en la consulta:
+        // ?ingrediente=tomate&ingrediente=albahaca&etiqueta=rapido
         var ingredientes = peticion.Query["ingrediente"].Where(valor => valor is not null).ToList()!;
+        var etiquetas = peticion.Query["etiqueta"].Where(valor => valor is not null).ToList()!;
 
-        var criterios = CriteriosDeBusqueda.Crear(nombre, ingredientes!, tipoDePlato);
+        var criterios = CriteriosDeBusqueda.Crear(nombre, ingredientes!, tipoDePlato, etiquetas!);
 
         var (resultados, hayMas) = await gestion.BuscarAsync(usuarioId, criterios, cancelacion);
 
@@ -419,7 +421,8 @@ public static class RecetasEndpoints
             return false;
         }
 
-        datos = new DatosDeReceta(peticion.Nombre, tipo, peticion.Elaboracion, lineas, peticion.Raciones);
+        datos = new DatosDeReceta(
+            peticion.Nombre, tipo, peticion.Elaboracion, lineas, peticion.Raciones, peticion.Etiquetas);
         return true;
     }
 
@@ -474,7 +477,12 @@ public static class RecetasEndpoints
             // Solo sobre lo ajeno y ya publicado: sobre lo propio ya están las
             // acciones de siempre, y sobre lo privado no hay nada que retirar.
             esResponsable && !receta.EsDe(usuarioId) && receta.EsPublica,
-            esFavorita);
+            esFavorita,
+            receta.Etiquetas
+                .Select(vinculo => vinculo.Etiqueta?.Nombre.Valor ?? string.Empty)
+                .Where(nombre => nombre.Length > 0)
+                .OrderBy(nombre => nombre, StringComparer.Ordinal)
+                .ToList());
 
     private static IResult NoEncontrada() =>
         Results.Json(new RespuestaDeError(MensajeDeNoEncontrada), statusCode: StatusCodes.Status404NotFound);

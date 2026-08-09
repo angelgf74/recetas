@@ -73,6 +73,50 @@ public class BusquedaTests(ApiConPostgresFixture api) : IClassFixture<ApiConPost
     }
 
     [Fact]
+    public async Task Busca_PorEtiquetaSinAcentos()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        await CrearConEtiquetasAsync(cliente, "Con etiqueta", ["Rápido"]);
+        await CrearConEtiquetasAsync(cliente, "Sin ella", ["Lento"]);
+
+        var resultado = await BuscarAsync(cliente, "etiqueta=rapido");
+
+        Assert.Single(resultado.Resultados);
+        Assert.Equal("Con etiqueta", resultado.Resultados.Single().Nombre);
+    }
+
+    [Fact]
+    public async Task VariasEtiquetas_ExigenQueEstenTodas()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        await CrearConEtiquetasAsync(cliente, "Con las dos", ["Rápido", "Sin gluten"]);
+        await CrearConEtiquetasAsync(cliente, "Solo una", ["Rápido"]);
+
+        var resultado = await BuscarAsync(cliente, $"etiqueta=rapido&etiqueta={Uri.EscapeDataString("sin gluten")}");
+
+        Assert.Single(resultado.Resultados);
+        Assert.Equal("Con las dos", resultado.Resultados.Single().Nombre);
+    }
+
+    [Fact]
+    public async Task Etiquetas_DeUnaPrivadaAjena_NoFiltranNada()
+    {
+        // El filtro de visibilidad va antes que el de etiqueta en la misma
+        // consulta: buscar por una etiqueta que solo lleva una receta privada
+        // ajena no debe encontrarla, o la búsqueda serviría para averiguar qué
+        // etiquetas usa otra persona en lo que no comparte.
+        var ana = await ClienteAutenticadoAsync();
+        var bruno = await ClienteAutenticadoAsync();
+        var etiquetaUnica = $"secreta-{Guid.NewGuid():N}";
+
+        await CrearConEtiquetasAsync(ana, "Privada de Ana", [etiquetaUnica]);
+
+        var resultado = await BuscarAsync(bruno, $"etiqueta={etiquetaUnica}");
+
+        Assert.Empty(resultado.Resultados);
+    }
+
+    [Fact]
     public async Task Busca_PorTipoDePlato()
     {
         var cliente = await ClienteAutenticadoAsync();
@@ -231,6 +275,22 @@ public class BusquedaTests(ApiConPostgresFixture api) : IClassFixture<ApiConPost
                     par.Unidad == "AlGusto" ? null : 1m,
                     par.Unidad))
                 .ToList()
+        });
+
+        var receta = await respuesta.Content.ReadFromJsonAsync<RespuestaDeReceta>();
+        return receta!.Id;
+    }
+
+    private static async Task<Guid> CrearConEtiquetasAsync(
+        HttpClient cliente, string nombre, List<string> etiquetas)
+    {
+        var respuesta = await cliente.PostAsJsonAsync("/recetas", new PeticionDeReceta
+        {
+            Nombre = nombre,
+            TipoDePlato = "PlatoPrincipal",
+            Elaboracion = "Pasos de la receta.",
+            Ingredientes = [new LineaDeIngredientePeticion("Patata", 1m, "Unidad")],
+            Etiquetas = etiquetas
         });
 
         var receta = await respuesta.Content.ReadFromJsonAsync<RespuestaDeReceta>();

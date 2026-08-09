@@ -49,6 +49,16 @@ public sealed class PeticionDeReceta
     public const int RacionesMinimas = 1;
 
     public const int RacionesMaximas = 100;
+
+    /// <summary>
+    /// Palabras libres, tal como las escribe el usuario; el servidor las
+    /// normaliza. Complemento de <see cref="TipoDePlato"/>, no obligatorio.
+    /// </summary>
+    [MaxLength(MaximoDeEtiquetas, ErrorMessage = "Como mucho {1} etiquetas.")]
+    public List<string> Etiquetas { get; set; } = [];
+
+    /// <summary>Debe coincidir con <c>Receta.MaximoDeEtiquetas</c> en el dominio.</summary>
+    public const int MaximoDeEtiquetas = 10;
 }
 
 /// <param name="Nombre">Nombre normalizado del ingrediente.</param>
@@ -121,7 +131,17 @@ public sealed record RespuestaDeReceta(
     /// deliberado, y `mission.md` explica por qué: un recuento haría competir a las
     /// recetas entre sí, que es lo que las valoraciones descartadas hacían.
     /// </remarks>
-    bool EsFavorita = false);
+    bool EsFavorita = false,
+    /// <summary>
+    /// Palabras libres, tal como están en el catálogo (ya en minúsculas, igual
+    /// que los nombres de ingrediente). Puede venir vacía.
+    /// </summary>
+    /// <remarks>
+    /// No entra en <see cref="ResumenDeReceta"/>: el listado no las necesita, y
+    /// añadirlas ahí costaría una consulta más por cada receta del listado.
+    /// Mismo argumento que llevó a dejar <c>EsFavorita</c> fuera del resumen.
+    /// </remarks>
+    IReadOnlyCollection<string>? Etiquetas = null);
 
 /// <summary>
 /// Receta en un listado: sin ingredientes ni elaboración.

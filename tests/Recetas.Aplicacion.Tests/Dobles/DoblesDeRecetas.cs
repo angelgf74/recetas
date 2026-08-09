@@ -182,3 +182,30 @@ public sealed class RepositorioDeIngredientesEnMemoria : IRepositorioDeIngredien
             ingredientes.Select(ingrediente => _catalogo[ingrediente.Nombre]).ToList());
     }
 }
+
+/// <summary>Calco de <see cref="RepositorioDeIngredientesEnMemoria"/>, para etiquetas.</summary>
+public sealed class RepositorioDeEtiquetasEnMemoria : IRepositorioDeEtiquetas
+{
+    private readonly Dictionary<NombreDeEtiqueta, Etiqueta> _catalogo = [];
+
+    public int Total => _catalogo.Count;
+
+    public Task<IReadOnlyCollection<Etiqueta>> BuscarPorNombresAsync(
+        IReadOnlyCollection<NombreDeEtiqueta> nombres,
+        CancellationToken cancelacion = default) =>
+        Task.FromResult<IReadOnlyCollection<Etiqueta>>(
+            nombres.Where(_catalogo.ContainsKey).Select(nombre => _catalogo[nombre]).ToList());
+
+    public Task<IReadOnlyCollection<Etiqueta>> AnadirNuevasAsync(
+        IReadOnlyCollection<Etiqueta> etiquetas,
+        CancellationToken cancelacion = default)
+    {
+        foreach (var etiqueta in etiquetas)
+        {
+            _catalogo.TryAdd(etiqueta.Nombre, etiqueta);
+        }
+
+        return Task.FromResult<IReadOnlyCollection<Etiqueta>>(
+            etiquetas.Select(etiqueta => _catalogo[etiqueta.Nombre]).ToList());
+    }
+}

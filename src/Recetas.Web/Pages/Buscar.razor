@@ -24,6 +24,13 @@
         </div>
 
         <div class="campo">
+            <label for="etiquetas">Etiquetas</label>
+            <input id="etiquetas" type="search" @bind="_etiquetas"
+                   placeholder="rápido, sin gluten" />
+            <p class="ayuda">Separadas por comas. Se buscan recetas que lleven <strong>todas</strong>.</p>
+        </div>
+
+        <div class="campo">
             <label for="tipo">Tipo de plato</label>
             <select id="tipo" @bind="_tipo">
                 <option value="">Cualquiera</option>
@@ -97,6 +104,7 @@
 @code {
     private string _nombre = string.Empty;
     private string _ingredientes = string.Empty;
+    private string _etiquetas = string.Empty;
     private string _tipo = string.Empty;
 
     private RespuestaDeBusqueda? _busqueda;
@@ -108,10 +116,13 @@
         _buscando = true;
         _resultado = null;
 
-        var lista = _ingredientes
+        var ingredientes = _ingredientes
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        (_resultado, _busqueda) = await Api.BuscarAsync(_nombre, lista, _tipo);
+        var etiquetas = _etiquetas
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        (_resultado, _busqueda) = await Api.BuscarAsync(_nombre, ingredientes, _tipo, etiquetas);
 
         _buscando = false;
     }

@@ -280,7 +280,8 @@ public sealed class ClienteDeApi(HttpClient http)
     public Task<(ResultadoDeLlamada Resultado, RespuestaDeBusqueda? Busqueda)> BuscarAsync(
         string? nombre,
         IEnumerable<string> ingredientes,
-        string? tipo)
+        string? tipo,
+        IEnumerable<string>? etiquetas = null)
     {
         var partes = new List<string>();
 
@@ -292,6 +293,11 @@ public sealed class ClienteDeApi(HttpClient http)
         foreach (var ingrediente in ingredientes.Where(valor => !string.IsNullOrWhiteSpace(valor)))
         {
             partes.Add($"ingrediente={Uri.EscapeDataString(ingrediente)}");
+        }
+
+        foreach (var etiqueta in (etiquetas ?? []).Where(valor => !string.IsNullOrWhiteSpace(valor)))
+        {
+            partes.Add($"etiqueta={Uri.EscapeDataString(etiqueta)}");
         }
 
         if (!string.IsNullOrWhiteSpace(tipo))

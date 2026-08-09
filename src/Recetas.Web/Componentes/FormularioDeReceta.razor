@@ -80,6 +80,13 @@
     </fieldset>
 
     <div class="campo">
+        <label for="etiquetas">Etiquetas</label>
+        <input id="etiquetas" type="text" @bind="_formulario.Etiquetas" disabled="@_enviando"
+               placeholder="rápido, sin gluten, de la abuela" />
+        <p class="ayuda">Opcional, separadas por comas. Complementan al tipo de plato, no lo sustituyen.</p>
+    </div>
+
+    <div class="campo">
         <label for="elaboracion">Elaboración</label>
         <InputTextArea id="elaboracion" rows="10" @bind-Value="_formulario.Elaboracion" disabled="@_enviando" />
         <ValidationMessage For="() => _formulario.Elaboracion" />
@@ -179,6 +186,7 @@
                 Unidad = linea.Unidad
             })
             .ToList();
+        _formulario.Etiquetas = string.Join(", ", Receta.Etiquetas ?? []);
         _formulario.Cargado = true;
     }
 
@@ -205,6 +213,10 @@
             // Una receta sin ingredientes no se puede guardar: se deja una línea
             // vacía para que el usuario no tenga que buscar el botón de añadir.
             : [new LineaEditable()];
+
+        // La importación (011) no trae etiquetas: no hay forma fiable de
+        // sacarlas de una página ajena. Se deja en blanco a propósito.
+        _formulario.Etiquetas = string.Join(", ", borrador.Etiquetas ?? []);
 
         _formulario.Cargado = true;
     }
@@ -254,6 +266,9 @@
                     linea.Nombre,
                     linea.Unidad == "AlGusto" ? null : linea.Cantidad,
                     linea.Unidad))
+                .ToList(),
+            Etiquetas = _formulario.Etiquetas
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .ToList()
         };
 
@@ -283,6 +298,9 @@
         public int? Raciones { get; set; }
 
         public List<LineaEditable> Ingredientes { get; set; } = [new()];
+
+        /// <summary>Texto tal como lo escribe el usuario, separado por comas.</summary>
+        public string Etiquetas { get; set; } = string.Empty;
     }
 
     private sealed class LineaEditable

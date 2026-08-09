@@ -28,7 +28,7 @@ public class RetirarPorModeracionTests
         new(_recetas, _usuarios, _correo, _reloj, NullLogger<RetirarPorModeracion>.Instance);
 
     private GestionDeRecetas RecetasDe =>
-        new(_recetas, new ResolverIngredientes(_ingredientes), _almacen, _reloj);
+        new(_recetas, new ResolverIngredientes(_ingredientes), new ResolverEtiquetas(new RepositorioDeEtiquetasEnMemoria()), _almacen, _reloj);
 
     public RetirarPorModeracionTests()
     {

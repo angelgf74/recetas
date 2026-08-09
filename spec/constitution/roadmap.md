@@ -53,6 +53,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 23. **[023 · Cambiar contraseña desde dentro](../features/023-cambiar-contrasena-desde-dentro/spec.md)** — con la sesión iniciada, cambiarla sabiendo la actual, sin pasar por el correo. La 008 dejó este caso fuera a propósito. Sigue el mismo orden que `BorrarCuenta`: se verifica la contraseña actual antes que validar la nueva, al revés que en el restablecimiento por correo, donde no hay ningún token de un solo uso que proteger de una errata. Avisa por correo al terminar, mismo patrón que la baja y la retirada por moderación: quien no lo pidió sabe que su contraseña está comprometida justo cuando más lo necesita.
 
+24. **[024 · Etiquetas libres](../features/024-etiquetas-libres/spec.md)** — palabras libres sobre una receta ("sin gluten", "rápido", "de la abuela"), complemento de `TipoDePlato` y no sustituto. Calco exacto del catálogo de ingredientes (003/006): una entidad de vínculo explícita (`EtiquetaDeReceta`) en lugar de un many-to-many implícito de EF, precisamente para no reabrir el terreno de la trampa de EF que documenta este archivo — clave `Guid` puesta por el dominio colgada de un padre ya rastreado. Buscar por etiqueta usa el mismo filtro **Y** que los ingredientes, y hereda su garantía de seguridad: el filtro de visibilidad va primero en la misma consulta, así que una etiqueta de una receta privada ajena nunca se puede usar para inferir nada.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -134,7 +136,6 @@ buenas prácticas en abstracto._
 
   Eso confirma de paso la decisión delicada de aquel día: en `assetlinks.json` va la huella del certificado con el que **Play refirma** (`4A:7E:85:…`), no la de subida. Con la de subida seguiría fallando, y sin ningún error que lo explicara: el enlace simplemente abriría el navegador.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
-- **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.
 - **Elegir la foto de portada** — hoy la receta se representa con la primera que se subió. Que el autor designe otra es un campo nuevo y un control en la ficha (sale de la 009).
 - **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).
 - **Importar también la foto de la receta** — descargar y republicar la imagen de un tercero tiene más aristas que el texto; quedó fuera de la 011.

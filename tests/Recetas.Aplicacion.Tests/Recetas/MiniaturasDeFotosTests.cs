@@ -26,7 +26,7 @@ public class MiniaturasDeFotosTests
         new(_recetas, _almacen, new LimpiadorQueNoTocaNada(), _escalador, _reloj);
 
     private GestionDeRecetas RecetasDe =>
-        new(_recetas, new ResolverIngredientes(_ingredientes), _almacen, _reloj);
+        new(_recetas, new ResolverIngredientes(_ingredientes), new ResolverEtiquetas(new RepositorioDeEtiquetasEnMemoria()), _almacen, _reloj);
 
     // ------------------------------------------------------------ Al subir
 

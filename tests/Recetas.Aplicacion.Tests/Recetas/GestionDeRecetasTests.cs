@@ -8,6 +8,7 @@ public class GestionDeRecetasTests
 {
     private readonly RepositorioDeRecetasEnMemoria _recetas = new();
     private readonly RepositorioDeIngredientesEnMemoria _ingredientes = new();
+    private readonly RepositorioDeEtiquetasEnMemoria _etiquetas = new();
     private readonly AlmacenDeFotosEnMemoria _fotos = new();
     private readonly RelojFalso _reloj = new(new DateTimeOffset(2026, 3, 1, 12, 0, 0, TimeSpan.Zero));
 
@@ -15,7 +16,7 @@ public class GestionDeRecetasTests
     private readonly Guid _bruno = Guid.NewGuid();
 
     private GestionDeRecetas Gestion =>
-        new(_recetas, new ResolverIngredientes(_ingredientes), _fotos, _reloj);
+        new(_recetas, new ResolverIngredientes(_ingredientes), new ResolverEtiquetas(_etiquetas), _fotos, _reloj);
 
     private static DatosDeReceta Datos(
         string nombre = "Tortilla de patatas",
@@ -27,6 +28,14 @@ public class GestionDeRecetasTests
             ingredientes.Length > 0
                 ? ingredientes
                 : [new LineaDeIngrediente("Patata", 500m, Unidad.Gramo)]);
+
+    private static DatosDeReceta DatosConEtiquetas(params string[] etiquetas) =>
+        new(
+            "Tortilla de patatas",
+            TipoDePlato.PlatoPrincipal,
+            "Batir los huevos, freír la patata, cuajar.",
+            [new LineaDeIngrediente("Patata", 500m, Unidad.Gramo)],
+            Etiquetas: etiquetas);
 
     // ---------------------------------------------------------------- Crear
 
@@ -215,5 +224,78 @@ public class GestionDeRecetasTests
 
         Assert.Equal(ResultadoDeReceta.NoEncontrada, resultado);
         Assert.Single(_recetas.Todas);
+    }
+
+    // ------------------------------------------------------------- Etiquetas
+
+    [Fact]
+    public async Task Crear_SinEtiquetas_EsValido()
+    {
+        var (resultado, receta) = await Gestion.CrearAsync(_ana, Datos());
+
+        Assert.Equal(ResultadoDeReceta.Correcto, resultado);
+        Assert.Empty(receta!.Etiquetas);
+    }
+
+    [Fact]
+    public async Task Crear_ConEtiquetasNuevas_LasDaDeAltaEnElCatalogo()
+    {
+        var (resultado, receta) = await Gestion.CrearAsync(_ana, DatosConEtiquetas("Rápido", "Sin gluten"));
+
+        Assert.Equal(ResultadoDeReceta.Correcto, resultado);
+        Assert.Equal(2, receta!.Etiquetas.Count);
+        Assert.Equal(2, _etiquetas.Total);
+    }
+
+    [Fact]
+    public async Task Crear_ReutilizaLasEtiquetasDelCatalogo()
+    {
+        var gestion = Gestion;
+
+        await gestion.CrearAsync(_ana, DatosConEtiquetas("Rápido"));
+        await gestion.CrearAsync(_bruno, DatosConEtiquetas("  rápido  "));
+
+        // Dos recetas de dos usuarios, una única etiqueta en el catálogo: es lo
+        // que hace posible buscar por ella.
+        Assert.Equal(1, _etiquetas.Total);
+    }
+
+    [Fact]
+    public async Task Crear_RepetirLaMismaEtiqueta_NoLaDuplica()
+    {
+        var (resultado, receta) = await Gestion.CrearAsync(_ana, DatosConEtiquetas("Rápido", "  rápido "));
+
+        Assert.Equal(ResultadoDeReceta.Correcto, resultado);
+        Assert.Single(receta!.Etiquetas);
+    }
+
+    [Fact]
+    public async Task Crear_MasEtiquetasQueElTope_RechazaLaReceta()
+    {
+        var demasiadas = Enumerable.Range(0, Receta.MaximoDeEtiquetas + 1)
+            .Select(numero => $"etiqueta-{numero}")
+            .ToArray();
+
+        var (resultado, receta) = await Gestion.CrearAsync(_ana, DatosConEtiquetas(demasiadas));
+
+        Assert.Equal(ResultadoDeReceta.DatosNoValidos, resultado);
+        Assert.Null(receta);
+        Assert.Empty(_recetas.Todas);
+    }
+
+    [Fact]
+    public async Task Actualizar_PuedeQuitarTodasLasEtiquetas()
+    {
+        var gestion = Gestion;
+        var (_, creada) = await gestion.CrearAsync(_ana, DatosConEtiquetas("Rápido"));
+
+        await gestion.ActualizarAsync(_ana, creada!.Id, new DatosDeReceta(
+            "Tortilla de patatas",
+            TipoDePlato.PlatoPrincipal,
+            "Pasos",
+            [new LineaDeIngrediente("Patata", 500m, Unidad.Gramo)],
+            Etiquetas: []));
+
+        Assert.Empty(creada.Etiquetas);
     }
 }
