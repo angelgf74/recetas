@@ -298,6 +298,21 @@ a {
     gap: var(--espacio-4);
     margin-left: auto;
     font-size: var(--texto-pequeno);
+
+    /* Cinco enlaces no caben en un móvil estrecho. Sin esto, los flex-item se
+       encogen por debajo del ancho de su texto y las palabras se parten
+       ("Mi" / "recetario") en lugar de desbordar; con esto, la fila entera se
+       desliza y cada enlace conserva su ancho natural. */
+    flex-shrink: 1;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.navegacion a,
+.navegacion button {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* Listados ---------------------------------------------------------------- */
