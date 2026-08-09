@@ -47,21 +47,24 @@
 
             @if (_receta.Fotos.Count > 0)
             {
-                <section class="fotos">
-                    @foreach (var foto in _receta.Fotos)
+                @*
+                    Miniaturas, no las fotos enteras. Antes la ficha descargaba
+                    cada archivo completo —y en base64, un 33 % más— solo para
+                    enseñar la receta. El visor es lo que permite que aquí quepan
+                    miniaturas sin perder la foto grande.
+                *@
+                <section class="tira-de-fotos" @ref="_tiraDeFotos" tabindex="-1">
+                    @for (var posicion = 0; posicion < _receta.Fotos.Count; posicion++)
                     {
-                        <figure>
-                            <FotoDeReceta RecetaId="_receta.Id" FotoId="foto.Id" />
-                            @if (EsMia)
-                            {
-                                <figcaption>
-                                    <Confirmacion Texto="Borrar foto"
-                                                  Icono="papelera"
-                                                  Pregunta="¿Borrar esta foto? No se puede deshacer."
-                                                  AlConfirmar="() => BorrarFotoAsync(foto.Id)" />
-                                </figcaption>
-                            }
-                        </figure>
+                        var indice = posicion;
+                        var foto = _receta.Fotos.ElementAt(indice);
+
+                        <button type="button" class="tira-foto"
+                                title="Ver la foto @(indice + 1)"
+                                aria-label="Ver la foto @(indice + 1) a tamaño completo"
+                                @onclick="() => AbrirVisor(indice)">
+                            <FotoDeReceta RecetaId="_receta.Id" FotoId="foto.Id" Miniatura="true" />
+                        </button>
                     }
                 </section>
             }
@@ -261,6 +264,16 @@
                 </section>
             }
         </article>
+
+        @if (_visorAbierto)
+        {
+            <VisorDeFotos RecetaId="_receta.Id"
+                          Fotos="_receta.Fotos.ToList()"
+                          Indice="_fotoEnElVisor"
+                          PuedeBorrar="EsMia"
+                          AlCerrar="CerrarVisorAsync"
+                          AlBorrar="BorrarFotoAsync" />
+        }
     }
 </RutaProtegida>
 
@@ -401,6 +414,30 @@
             _aviso = null;
             await RecargarAsync();
         }
+    }
+
+    // ---------------------------------------------------------------- Visor
+
+    private ElementReference _tiraDeFotos;
+    private bool _visorAbierto;
+    private int _fotoEnElVisor;
+
+    private void AbrirVisor(int indice)
+    {
+        _fotoEnElVisor = indice;
+        _visorAbierto = true;
+    }
+
+    /// <summary>
+    /// Al cerrar, el foco vuelve a la tira. Si no, quien navega con el teclado se
+    /// queda con el foco en el cuerpo del documento y tiene que recorrer la página
+    /// entera para volver a donde estaba.
+    /// </summary>
+    private async Task CerrarVisorAsync()
+    {
+        _visorAbierto = false;
+
+        await _tiraDeFotos.FocusAsync();
     }
 
     private async Task BorrarRecetaAsync()

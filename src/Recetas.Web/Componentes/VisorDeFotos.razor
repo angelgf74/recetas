@@ -1,0 +1,155 @@
+@using Recetas.Contratos.Recetas
+
+@*
+    Foto a tamaño completo sobre la ficha.
+
+    Existe para que la ficha pueda pintar miniaturas: el endpoint de fotos exige
+    cabecera de autorización, así que un enlace a la imagen no vale y sin este
+    visor no habría forma de ver el archivo entero.
+
+    Todo con Blazor y sin JavaScript. La política de seguridad de contenido no
+    permite `unsafe-inline`, así que un manejador escrito en el HTML funcionaría
+    en desarrollo y lo bloquearía nginx en producción.
+*@
+
+<div class="visor" role="dialog" aria-modal="true" aria-label="Foto de la receta"
+     tabindex="-1" @ref="_dialogo" @onkeydown="AlPulsarTeclaAsync" @onclick="CerrarAsync">
+
+    @* El clic en la foto y en los controles no debe cerrar: solo el del fondo.
+       Sin esta parada, pulsar «siguiente» cerraría el visor. *@
+    <div class="visor-contenido" @onclick:stopPropagation="true">
+
+        <div class="visor-barra">
+            <span class="visor-cuenta" role="status">
+                Foto @(_indice + 1) de @Fotos.Count
+            </span>
+
+            <div class="visor-barra-acciones">
+                @if (PuedeBorrar)
+                {
+                    <Confirmacion Texto="Borrar foto"
+                                  Icono="papelera"
+                                  Pregunta="¿Borrar esta foto? No se puede deshacer."
+                                  AlConfirmar="BorrarAsync" />
+                }
+
+                <button type="button" class="boton-accion" title="Cerrar" aria-label="Cerrar"
+                        @onclick="CerrarAsync">
+                    <Icono Nombre="cerrar" />
+                </button>
+            </div>
+        </div>
+
+        <div class="visor-imagen">
+            @if (HayVarias)
+            {
+                <button type="button" class="visor-paso" title="Foto anterior" aria-label="Foto anterior"
+                        @onclick="Anterior">
+                    <Icono Nombre="anterior" />
+                </button>
+            }
+
+            @* La clave hace que Blazor rehaga el componente al cambiar de foto en
+               lugar de reutilizarlo: sin ella se vería la foto vieja hasta que
+               terminara de bajar la nueva. *@
+            <FotoDeReceta @key="FotoActual.Id" RecetaId="RecetaId" FotoId="FotoActual.Id" />
+
+            @if (HayVarias)
+            {
+                <button type="button" class="visor-paso" title="Foto siguiente" aria-label="Foto siguiente"
+                        @onclick="Siguiente">
+                    <Icono Nombre="siguiente" />
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Guid RecetaId { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<FotoRespuesta> Fotos { get; set; } = [];
+
+    /// <summary>Por qué foto se abre.</summary>
+    [Parameter]
+    public int Indice { get; set; }
+
+    /// <summary>
+    /// Si se ofrece borrar. Lo decide la ficha, que sabe si la receta es del
+    /// usuario. La autorización de verdad la hace el servidor al recibir la
+    /// petición; esto solo evita ofrecer lo que va a fallar.
+    /// </summary>
+    [Parameter]
+    public bool PuedeBorrar { get; set; }
+
+    [Parameter, EditorRequired]
+    public EventCallback AlCerrar { get; set; }
+
+    /// <summary>
+    /// Avisa de que hay que borrar esa foto. El visor no llama a la API: quien
+    /// abrió el visor ya sabe borrar y recargar, y un componente de presentación
+    /// que además escribe en el servidor tiene dos motivos para cambiar.
+    /// </summary>
+    [Parameter]
+    public EventCallback<Guid> AlBorrar { get; set; }
+
+    private ElementReference _dialogo;
+    private bool _enfocado;
+    private int _indice;
+
+    private bool HayVarias => Fotos.Count > 1;
+
+    private FotoRespuesta FotoActual => Fotos[_indice];
+
+    protected override void OnParametersSet() =>
+        _indice = Math.Clamp(Indice, 0, Math.Max(Fotos.Count - 1, 0));
+
+    protected override async Task OnAfterRenderAsync(bool primeraVez)
+    {
+        // El foco entra una sola vez, al abrir. Si se pidiera en cada render, el
+        // visor robaría el foco al pulsar «siguiente» o al confirmar un borrado.
+        if (primeraVez && !_enfocado)
+        {
+            _enfocado = true;
+            await _dialogo.FocusAsync();
+        }
+    }
+
+    /// <summary>
+    /// Da la vuelta al llegar al final. Con dos o tres fotos, toparse con un botón
+    /// que no hace nada se lee como que la aplicación se ha quedado colgada.
+    /// </summary>
+    private void Siguiente() => _indice = (_indice + 1) % Fotos.Count;
+
+    private void Anterior() => _indice = (_indice - 1 + Fotos.Count) % Fotos.Count;
+
+    private async Task AlPulsarTeclaAsync(KeyboardEventArgs argumentos)
+    {
+        switch (argumentos.Key)
+        {
+            case "Escape":
+                await CerrarAsync();
+                break;
+
+            case "ArrowRight" when HayVarias:
+                Siguiente();
+                break;
+
+            case "ArrowLeft" when HayVarias:
+                Anterior();
+                break;
+        }
+    }
+
+    private Task CerrarAsync() => AlCerrar.InvokeAsync();
+
+    private async Task BorrarAsync()
+    {
+        // Se avisa del borrado y se cierra: la foto que se estaba mirando ya no
+        // está, y dejar el visor abierto sobre un hueco es peor que salir.
+        await AlBorrar.InvokeAsync(FotoActual.Id);
+        await CerrarAsync();
+    }
+}

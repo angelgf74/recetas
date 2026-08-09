@@ -118,6 +118,38 @@ public class FichaDeRecetaTests : ContextoDeWeb
         Assert.Contains("Guardar en favoritos", pantalla.Markup);
     }
 
+    [Fact]
+    public void ConFotos_LaFichaPideMiniaturasYNoLosArchivosCompletos()
+    {
+        // Es la razón de ser de la 022. Antes la ficha descargaba cada archivo
+        // entero —y en base64, un 33 % más— solo para enseñar la receta.
+        var foto = new FotoRespuesta(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"), "Jpeg", 3_000_000);
+        Respuestas.Para($"recetas/{Id}/fotos/{foto.Id}/miniatura", System.Net.HttpStatusCode.OK);
+
+        var pantalla = Pintar(Receta(esMia: true, fotos: [foto]));
+
+        pantalla.WaitForAssertion(() =>
+            Assert.Contains($"recetas/{Id}/fotos/{foto.Id}/miniatura", Respuestas.Peticiones));
+
+        Assert.DoesNotContain($"recetas/{Id}/fotos/{foto.Id}", Respuestas.Peticiones);
+    }
+
+    [Fact]
+    public void ConFotos_OfreceAbrirlasATamanoCompleto()
+    {
+        var foto = new FotoRespuesta(Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001"), "Jpeg", 3_000_000);
+        Respuestas.Para($"recetas/{Id}/fotos/{foto.Id}/miniatura", System.Net.HttpStatusCode.OK);
+        Respuestas.Para($"recetas/{Id}/fotos/{foto.Id}", System.Net.HttpStatusCode.OK);
+
+        var pantalla = Pintar(Receta(esMia: true, fotos: [foto]));
+
+        // Sin este botón, pasar la ficha a miniaturas dejaría la foto completa
+        // inalcanzable: el endpoint exige cabecera y no se puede enlazar.
+        pantalla.Find("button[aria-label='Ver la foto 1 a tamaño completo']").Click();
+
+        pantalla.WaitForAssertion(() => Assert.Contains("Foto 1 de 1", pantalla.Markup));
+    }
+
     // ------------------------------------------------------------- Auxiliares
 
     private IRenderedComponent<FichaDeReceta> Pintar(RespuestaDeReceta receta)
@@ -137,7 +169,8 @@ public class FichaDeRecetaTests : ContextoDeWeb
     private static RespuestaDeReceta Receta(
         bool esMia,
         bool puedoRetirarla = false,
-        bool esFavorita = false) =>
+        bool esFavorita = false,
+        IReadOnlyCollection<FotoRespuesta>? fotos = null) =>
         new(
             Id,
             "Tortilla de patatas",
@@ -147,7 +180,7 @@ public class FichaDeRecetaTests : ContextoDeWeb
             DateTimeOffset.UtcNow,
             DateTimeOffset.UtcNow,
             [new LineaDeIngredienteRespuesta("Patata", 500m, "Gramo")],
-            [],
+            fotos ?? [],
             esMia,
             Raciones: null,
             RacionesMostradas: null,

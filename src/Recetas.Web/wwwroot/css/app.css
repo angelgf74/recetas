@@ -545,6 +545,150 @@ a {
     margin-top: var(--espacio-2);
 }
 
+/* Tira de miniaturas de la ficha ------------------------------------------
+   Cada una es un botón: abre el visor. Se envuelve en un botón y no en un
+   enlace porque no hay ninguna dirección a la que ir — la foto se sirve con
+   cabecera de autorización y no se puede enlazar. */
+
+.tira-de-fotos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--espacio-2);
+}
+
+/* El contenedor recibe el foco al cerrar el visor, pero no es un control: el
+   anillo de foco lo dibujan las miniaturas, que sí lo son. */
+.tira-de-fotos:focus {
+    outline: none;
+}
+
+.tira-foto {
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: var(--radio);
+    cursor: pointer;
+}
+
+.tira-foto:focus-visible {
+    outline: 2px solid var(--color-acento);
+    outline-offset: 2px;
+}
+
+/* Visor de fotos ----------------------------------------------------------
+   Superposición a pantalla completa. El fondo oscuro no es decoración: la foto
+   viene en cualquier proporción y sin él quedaría flotando sobre el texto de la
+   receta. */
+
+.visor {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--espacio-3);
+    background-color: rgb(0 0 0 / 85%);
+}
+
+.visor:focus {
+    outline: none;
+}
+
+.visor-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: var(--espacio-2);
+    width: 100%;
+    max-width: 60rem;
+}
+
+.visor-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-3);
+    color: #fff;
+}
+
+.visor-barra-acciones {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-2);
+}
+
+.visor-cuenta {
+    font-size: var(--texto-pequeno);
+}
+
+.visor-imagen {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-2);
+}
+
+/* La foto manda sobre su caja: entera y dentro de la pantalla, sin recortar.
+   `.foto` de la ficha es de ancho completo, que aquí desbordaría en vertical. */
+.visor-imagen .foto {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+/* Los huecos de carga y error de `.foto` traen fondo claro y borde punteado,
+   pensados para la ficha. Sobre el fondo oscuro del visor hay que rehacerlos. */
+.visor-imagen .foto-cargando,
+.visor-imagen .foto-rota {
+    flex: 1 1 auto;
+    aspect-ratio: 4 / 3;
+    color: #fff;
+    background-color: rgb(255 255 255 / 8%);
+    border-color: rgb(255 255 255 / 30%);
+}
+
+.visor-paso {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: #fff;
+    background-color: rgb(255 255 255 / 12%);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.visor-paso:hover {
+    background-color: rgb(255 255 255 / 24%);
+}
+
+.visor .boton-accion {
+    color: #fff;
+    border-color: rgb(255 255 255 / 30%);
+}
+
+/* La confirmación de borrado se pinta dentro de la barra, sobre el fondo
+   oscuro: sin esto heredaría el color de texto de la página y no se leería. */
+.visor .confirmacion {
+    color: var(--color-texto);
+}
+
+/* En pantallas estrechas los botones de paso comen el ancho de la foto. Se
+   quedan, porque son la única forma de pasar sin gestos, pero más pequeños. */
+@media (max-width: 30rem) {
+    .visor-paso {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .visor-imagen {
+        gap: var(--espacio-1);
+    }
+}
+
 /* Acciones ---------------------------------------------------------------- */
 
 .acciones {

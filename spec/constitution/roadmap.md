@@ -49,6 +49,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
     La marca **sobrevive a que la receta deje de ser visible, pero la lista no la enseña**: el filtro de visibilidad va en la consulta, o los favoritos serían una forma de seguir viendo lo que alguien dejó de compartir.
 
+22. **[022 · Visor de fotos](../features/022-visor-de-fotos/spec.md)** — la ficha pasa a una tira de miniaturas y la foto se abre a tamaño completo sobre la página. La ganancia no es el visor: es que **la ficha deja de descargar todos los archivos enteros** —y en base64, un 33 % más— solo para enseñar la receta. No se podía hacer antes porque el endpoint de fotos exige cabecera de autorización y una imagen no se puede enlazar, así que sin visor la foto grande quedaba inalcanzable. Ni un endpoint nuevo: todo estaba desde la 009. Teclado y foco con Blazor, **sin JavaScript**, porque la política de seguridad de contenido no admite `unsafe-inline` y eso falla solo en producción.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -133,7 +135,6 @@ buenas prácticas en abstracto._
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.
 - **Elegir la foto de portada** — hoy la receta se representa con la primera que se subió. Que el autor designe otra es un campo nuevo y un control en la ficha (sale de la 009).
-- **Visor de fotos** — abrir una foto a tamaño completo desde la ficha. Hace falta antes de poder pasar la ficha a miniaturas, porque un enlace normal no vale: el endpoint exige cabecera de autorización.
 - **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).
 - **Importar también la foto de la receta** — descargar y republicar la imagen de un tercero tiene más aristas que el texto; quedó fuera de la 011.
 - **Más formatos de marcado al importar** (microdatos, RDFa) y páginas que montan la receta con JavaScript. Hoy solo se lee JSON-LD.
