@@ -95,11 +95,22 @@ buenas prácticas en abstracto._
   **No despliega nada**: desplegar sigue siendo deliberado con `publish.ps1`, que
   además exige el árbol limpio para que la release sea reproducible desde git.
 
-- **Comprobar que el límite de peticiones distingue de verdad a los usuarios.**
-  `LimitesDePeticiones` reparte por dirección de origen, y el propio código
-  advierte de que tras el túnel de Cloudflare puede llegar siempre la misma IP.
-  Se configuró `UseForwardedHeaders`, pero **no se ha comprobado en producción**:
-  si no funciona, todos comparten cubo y basta uno para dejar fuera a los demás.
+- ~~**Comprobar que el límite de peticiones distingue a los usuarios.**~~
+  **Comprobado el 9 de agosto de 2026 contra producción, y funciona.** Se agotó
+  el límite de inicio de sesión desde una IP externa (10 permitidos, el 11 con
+  `429`) y acto seguido una petición **directa a Kestrel desde el servidor**
+  respondió `401`, no `429`.
+
+  Eso lo demuestra: sin las cabeceras de reenvío, todo el tráfico externo llegaría
+  a Kestrel como `127.0.0.1` —cloudflared y nginx están ambos en local—, o sea el
+  mismo cubo que la petición local, y habría salido limitada.
+
+- **El registro de nginx no guarda la IP real.** Anota `127.0.0.1` en todas las
+  peticiones, porque usa el formato `combined` por defecto y `$remote_addr` es el
+  túnel. El limitador sí ve la IP verdadera —va por `X-Forwarded-For`—, pero **si
+  algún día hay abuso, el registro no dice de dónde viene**. Se arregla con un
+  `log_format` que incluya `$http_cf_connecting_ip`. Afecta a todas las
+  aplicaciones del servidor, no solo a esta.
 
 ### Producto y mantenimiento
 

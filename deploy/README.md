@@ -285,6 +285,45 @@ nunca se ha bajado tampoco. **Conviene repetir esta comprobación de vez en
 cuando**: lo que se estropea en silencio no suele ser el script, sino el testigo
 de acceso a OneDrive, que caduca sin avisar a nadie.
 
+## La IP real del cliente
+
+Cloudflare → cloudflared → nginx → Kestrel: **todos los saltos son locales**, así
+que sin cabeceras de reenvío cada petición llegaría a la API como `127.0.0.1` y
+el limitador metería a todos los usuarios en el mismo cubo. Bastaría un visitante
+activo para dejar a los demás sin alta y sin inicio de sesión.
+
+Lo resuelven dos piezas que hay que mantener juntas: nginx **sobrescribe**
+`X-Forwarded-For` con `$http_cf_connecting_ip` —no lo acumula, o un cliente
+podría inyectar entradas falsas— y la API confía en un único salto, solo desde
+loopback.
+
+**Comprobado el 9 de agosto de 2026 en producción.** La prueba, por si hay que
+repetirla tras tocar nginx o el túnel:
+
+```bash
+# 1. Agotar el límite desde fuera: 10 permitidos, el 11 debe dar 429.
+for i in $(seq 1 11); do
+  curl -s -o /dev/null -w "%{http_code}\n" -X POST https://recetas-api.angelgf.com.es/sesiones \
+    -H 'Content-Type: application/json' \
+    -d '{"correo":"sonda@ejemplo.com","contrasena":"credencial-falsa-1234"}'
+done
+
+# 2. Y acto seguido, desde el servidor y directo a Kestrel:
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://127.0.0.1:54009/sesiones \
+  -H 'Content-Type: application/json' \
+  -d '{"correo":"sonda@ejemplo.com","contrasena":"credencial-falsa-1234"}'
+```
+
+**`401` en el segundo paso significa que funciona**: los cubos son distintos. Un
+`429` significaría que el tráfico externo se está identificando como local, es
+decir, que las cabeceras no llegan.
+
+> **El registro de nginx no guarda la IP real.** Usa el formato `combined`, cuyo
+> `$remote_addr` es el túnel, así que **todo aparece como `127.0.0.1`**. El
+> limitador sí distingue, pero si algún día hay abuso el registro no dirá de
+> dónde viene. Se arregla con un `log_format` que incluya
+> `$http_cf_connecting_ip`, y afecta a todas las aplicaciones del servidor.
+
 ## Vigilancia
 
 `GET /salud` responde `200` solo si **la base de datos responde y el disco de las

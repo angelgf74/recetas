@@ -87,10 +87,18 @@ public static class LimitesDePeticiones
     /// Se reparte por dirección de origen.
     /// </summary>
     /// <remarks>
-    /// Limitación conocida: tras el túnel de Cloudflare, <c>RemoteIpAddress</c> es
-    /// la del túnel salvo que se configuren cabeceras de reenvío, con lo que todos
-    /// los usuarios compartirían cubo. Al desplegar hay que configurar
-    /// <c>ForwardedHeaders</c>; hasta entonces el límite es conservador pero global.
+    /// Tras el túnel de Cloudflare, <c>RemoteIpAddress</c> sería la del propio
+    /// túnel si no se configuraran cabeceras de reenvío, y entonces <b>todos los
+    /// usuarios compartirían cubo</b>: bastaría uno activo para dejar sin alta ni
+    /// inicio de sesión a los demás. Por eso nginx sobrescribe
+    /// <c>X-Forwarded-For</c> con la cabecera de Cloudflare y <c>Program</c>
+    /// configura <c>ForwardedHeaders</c> con un único salto de confianza.
+    /// <para>
+    /// <b>Comprobado en producción el 9 de agosto de 2026:</b> agotado el límite
+    /// desde una IP externa, una petición directa a Kestrel desde el propio
+    /// servidor seguía respondiendo <c>401</c> y no <c>429</c>. Sin las cabeceras
+    /// ambas habrían caído en el cubo de <c>127.0.0.1</c>.
+    /// </para>
     /// </remarks>
     private static string ClaveDeParticion(HttpContext contexto) =>
         contexto.Connection.RemoteIpAddress?.ToString() ?? "desconocido";
