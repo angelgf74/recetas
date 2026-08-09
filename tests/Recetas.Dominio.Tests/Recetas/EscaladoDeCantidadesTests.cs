@@ -114,4 +114,68 @@ public class EscaladoDeCantidadesTests
         Assert.Throws<ArgumentOutOfRangeException>(() =>
             EscaladoDeCantidades.Escalar(100m, Unidad.Gramo, 0m));
     }
+
+    // ------------------------------------------- Conversión de unidad (026)
+
+    [Fact]
+    public void Gramos_AlLlegarAMil_ConvierteAKilogramos()
+    {
+        var (cantidad, unidad) = EscaladoDeCantidades.EscalarConUnidad(500m, Unidad.Gramo, 2m);
+
+        Assert.Equal(Unidad.Kilogramo, unidad);
+        Assert.Equal(1m, cantidad);
+    }
+
+    [Fact]
+    public void Mililitros_AlLlegarAMil_ConvierteALitros()
+    {
+        var (cantidad, unidad) = EscaladoDeCantidades.EscalarConUnidad(250m, Unidad.Mililitro, 4m);
+
+        Assert.Equal(Unidad.Litro, unidad);
+        Assert.Equal(1m, cantidad);
+    }
+
+    [Fact]
+    public void PorDebajoDeMil_SigueEnGramos()
+    {
+        var (cantidad, unidad) = EscaladoDeCantidades.EscalarConUnidad(500m, Unidad.Gramo, 1.5m);
+
+        Assert.Equal(Unidad.Gramo, unidad);
+        Assert.Equal(750m, cantidad);
+    }
+
+    [Fact]
+    public void LaConversion_RedondeaUnaSolaVezEnLaUnidadDeDestino()
+    {
+        // 900 × 2 = 1800 g → 1,8 kg exactos antes de redondear; el kilogramo
+        // redondea a cuartos, así que el resultado final es 1,75 kg y no un
+        // redondeo distinto que arrastrara el paso intermedio en gramos.
+        var (cantidad, unidad) = EscaladoDeCantidades.EscalarConUnidad(900m, Unidad.Gramo, 2m);
+
+        Assert.Equal(Unidad.Kilogramo, unidad);
+        Assert.Equal(1.75m, cantidad);
+    }
+
+    [Theory]
+    [InlineData(Unidad.Cucharada)]
+    [InlineData(Unidad.Cucharadita)]
+    [InlineData(Unidad.Taza)]
+    [InlineData(Unidad.Unidad)]
+    [InlineData(Unidad.Kilogramo)]
+    [InlineData(Unidad.Litro)]
+    public void UnidadesSinPareja_NuncaCambianDeUnidad(Unidad unidad)
+    {
+        var (_, unidadFinal) = EscaladoDeCantidades.EscalarConUnidad(500m, unidad, 10m);
+
+        Assert.Equal(unidad, unidadFinal);
+    }
+
+    [Fact]
+    public void AlGusto_NoConvierteNiCambia()
+    {
+        var (cantidad, unidad) = EscaladoDeCantidades.EscalarConUnidad(null, Unidad.AlGusto, 4m);
+
+        Assert.Null(cantidad);
+        Assert.Equal(Unidad.AlGusto, unidad);
+    }
 }

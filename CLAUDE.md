@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado actual del repositorio
 
-**Las siete features del plan están terminadas, más la 008 (recuperar contraseña), la 009 (fotos en los listados), la 010 (escalar cantidades), la 011 (importar desde URL), la 021 (favoritos privados), la 022 (visor de fotos), la 023 (cambiar contraseña desde dentro), la 024 (etiquetas libres) y la 025 (elegir la foto de portada), salidas del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
+**Las siete features del plan están terminadas, más la 008 (recuperar contraseña), la 009 (fotos en los listados), la 010 (escalar cantidades), la 011 (importar desde URL), la 021 (favoritos privados), la 022 (visor de fotos), la 023 (cambiar contraseña desde dentro), la 024 (etiquetas libres), la 025 (elegir la foto de portada) y la 026 (convertir unidades al escalar), salidas del backlog.** El producto se usa entero desde el navegador. Lo siguiente vuelve a salir del backlog de `roadmap.md`.
 
 **Web:** portada, alta en dos pasos, login, recuperar contraseña en dos pasos, recetario con miniaturas, ficha, crear/editar, fotos, publicar y buscar. La sesión vive en `localStorage`; `ManejadorDeAutenticacion` pone la cabecera en cada petición y centraliza el `401`, y `RutaProtegida` redirige al login. Ninguna página construye peticiones a mano.
 
@@ -35,6 +35,8 @@ La **única excepción** es la retirada por moderación, y **no es un parámetro
 `POST /recetas/importaciones` **no crea nada**: devuelve un borrador que rellena el formulario. Es lo que mantiene la feature dentro del "no es un catálogo editorial" de `mission.md`, junto con que sea de una en una.
 
 **Escalar cantidades (010):** `Receta.Raciones` es opcional; sin ese dato no se puede escalar y la ficha no lo ofrece. `GET /recetas/{id}?raciones=N` devuelve las cantidades ajustadas y **no escribe nada**: escalar es leer. El cálculo va en `EscaladoDeCantidades`, en el dominio, porque lo que importa no es multiplicar sino **redondear a cantidades medibles** —contables a media unidad, gramos y mililitros a entero, el resto a cuartos, y nunca a cero—, y eso es regla de negocio: en Blazor quedaría fuera del alcance de Android. `AlGusto` y `Pizca` no escalan. Se escala **siempre desde lo guardado**, nunca desde lo ya escalado, para no acumular redondeos.
+
+**Convertir unidades al escalar (026):** gramo y mililitro pasan a kilogramo y litro cuando el resultado llega a 1000 — solo hacia arriba, solo esos dos pares. Vive en `EscaladoDeCantidades.EscalarConUnidad`, aparte de `Escalar`, y `Receta.EscalarA` solo llama a la versión que convierte **cuando de verdad se ha pedido escalar** (`PuedeEscalarseA`). La ficha en reposo y el formulario de edición piden la receta sin `?raciones=`, así que nunca ven la conversión: si la vieran, editar algo guardado en gramos mostraría kilogramos, y guardar sin tocar ese campo cambiaría la unidad guardada por el hecho de haberla mirado.
 
 **Miniaturas (009):** cada foto tiene una versión reducida en el mismo directorio, con sufijo `-min`. No lleva fila propia ni identificador: su ruta se deriva de la foto. Las fotos subidas antes de la 009 no tienen miniatura hasta que alguien la pide: se genera y se guarda en esa primera petición. **Esa generación perezosa va después de comprobar `PuedeVerla`**, o sería una puerta trasera a las fotos privadas ajenas.
 

@@ -169,4 +169,48 @@ public class RacionesDeRecetaTests
     {
         Assert.Null(Crear(raciones: null).RacionesMostradasPara(8));
     }
+
+    // -------------------------------------- Conversión de unidad (026)
+
+    [Fact]
+    public void AlEscalarYCruzarElUmbral_ConvierteDeUnidad()
+    {
+        var receta = Crear(raciones: 4);
+        receta.ReemplazarIngredientes([(Harina, 600m, Unidad.Gramo)]);
+
+        var (cantidad, unidad) = receta.EscalarA(8)
+            .Select(linea => (linea.Cantidad, linea.Unidad))
+            .Single();
+
+        Assert.Equal(Unidad.Kilogramo, unidad);
+        Assert.Equal(1.25m, cantidad); // 600 × 2 = 1200 g → 1,25 kg (cuartos).
+    }
+
+    /// <summary>
+    /// El caso que motiva la 026: la ficha en reposo —sin pedir raciones— y lo
+    /// que precarga el formulario de edición comparten este mismo camino. Si
+    /// convirtiera aquí, editar una receta guardada en gramos mostraría
+    /// kilogramos, y guardar sin tocar ese campo cambiaría la unidad guardada.
+    /// </summary>
+    [Fact]
+    public void SinPedirRaciones_NoConvierteDeUnidadAunqueSuperaraElUmbral()
+    {
+        var receta = Crear(raciones: 4);
+        receta.ReemplazarIngredientes([(Harina, 1200m, Unidad.Gramo)]);
+
+        var (cantidad, unidad) = receta.EscalarA(null)
+            .Select(linea => (linea.Cantidad, linea.Unidad))
+            .Single();
+
+        Assert.Equal(Unidad.Gramo, unidad);
+        Assert.Equal(1200m, cantidad);
+    }
+
+    [Fact]
+    public void PorDebajoDelUmbral_SigueEnLaUnidadOriginalAlEscalar()
+    {
+        var lineas = Crear().EscalarA(6); // 300 g × 1,5 = 450 g: no llega a 1000.
+
+        Assert.Equal(Unidad.Gramo, lineas.Single(l => l.IngredienteId == Harina).Unidad);
+    }
 }

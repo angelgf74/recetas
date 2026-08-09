@@ -32,6 +32,50 @@ public class EscalarCantidadesTests(ApiConPostgresFixture api) : IClassFixture<A
         Assert.Equal(4m, CantidadDe(receta, "huevo"));
     }
 
+    // ------------------------------------------------- Conversión de unidad
+
+    [Fact]
+    public async Task AlCruzarMilGramos_ConvierteAKilogramos()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        var recetaId = await CrearRecetaAsync(cliente, raciones: 4);
+
+        // 300 g × 4 = 1200 g de harina.
+        var receta = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}?raciones=16");
+
+        Assert.NotNull(receta);
+        Assert.Equal("Kilogramo", UnidadDe(receta, "harina"));
+        Assert.Equal(1.25m, CantidadDe(receta, "harina"));
+    }
+
+    [Fact]
+    public async Task SinPedirRaciones_NoConvierteAunqueElValorGuardadoSuperaraElUmbral()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        var recetaId = await CrearRecetaAsync(cliente, raciones: 4);
+
+        // Se sube a mano a 1200 g, editando directamente: la unidad guardada
+        // sigue siendo gramo.
+        await cliente.PutAsJsonAsync($"/recetas/{recetaId}", new PeticionDeReceta
+        {
+            Nombre = "Tortitas",
+            TipoDePlato = "Postre",
+            Elaboracion = "Mezclar y cuajar.",
+            Raciones = 4,
+            Ingredientes =
+            [
+                new LineaDeIngredientePeticion("harina", 1200m, "Gramo"),
+                new LineaDeIngredientePeticion("huevo", 2m, "Unidad")
+            ]
+        });
+
+        // La ficha en reposo y lo que precarga la edición piden esto mismo, sin
+        // el parámetro: la unidad guardada llega intacta.
+        var sinParametro = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        Assert.Equal("Gramo", UnidadDe(sinParametro!, "harina"));
+        Assert.Equal(1200m, CantidadDe(sinParametro, "harina"));
+    }
+
     [Fact]
     public async Task SinElParametro_LlegaTalComoEstaGuardada()
     {
@@ -174,6 +218,9 @@ public class EscalarCantidadesTests(ApiConPostgresFixture api) : IClassFixture<A
 
     private static decimal? CantidadDe(RespuestaDeReceta receta, string ingrediente) =>
         receta.Ingredientes.Single(linea => linea.Nombre == ingrediente).Cantidad;
+
+    private static string UnidadDe(RespuestaDeReceta receta, string ingrediente) =>
+        receta.Ingredientes.Single(linea => linea.Nombre == ingrediente).Unidad;
 
     /// <summary>Para 4: 300 g de harina, 2 huevos y sal al gusto.</summary>
     private static PeticionDeReceta PeticionDe(int? raciones) => new()

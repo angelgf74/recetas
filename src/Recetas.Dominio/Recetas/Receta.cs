@@ -190,12 +190,23 @@ public sealed class Receta
     {
         var factor = FactorPara(raciones);
 
+        // La conversión de unidad (026) solo entra cuando de verdad se ha pedido
+        // escalar: la misma condición que decide si hay algo que escalar. Sin
+        // esto, la ficha en reposo y el formulario de edición —que piden esto
+        // mismo sin raciones— podrían enseñar kilogramos donde se guardaron
+        // gramos, y guardar sin tocar ese campo cambiaría la unidad guardada por
+        // el simple hecho de haberla mirado.
+        var conConversionDeUnidad = PuedeEscalarseA(raciones);
+
         return _ingredientes
-            .Select(linea => new LineaEscalada(
-                linea.IngredienteId,
-                linea.Ingrediente,
-                EscaladoDeCantidades.Escalar(linea.Cantidad, linea.Unidad, factor),
-                linea.Unidad))
+            .Select(linea =>
+            {
+                var (cantidad, unidad) = conConversionDeUnidad
+                    ? EscaladoDeCantidades.EscalarConUnidad(linea.Cantidad, linea.Unidad, factor)
+                    : (EscaladoDeCantidades.Escalar(linea.Cantidad, linea.Unidad, factor), linea.Unidad);
+
+                return new LineaEscalada(linea.IngredienteId, linea.Ingrediente, cantidad, unidad);
+            })
             .ToList();
     }
 

@@ -42,6 +42,52 @@ public static class EscaladoDeCantidades
     }
 
     /// <summary>
+    /// Como <see cref="Escalar"/>, pero además decide si conviene cambiar de
+    /// unidad —de gramos a kilogramos, de mililitros a litros— cuando el
+    /// resultado llega a 1000.
+    /// </summary>
+    /// <remarks>
+    /// Método aparte y no un parámetro más en <see cref="Escalar"/> a propósito:
+    /// la unidad guardada de una receta no debe cambiar por el simple hecho de
+    /// mirarla. Solo <c>Receta.EscalarA</c> llama a este método, y solo cuando de
+    /// verdad se ha pedido escalar — nunca al leer la ficha en reposo ni al
+    /// precargar el formulario de edición, que comparten el mismo camino que la
+    /// vista sin escalar.
+    /// <para>
+    /// La conversión ocurre <b>antes</b> de redondear, no después: redondear
+    /// primero en gramos y volver a redondear en kilogramos acumularía dos
+    /// redondeos donde solo hace falta uno.
+    /// </para>
+    /// </remarks>
+    public static (decimal? Cantidad, Unidad Unidad) EscalarConUnidad(
+        decimal? cantidad, Unidad unidad, decimal factor)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(factor);
+
+        if (cantidad is not { } valor || !SeEscala(unidad))
+        {
+            return (cantidad, unidad);
+        }
+
+        var bruto = valor * factor;
+
+        // Solo hacia arriba, y solo estos dos pares: son los únicos con una
+        // equivalencia exacta (1000:1) entre dos unidades que ya conviven en el
+        // enumerado. Convertir hacia abajo queda fuera a propósito (026).
+        var (unidadFinal, divisor) = unidad switch
+        {
+            Unidad.Gramo when bruto >= 1000m => (Unidad.Kilogramo, 1000m),
+            Unidad.Mililitro when bruto >= 1000m => (Unidad.Litro, 1000m),
+            _ => (unidad, 1m)
+        };
+
+        var paso = PasoDeRedondeo(unidadFinal);
+        var redondeada = Math.Round(bruto / divisor / paso, MidpointRounding.AwayFromZero) * paso;
+
+        return (redondeada <= 0 ? paso : redondeada, unidadFinal);
+    }
+
+    /// <summary>
     /// Si multiplicar esa unidad significa algo.
     /// </summary>
     /// <remarks>
