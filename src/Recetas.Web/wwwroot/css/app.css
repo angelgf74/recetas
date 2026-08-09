@@ -336,6 +336,11 @@ a {
 .navegacion a,
 .navegacion button {
     padding: var(--espacio-2) 0;
+
+    /* «Salir» es un <button>, y el navegador lo centra por defecto a
+       diferencia de un <a>. Sin esto, en el panel de móvil quedaría el único
+       enlace descentrado respecto a los demás. */
+    text-align: left;
 }
 
 @media (min-width: 40rem) {
