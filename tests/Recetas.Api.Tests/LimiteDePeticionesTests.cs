@@ -1,7 +1,9 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Recetas.Contratos.Contrasenas;
 using Recetas.Contratos.Registro;
+using Recetas.Contratos.Sesiones;
 
 namespace Recetas.Api.Tests;
 
@@ -84,5 +86,64 @@ public class LimiteCompartidoConElRestablecimientoTests(ApiConLimiteEstrechoPara
 
         Assert.Equal(HttpStatusCode.TooManyRequests, rechazada.StatusCode);
         Assert.Equal(correosAntes, api.Correo.EnlacesDeContrasena.Count);
+    }
+}
+
+/// <summary>
+/// Fixture propio: comprobar una contraseña actual es la misma superficie que
+/// el inicio de sesión, con su propio cubo.
+/// </summary>
+public sealed class ApiConLimiteEstrechoParaCambioDeContrasenaFixture : ApiConPostgresFixture
+{
+    protected override int MaximoDeCambiosDeContrasenaPorVentana => 2;
+}
+
+[Trait("Categoria", "Integracion")]
+public class LimiteDeCambioDeContrasenaTests(ApiConLimiteEstrechoParaCambioDeContrasenaFixture api)
+    : IClassFixture<ApiConLimiteEstrechoParaCambioDeContrasenaFixture>
+{
+    private const string Contrasena = "una-contrasena-larga";
+
+    [Fact]
+    public async Task SuperarElLimite_Responde429()
+    {
+        var cliente = api.CreateClient();
+        var correo = $"limite-contrasena-{Guid.NewGuid():N}@ejemplo.com";
+
+        await cliente.PostAsJsonAsync("/registro/solicitudes",
+            new PeticionDeSolicitudDeRegistro { Correo = correo });
+
+        await cliente.PostAsJsonAsync("/registro/completar", new PeticionDeCompletarRegistro
+        {
+            Token = api.Correo.TokenEnviadoA(correo),
+            Contrasena = Contrasena
+        });
+
+        var sesion = await cliente.PostAsJsonAsync("/sesiones",
+            new PeticionDeInicioDeSesion { Correo = correo, Contrasena = Contrasena });
+        var acceso = await sesion.Content.ReadFromJsonAsync<RespuestaDeInicioDeSesion>();
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", acceso!.Token);
+
+        for (var intento = 0; intento < 2; intento++)
+        {
+            var respuesta = await cliente.PutAsJsonAsync("/yo/contrasena", new PeticionDeCambioDeContrasena
+            {
+                // Deliberadamente incorrecta: lo que se mide es cuántos intentos se
+                // dejan hacer, no si acierta. Con la correcta, el segundo intento
+                // fallaría por ser ya la contraseña anterior.
+                ContrasenaActual = "no es la correcta",
+                ContrasenaNueva = "otra-contrasena-larga"
+            });
+
+            Assert.Equal(HttpStatusCode.Unauthorized, respuesta.StatusCode);
+        }
+
+        var rechazada = await cliente.PutAsJsonAsync("/yo/contrasena", new PeticionDeCambioDeContrasena
+        {
+            ContrasenaActual = "no es la correcta",
+            ContrasenaNueva = "otra-contrasena-larga"
+        });
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, rechazada.StatusCode);
     }
 }

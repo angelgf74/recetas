@@ -72,6 +72,18 @@ public interface IEnviadorDeCorreo
         CorreoElectronico destinatario,
         string nombreDeLaReceta,
         CancellationToken cancelacion = default);
+
+    /// <summary>
+    /// Confirmación de que la contraseña de la cuenta ha cambiado.
+    /// </summary>
+    /// <remarks>
+    /// Quien lo pide ya tiene la sesión abierta, así que el correo no es la
+    /// notificación que le informa: es la que avisa a quien <b>no</b> lo pidió de
+    /// que alguien más conoce su contraseña actual y acaba de cambiarla.
+    /// </remarks>
+    Task EnviarConfirmacionDeCambioDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default);
 }
 
 /// <param name="RecetaId">Identificador de la receta, para poder localizarla.</param>

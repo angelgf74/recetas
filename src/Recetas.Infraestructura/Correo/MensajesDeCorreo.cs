@@ -190,4 +190,27 @@ internal static class MensajesDeCorreo
          Para retirarla, entra con la cuenta responsable, abre la receta y despublicala.
          Retirarla la devuelve a privada: su autor la conserva.
          """;
+
+    public const string AsuntoDeCambioDeContrasena = "Tu contraseña de Recetas ha cambiado";
+
+    public static string CuerpoDeCambioDeContrasena() =>
+        """
+        <p>Hola:</p>
+        <p>La contraseña de tu cuenta de Recetas se ha cambiado.</p>
+        <p>Si has sido tú, no tienes que hacer nada más.</p>
+        <p><strong>Si no has sido tú</strong>, respóndenos a este mensaje: hacía falta la contraseña anterior para cambiarla, así que conviene que la cambies también en cualquier otro sitio donde usaras esa misma.</p>
+        """;
+
+    public static string TextoDeCambioDeContrasena() =>
+        """
+        Hola:
+
+        La contraseña de tu cuenta de Recetas se ha cambiado.
+
+        Si has sido tu, no tienes que hacer nada mas.
+
+        Si no has sido tu, respondenos a este mensaje: hacia falta la contrasena
+        anterior para cambiarla, asi que conviene que la cambies tambien en
+        cualquier otro sitio donde usaras esa misma.
+        """;
 }

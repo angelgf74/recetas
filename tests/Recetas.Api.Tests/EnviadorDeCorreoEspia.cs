@@ -73,6 +73,18 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
         return Task.CompletedTask;
     }
 
+    private readonly ConcurrentQueue<string> _cambiosDeContrasena = new();
+
+    public IReadOnlyCollection<string> ConfirmacionesDeCambioDeContrasena => _cambiosDeContrasena;
+
+    public Task EnviarConfirmacionDeCambioDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default)
+    {
+        _cambiosDeContrasena.Enqueue(destinatario.Valor);
+        return Task.CompletedTask;
+    }
+
     private readonly ConcurrentQueue<string> _bajas = new();
 
     public IReadOnlyCollection<string> ConfirmacionesDeBaja => _bajas;

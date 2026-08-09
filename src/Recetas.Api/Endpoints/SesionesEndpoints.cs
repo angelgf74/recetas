@@ -4,11 +4,13 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Recetas.Aplicacion.Contrasenas;
 using Recetas.Aplicacion.Cuentas;
+using Recetas.Contratos.Contrasenas;
 using Recetas.Contratos.Cuentas;
+using Recetas.Contratos.Registro;
 using Recetas.Dominio.Recetas;
 using Recetas.Aplicacion.Sesiones;
-using Recetas.Contratos.Cuentas;
 using Recetas.Contratos.Sesiones;
 
 namespace Recetas.Api.Endpoints;
@@ -42,6 +44,13 @@ public static class SesionesEndpoints
         rutas.MapGet("/yo/datos", ExportarAsync)
             .RequireAuthorization()
             .RequireRateLimiting(LimitesDePeticiones.Exportacion)
+            .WithTags("Sesiones");
+
+        // Comprobar una contraseña actual es la misma superficie que el inicio de
+        // sesión, así que lleva el mismo tipo de límite.
+        rutas.MapPut("/yo/contrasena", CambiarContrasenaAsync)
+            .RequireAuthorization()
+            .RequireRateLimiting(LimitesDePeticiones.CambioDeContrasena)
             .WithTags("Sesiones");
     }
 
@@ -242,6 +251,40 @@ public static class SesionesEndpoints
             correo,
             resumen.Recetas,
             resumen.Fotos));
+    }
+
+    private static async Task<IResult> CambiarContrasenaAsync(
+        [FromBody] PeticionDeCambioDeContrasena peticion,
+        ClaimsPrincipal usuario,
+        CambiarContrasena casoDeUso,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var resultado = await casoDeUso.EjecutarAsync(
+            usuarioId, peticion.ContrasenaActual, peticion.ContrasenaNueva, cancelacion);
+
+        return resultado switch
+        {
+            ResultadoDeCambioDeContrasena.Correcto =>
+                Results.Ok(new RespuestaDeError("Contraseña cambiada.")),
+
+            ResultadoDeCambioDeContrasena.ContrasenaNoValida =>
+                Results.BadRequest(new RespuestaDeError(
+                    $"La contraseña nueva debe tener entre "
+                    + $"{PeticionDeCompletarRegistro.LongitudMinimaDeContrasena} y "
+                    + $"{PeticionDeCompletarRegistro.LongitudMaximaDeContrasena} caracteres.")),
+
+            // Mismo 401 y mismo texto que al borrar la cuenta: quien pregunta ya
+            // tiene un token válido, así que la única lectura útil es que vuelva a
+            // identificarse.
+            _ => Results.Json(
+                new RespuestaDeError("La contraseña no es correcta."),
+                statusCode: StatusCodes.Status401Unauthorized)
+        };
     }
 
     private static async Task<IResult> BorrarmeAsync(

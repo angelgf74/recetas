@@ -51,6 +51,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 22. **[022 · Visor de fotos](../features/022-visor-de-fotos/spec.md)** — la ficha pasa a una tira de miniaturas y la foto se abre a tamaño completo sobre la página. La ganancia no es el visor: es que **la ficha deja de descargar todos los archivos enteros** —y en base64, un 33 % más— solo para enseñar la receta. No se podía hacer antes porque el endpoint de fotos exige cabecera de autorización y una imagen no se puede enlazar, así que sin visor la foto grande quedaba inalcanzable. Ni un endpoint nuevo: todo estaba desde la 009. Teclado y foco con Blazor, **sin JavaScript**, porque la política de seguridad de contenido no admite `unsafe-inline` y eso falla solo en producción.
 
+23. **[023 · Cambiar contraseña desde dentro](../features/023-cambiar-contrasena-desde-dentro/spec.md)** — con la sesión iniciada, cambiarla sabiendo la actual, sin pasar por el correo. La 008 dejó este caso fuera a propósito. Sigue el mismo orden que `BorrarCuenta`: se verifica la contraseña actual antes que validar la nueva, al revés que en el restablecimiento por correo, donde no hay ningún token de un solo uso que proteger de una errata. Avisa por correo al terminar, mismo patrón que la baja y la retirada por moderación: quien no lo pidió sabe que su contraseña está comprometida justo cuando más lo necesita.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -132,7 +134,6 @@ buenas prácticas en abstracto._
 
   Eso confirma de paso la decisión delicada de aquel día: en `assetlinks.json` va la huella del certificado con el que **Play refirma** (`4A:7E:85:…`), no la de subida. Con la de subida seguiría fallando, y sin ningún error que lo explicara: el enlace simplemente abriría el navegador.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
-- **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.
 - **Elegir la foto de portada** — hoy la receta se representa con la primera que se subió. Que el autor designe otra es un campo nuevo y un control en la ficha (sale de la 009).
 - **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).

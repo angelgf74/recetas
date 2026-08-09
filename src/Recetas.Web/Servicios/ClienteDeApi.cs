@@ -36,6 +36,11 @@ public sealed class ClienteDeApi(HttpClient http)
         EnviarAsync(HttpMethod.Post, "contrasena/restablecer",
             new PeticionDeRestablecerContrasena { Token = token, Contrasena = contrasena });
 
+    /// <summary>Cambia la contraseña con la sesión iniciada, sabiendo la actual.</summary>
+    public Task<ResultadoDeLlamada> CambiarContrasenaAsync(string actual, string nueva) =>
+        EnviarAsync(HttpMethod.Put, "yo/contrasena",
+            new PeticionDeCambioDeContrasena { ContrasenaActual = actual, ContrasenaNueva = nueva });
+
     public async Task<(ResultadoDeLlamada Resultado, RespuestaDeInicioDeSesion? Acceso)> IniciarSesionAsync(
         string correo,
         string contrasena)

@@ -14,6 +14,14 @@ public static class LimitesDePeticiones
     public const string InicioDeSesion = "inicio-de-sesion";
 
     /// <summary>
+    /// Verificar la contraseña actual es la misma superficie de ataque que el
+    /// inicio de sesión, así que comparte forma. Cubo propio: agotar el de
+    /// inicio de sesión no debe bloquear a alguien que solo quiere cambiar su
+    /// contraseña, y viceversa.
+    /// </summary>
+    public const string CambioDeContrasena = "cambio-de-contrasena";
+
+    /// <summary>
     /// Importar desde una URL hace que el servidor pida una página elegida por el
     /// usuario. Sin límite, la API es un intermediario anónimo para machacar a un
     /// tercero, y el tráfico sale con la IP del servidor.
@@ -40,6 +48,7 @@ public static class LimitesDePeticiones
         // límite al encadenar peticiones, y bajarlos donde se prueba el 429.
         var maximoDeRegistros = configuracion.GetValue("Limites:RegistrosPorVentana", 5);
         var maximoDeInicios = configuracion.GetValue("Limites:IniciosDeSesionPorVentana", 10);
+        var maximoDeCambiosDeContrasena = configuracion.GetValue("Limites:CambiosDeContrasenaPorVentana", 10);
         var maximoDeImportaciones = configuracion.GetValue("Limites:ImportacionesPorVentana", 20);
         var maximoDeDenuncias = configuracion.GetValue("Limites:DenunciasPorVentana", 10);
         var maximoDeExportaciones = configuracion.GetValue("Limites:ExportacionesPorVentana", 3);
@@ -63,6 +72,15 @@ public static class LimitesDePeticiones
                     _ => new FixedWindowRateLimiterOptions
                     {
                         PermitLimit = maximoDeInicios,
+                        Window = TimeSpan.FromMinutes(5)
+                    }));
+
+            opciones.AddPolicy(CambioDeContrasena, contexto =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    ClaveDeParticion(contexto),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = maximoDeCambiosDeContrasena,
                         Window = TimeSpan.FromMinutes(5)
                     }));
 

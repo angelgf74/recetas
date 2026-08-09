@@ -22,6 +22,7 @@ public static class InyeccionDeDependencias
         servicios.AddScoped<CompletarRegistro>();
         servicios.AddScoped<SolicitarRestablecerContrasena>();
         servicios.AddScoped<RestablecerContrasena>();
+        servicios.AddScoped<CambiarContrasena>();
         servicios.AddScoped<IniciarSesion>();
         servicios.AddScoped<ResolverIngredientes>();
         servicios.AddScoped<GestionDeRecetas>();

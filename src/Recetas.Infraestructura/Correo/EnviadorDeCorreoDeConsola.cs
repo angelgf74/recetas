@@ -75,6 +75,17 @@ public sealed class EnviadorDeCorreoDeConsola(ILogger<EnviadorDeCorreoDeConsola>
         return Task.CompletedTask;
     }
 
+    public Task EnviarConfirmacionDeCambioDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default)
+    {
+        registro.LogInformation(
+            "[CORREO SIMULADO] Contraseña cambiada: {Destinatario}.",
+            destinatario.Valor);
+
+        return Task.CompletedTask;
+    }
+
     public Task EnviarAvisoDeDenunciaAsync(
         CorreoElectronico destinatario,
         AvisoDeDenuncia aviso,

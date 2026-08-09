@@ -47,6 +47,9 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
     /// </summary>
     protected virtual int MaximoDeIniciosDeSesionPorVentana => 1000;
 
+    /// <summary>Mismo motivo que <see cref="MaximoDeIniciosDeSesionPorVentana"/>.</summary>
+    protected virtual int MaximoDeCambiosDeContrasenaPorVentana => 1000;
+
     public async Task InitializeAsync()
     {
         await _postgres.StartAsync();
@@ -93,6 +96,9 @@ public class ApiConPostgresFixture : WebApplicationFactory<Program>, IAsyncLifet
         constructor.UseSetting(
             "Limites:IniciosDeSesionPorVentana",
             MaximoDeIniciosDeSesionPorVentana.ToString());
+        constructor.UseSetting(
+            "Limites:CambiosDeContrasenaPorVentana",
+            MaximoDeCambiosDeContrasenaPorVentana.ToString());
 
         // Holgado: la ventana real de denuncias es de una hora, así que con el
         // valor de producción los tests que encadenan varias chocarían con el 429.

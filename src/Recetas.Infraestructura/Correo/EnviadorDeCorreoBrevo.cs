@@ -84,6 +84,16 @@ public sealed class EnviadorDeCorreoBrevo(
             MensajesDeCorreo.TextoDeRetirada(nombreDeLaReceta),
             cancelacion);
 
+    public Task EnviarConfirmacionDeCambioDeContrasenaAsync(
+        CorreoElectronico destinatario,
+        CancellationToken cancelacion = default) =>
+        EnviarAsync(
+            destinatario,
+            MensajesDeCorreo.AsuntoDeCambioDeContrasena,
+            MensajesDeCorreo.CuerpoDeCambioDeContrasena(),
+            MensajesDeCorreo.TextoDeCambioDeContrasena(),
+            cancelacion);
+
     private async Task EnviarAsync(
         CorreoElectronico destinatario,
         string asunto,

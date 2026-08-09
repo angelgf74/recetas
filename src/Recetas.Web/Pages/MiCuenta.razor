@@ -68,6 +68,33 @@
             </button>
         </section>
 
+        <section>
+            <h2>Cambiar mi contraseña</h2>
+
+            @if (_avisoDeContrasena is not null)
+            {
+                <div class="aviso @(_avisoDeContrasena.Correcta ? "aviso-exito" : "aviso-error")" role="alert">
+                    @_avisoDeContrasena.Mensaje
+                </div>
+            }
+
+            <label class="campo">
+                <span>Contraseña actual</span>
+                <input type="password" @bind="_contrasenaActual" autocomplete="current-password" />
+            </label>
+
+            <label class="campo">
+                <span>Contraseña nueva</span>
+                <input type="password" @bind="_contrasenaNueva" autocomplete="new-password" />
+                <span class="ayuda">Al menos 12 caracteres.</span>
+            </label>
+
+            <button type="button" class="boton boton-secundario"
+                    disabled="@_cambiandoContrasena" @onclick="CambiarContrasenaAsync">
+                @(_cambiandoContrasena ? "Cambiando…" : "Cambiar contraseña")
+            </button>
+        </section>
+
         <section class="zona-peligrosa">
             <h2>Borrar mi cuenta</h2>
 
@@ -109,6 +136,11 @@
     private bool _descargando;
     private string _contrasena = string.Empty;
 
+    private string _contrasenaActual = string.Empty;
+    private string _contrasenaNueva = string.Empty;
+    private bool _cambiandoContrasena;
+    private ResultadoDeLlamada? _avisoDeContrasena;
+
     private async Task DescargarAsync()
     {
         _descargando = true;
@@ -145,6 +177,29 @@
 
     private static string Recuento(int cuantas, string singular, string plural) =>
         cuantas == 1 ? $"1 {singular}" : $"{cuantas} {plural}";
+
+    private async Task CambiarContrasenaAsync()
+    {
+        _cambiandoContrasena = true;
+        _avisoDeContrasena = null;
+
+        var resultado = await Api.CambiarContrasenaAsync(_contrasenaActual, _contrasenaNueva);
+
+        if (resultado.Correcta)
+        {
+            // Se limpian los dos campos: dejar la actual en pantalla sería
+            // conservar una credencial que ya no hace falta ver.
+            _contrasenaActual = string.Empty;
+            _contrasenaNueva = string.Empty;
+            _avisoDeContrasena = ResultadoDeLlamada.Correcto("Contraseña cambiada.");
+        }
+        else
+        {
+            _avisoDeContrasena = resultado;
+        }
+
+        _cambiandoContrasena = false;
+    }
 
     private async Task BorrarAsync()
     {
