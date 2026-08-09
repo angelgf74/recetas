@@ -9,7 +9,7 @@ namespace Recetas.Web;
 /// del enumerado. Mostrarlos tal cual sería feo, y meter el texto bonito en el
 /// contrato mezclaría presentación con datos.
 /// </remarks>
-public static class Etiquetas
+public static class TextosDeEnumerado
 {
     public static string DeTipo(string tipo) => tipo switch
     {

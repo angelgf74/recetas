@@ -26,7 +26,7 @@
             <header>
                 <h1>@_receta.Nombre</h1>
                 <p class="meta">
-                    @Etiquetas.DeTipo(_receta.TipoDePlato)
+                    @TextosDeEnumerado.DeTipo(_receta.TipoDePlato)
                     @if (_receta.Visibilidad == "Publica")
                     {
                         <span class="marca marca-publica">Publicada</span>
@@ -107,7 +107,7 @@
                     {
                         <li>
                             <span class="cantidad">
-                                @Etiquetas.DeCantidad(linea.Cantidad) @Etiquetas.DeUnidad(linea.Unidad, linea.Cantidad)
+                                @TextosDeEnumerado.DeCantidad(linea.Cantidad) @TextosDeEnumerado.DeUnidad(linea.Unidad, linea.Cantidad)
                             </span>
                             <span class="ingrediente-nombre">@linea.Nombre</span>
                         </li>
