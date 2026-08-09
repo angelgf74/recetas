@@ -41,6 +41,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 19. **[019 · Exportar mis datos](../features/019-exportar-mis-datos/spec.md)** — descargar en un `.zip` todas tus recetas y tus fotos, con un `datos.json` legible y un `LEEME.txt` que lo explica. Es el derecho de portabilidad del RGPD que la 016 dejó fuera, y la otra mitad de "el autor manda sobre sus datos": irse sin poder llevarse nada es una puerta cerrada con llave. El paquete se escribe sobre la respuesta según se genera, sin cargar las fotos en memoria.
 
+20. **[020 · Aviso de retirada](../features/020-aviso-de-retirada/spec.md)** — cuando el responsable retira una receta de la parte pública, su autor recibe un correo: qué receta, que no se ha borrado nada y a quién escribir. Es lo que separa moderar de censurar, y la 015 lo dejó anotado a propósito. De paso saca la retirada de `GestionDeRecetas`: mientras era idéntica a que el autor dejara de compartir, un parámetro `esResponsable` bastaba; en cuanto una avisa por correo y la otra no, dejaron de ser la misma operación y comparten solo la ruta.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -121,7 +123,6 @@ buenas prácticas en abstracto._
   **Los enlaces profundos, comprobados el 9 de agosto de 2026 con la aplicación instalada desde la tienda.** `pm get-app-links` pasó de `1024` —verificación fallida, con la copia instalada por cable— a `verified`, y abrir una dirección del dominio lanza la aplicación en lugar del navegador.
 
   Eso confirma de paso la decisión delicada de aquel día: en `assetlinks.json` va la huella del certificado con el que **Play refirma** (`4A:7E:85:…`), no la de subida. Con la de subida seguiría fallando, y sin ningún error que lo explicara: el enlace simplemente abriría el navegador.
-- **Avisar al autor de que su receta ha sido retirada** — hoy se entera al mirarla. Necesita decidir qué se le cuenta —sin exponer quién denunció— y si puede recurrir. Sale de la 015.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
 - **Cambiar la contraseña desde dentro** — sabiendo la actual, sin pasar por el correo. La 008 dejó fuera este caso.
 - **Etiquetas libres** — el eje que `TipoPlato` deliberadamente no cubre: "ensalada", "sin gluten", "rápido", "de la abuela". Complemento del enumerado, no sustituto. Es la salida natural si al usar la app se echa en falta filtrar por algo que el momento del menú no expresa.

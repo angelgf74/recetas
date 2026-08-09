@@ -114,6 +114,41 @@ internal static class MensajesDeCorreo
         otro sitio donde uses esa misma.
         """;
 
+    public const string AsuntoDeRetirada = "Tu receta ha dejado de estar compartida";
+
+    /// <summary>
+    /// Aviso al autor de una receta retirada.
+    /// </summary>
+    /// <remarks>
+    /// El tono no es casual: dice qué ha pasado, que no se ha perdido nada y a
+    /// quién escribir. Un aviso de moderación que suena a sanción invita a
+    /// discutir; uno que suena a fallo del sistema invita a ignorarlo.
+    /// <para>
+    /// El nombre de la receta lo escribe un usuario, así que va escapado.
+    /// </para>
+    /// </remarks>
+    public static string CuerpoDeRetirada(string nombreDeLaReceta) =>
+        $"""
+         <p>Hola:</p>
+         <p>Tu receta <strong>{WebUtility.HtmlEncode(nombreDeLaReceta)}</strong> ha dejado de estar compartida con el resto de usuarios.</p>
+         <p><strong>No se ha borrado nada.</strong> Sigue en tu recetario, ahora como privada: puedes verla, editarla y volver a compartirla cuando quieras.</p>
+         <p>Si crees que se trata de un error, respóndenos a este mensaje y lo revisamos.</p>
+         """;
+
+    public static string TextoDeRetirada(string nombreDeLaReceta) =>
+        $"""
+         Hola:
+
+         Tu receta "{nombreDeLaReceta}" ha dejado de estar compartida con el resto
+         de usuarios.
+
+         NO SE HA BORRADO NADA. Sigue en tu recetario, ahora como privada: puedes
+         verla, editarla y volver a compartirla cuando quieras.
+
+         Si crees que se trata de un error, respondenos a este mensaje y lo
+         revisamos.
+         """;
+
     public const string AsuntoDeDenuncia = "Han denunciado una receta pública en Recetas";
 
     /// <summary>

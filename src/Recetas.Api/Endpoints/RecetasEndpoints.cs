@@ -43,23 +43,20 @@ public static class RecetasEndpoints
         // receta entera podría publicarla sin querer. Compartir tiene que ser un
         // acto deliberado, que es lo que pide mission.md.
         grupo.MapPost("/{id:guid}/publicacion", (Guid id, ClaimsPrincipal usuario, GestionDeRecetas gestion,
-            CorreoDelResponsable responsable, CancellationToken cancelacion) =>
-            CambiarVisibilidadAsync(id, usuario, gestion, responsable, true, cancelacion));
+            CancellationToken cancelacion) => CambiarVisibilidadAsync(id, usuario, gestion, true, cancelacion));
 
-        // El DELETE lo usan dos actores distintos con la misma ruta: el autor, que
-        // deja de compartir su receta, y el responsable del servicio, que retira
-        // una ajena tras una denuncia. Es la misma operación —volver a privada— y
-        // no merece un endpoint de administración aparte.
-        grupo.MapDelete("/{id:guid}/publicacion", (Guid id, ClaimsPrincipal usuario, GestionDeRecetas gestion,
-            CorreoDelResponsable responsable, CancellationToken cancelacion) =>
-            CambiarVisibilidadAsync(id, usuario, gestion, responsable, false, cancelacion));
+        // El DELETE lo usan dos actores con la misma ruta: el autor, que deja de
+        // compartir su receta, y el responsable del servicio, que retira una
+        // ajena. Para el usuario es la misma acción —dejar de estar público— y no
+        // merece un endpoint de administración aparte, pero por dentro son casos
+        // de uso distintos: la retirada avisa por correo al autor (020).
+        grupo.MapDelete("/{id:guid}/publicacion", DespublicarAsync);
     }
 
     private static async Task<IResult> CambiarVisibilidadAsync(
         Guid id,
         ClaimsPrincipal usuario,
         GestionDeRecetas gestion,
-        CorreoDelResponsable responsable,
         bool publicar,
         CancellationToken cancelacion)
     {
@@ -68,14 +65,43 @@ public static class RecetasEndpoints
             return Results.Unauthorized();
         }
 
-        var resultado = await gestion.CambiarVisibilidadAsync(
-            usuarioId,
-            id,
-            publicar,
-            responsable.Es(usuario.ObtenerCorreo()),
-            cancelacion);
+        var resultado = await gestion.CambiarVisibilidadAsync(usuarioId, id, publicar, cancelacion);
 
         return resultado is ResultadoDeReceta.Correcto ? Results.NoContent() : NoEncontrada();
+    }
+
+    private static async Task<IResult> DespublicarAsync(
+        Guid id,
+        ClaimsPrincipal usuario,
+        GestionDeRecetas gestion,
+        RetirarPorModeracion retirar,
+        CorreoDelResponsable responsable,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        // Se intenta primero como autor, que es el caso normal. Solo si no es
+        // suya y quien pide es el responsable, se pasa por la moderación: así
+        // el responsable despublicando una receta propia sigue siendo el autor
+        // despublicando, y no se autoenvía un aviso de retirada.
+        var resultado = await gestion.CambiarVisibilidadAsync(usuarioId, id, publicar: false, cancelacion);
+
+        if (resultado is ResultadoDeReceta.Correcto)
+        {
+            return Results.NoContent();
+        }
+
+        if (!responsable.Es(usuario.ObtenerCorreo()))
+        {
+            return NoEncontrada();
+        }
+
+        var retirada = await retirar.EjecutarAsync(usuarioId, id, cancelacion);
+
+        return retirada is ResultadoDeRetirada.Correcto ? Results.NoContent() : NoEncontrada();
     }
 
     private static async Task<IResult> CrearAsync(

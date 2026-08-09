@@ -152,6 +152,22 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
 
     public List<string> ConfirmacionesDeBaja { get; } = [];
 
+    public List<(string Destinatario, string Receta)> AvisosDeRetirada { get; } = [];
+
+    public Task EnviarAvisoDeRetiradaAsync(
+        CorreoElectronico destinatario,
+        string nombreDeLaReceta,
+        CancellationToken cancelacion = default)
+    {
+        if (FallaAlEnviar)
+        {
+            throw new InvalidOperationException("Fallo simulado del envío de correo.");
+        }
+
+        AvisosDeRetirada.Add((destinatario.Valor, nombreDeLaReceta));
+        return Task.CompletedTask;
+    }
+
     public Task EnviarConfirmacionDeBajaAsync(
         CorreoElectronico destinatario,
         CancellationToken cancelacion = default)

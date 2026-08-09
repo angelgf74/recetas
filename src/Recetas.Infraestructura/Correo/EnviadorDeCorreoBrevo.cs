@@ -73,6 +73,17 @@ public sealed class EnviadorDeCorreoBrevo(
             MensajesDeCorreo.TextoDeBaja(),
             cancelacion);
 
+    public Task EnviarAvisoDeRetiradaAsync(
+        CorreoElectronico destinatario,
+        string nombreDeLaReceta,
+        CancellationToken cancelacion = default) =>
+        EnviarAsync(
+            destinatario,
+            MensajesDeCorreo.AsuntoDeRetirada,
+            MensajesDeCorreo.CuerpoDeRetirada(nombreDeLaReceta),
+            MensajesDeCorreo.TextoDeRetirada(nombreDeLaReceta),
+            cancelacion);
+
     private async Task EnviarAsync(
         CorreoElectronico destinatario,
         string asunto,

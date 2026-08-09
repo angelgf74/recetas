@@ -57,6 +57,21 @@ public interface IEnviadorDeCorreo
     Task EnviarConfirmacionDeBajaAsync(
         CorreoElectronico destinatario,
         CancellationToken cancelacion = default);
+
+    /// <summary>
+    /// Aviso al autor de que su receta ha dejado de estar publicada por decisión
+    /// del responsable del servicio.
+    /// </summary>
+    /// <remarks>
+    /// Lleva el nombre de la receta y nada más. <b>Ni quién denunció, ni cuántos,
+    /// ni el motivo:</b> la retirada la decide el responsable —puede retirar sin
+    /// que nadie haya denunciado— y en una comunidad pequeña decir cuántas
+    /// denuncias hubo es casi decir quiénes.
+    /// </remarks>
+    Task EnviarAvisoDeRetiradaAsync(
+        CorreoElectronico destinatario,
+        string nombreDeLaReceta,
+        CancellationToken cancelacion = default);
 }
 
 /// <param name="RecetaId">Identificador de la receta, para poder localizarla.</param>

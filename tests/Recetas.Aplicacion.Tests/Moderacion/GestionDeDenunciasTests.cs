@@ -157,53 +157,10 @@ public class GestionDeDenunciasTests
     }
 
     // ------------------------------------------------------ Retirar contenido
-
-    [Fact]
-    public async Task Retirar_ElResponsablePuedeDespublicarUnaAjena()
-    {
-        var recetaId = await CrearPublicaAsync(_ana);
-
-        var resultado = await RecetasDe.CambiarVisibilidadAsync(
-            _bruno, recetaId, publicar: false, esResponsable: true);
-
-        Assert.Equal(ResultadoDeReceta.Correcto, resultado);
-
-        var receta = await _recetas.BuscarPorIdAsync(recetaId);
-        Assert.False(receta!.EsPublica);
-
-        // Retirar no borra: su autora la conserva.
-        Assert.Equal(_ana, receta.AutorId);
-    }
-
-    [Fact]
-    public async Task Retirar_QuienNoEsResponsable_NoPuede()
-    {
-        var recetaId = await CrearPublicaAsync(_ana);
-
-        var resultado = await RecetasDe.CambiarVisibilidadAsync(
-            _bruno, recetaId, publicar: false, esResponsable: false);
-
-        Assert.Equal(ResultadoDeReceta.NoEncontrada, resultado);
-
-        var receta = await _recetas.BuscarPorIdAsync(recetaId);
-        Assert.True(receta!.EsPublica);
-    }
-
-    [Fact]
-    public async Task Retirar_ElResponsableNoPuedePublicarUnaPrivadaAjena()
-    {
-        // La moderación sirve para quitar de la vista, nunca para exponer lo que
-        // su autor decidió no compartir.
-        var recetaId = await CrearRecetaAsync(_ana);
-
-        var resultado = await RecetasDe.CambiarVisibilidadAsync(
-            _bruno, recetaId, publicar: true, esResponsable: true);
-
-        Assert.Equal(ResultadoDeReceta.NoEncontrada, resultado);
-
-        var receta = await _recetas.BuscarPorIdAsync(recetaId);
-        Assert.False(receta!.EsPublica);
-    }
+    //
+    // Retirar por moderación tiene su propio caso de uso desde la 020, y sus
+    // tests viven en `RetirarPorModeracionTests`. Aquí queda solo lo que sigue
+    // siendo de `GestionDeRecetas`: que ser responsable no abra nada más.
 
     [Fact]
     public async Task Retirar_ElResponsableNoPuedeEditarNiBorrarRecetasAjenas()

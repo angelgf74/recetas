@@ -60,6 +60,19 @@ public sealed class EnviadorDeCorreoEspia : IEnviadorDeCorreo
         return Task.CompletedTask;
     }
 
+    private readonly ConcurrentQueue<(string Destinatario, string Receta)> _retiradas = new();
+
+    public IReadOnlyCollection<(string Destinatario, string Receta)> AvisosDeRetirada => _retiradas;
+
+    public Task EnviarAvisoDeRetiradaAsync(
+        CorreoElectronico destinatario,
+        string nombreDeLaReceta,
+        CancellationToken cancelacion = default)
+    {
+        _retiradas.Enqueue((destinatario.Valor, nombreDeLaReceta));
+        return Task.CompletedTask;
+    }
+
     private readonly ConcurrentQueue<string> _bajas = new();
 
     public IReadOnlyCollection<string> ConfirmacionesDeBaja => _bajas;

@@ -127,6 +127,51 @@ public class DenunciasTests(ApiConPostgresFixture api) : IClassFixture<ApiConPos
     }
 
     [Fact]
+    public async Task Retirar_AvisaPorCorreoAlAutor()
+    {
+        var correoDeAna = $"ana-{Guid.NewGuid():N}@ejemplo.com";
+        var ana = await ClienteAutenticadoAsync(correoDeAna);
+        var responsable = await ClienteAutenticadoAsync(ApiConPostgresFixture.CorreoDelResponsable);
+        var recetaId = await CrearPublicaAsync(ana);
+
+        await responsable.DeleteAsync($"/recetas/{recetaId}/publicacion");
+
+        // Sin aviso, la receta desaparece de la vista sin que su autora sepa
+        // por qué ni pueda corregirla. Es la feature 020 entera.
+        var aviso = Assert.Single(api.Correo.AvisosDeRetirada, envio => envio.Destinatario == correoDeAna);
+        Assert.Equal("Tortilla de patatas", aviso.Receta);
+    }
+
+    [Fact]
+    public async Task Despublicar_ElAutorNoRecibeAvisoDeRetirada()
+    {
+        // Quitar de público lo propio es una decisión, no una moderación:
+        // avisar sería mandarse un correo a uno mismo por cada clic.
+        var correoDeAna = $"ana-{Guid.NewGuid():N}@ejemplo.com";
+        var ana = await ClienteAutenticadoAsync(correoDeAna);
+        var recetaId = await CrearPublicaAsync(ana);
+
+        var respuesta = await ana.DeleteAsync($"/recetas/{recetaId}/publicacion");
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+        Assert.DoesNotContain(api.Correo.AvisosDeRetirada, envio => envio.Destinatario == correoDeAna);
+    }
+
+    [Fact]
+    public async Task Despublicar_ElResponsableSobreLoPropio_NoSeAutoavisa()
+    {
+        var responsable = await ClienteAutenticadoAsync(ApiConPostgresFixture.CorreoDelResponsable);
+        var recetaId = await CrearPublicaAsync(responsable);
+
+        var respuesta = await responsable.DeleteAsync($"/recetas/{recetaId}/publicacion");
+
+        Assert.Equal(HttpStatusCode.NoContent, respuesta.StatusCode);
+        Assert.DoesNotContain(
+            api.Correo.AvisosDeRetirada,
+            envio => envio.Destinatario == ApiConPostgresFixture.CorreoDelResponsable);
+    }
+
+    [Fact]
     public async Task LaFicha_DiceSiQuienPreguntaPuedeRetirarla()
     {
         // Sin este campo la interfaz no puede ofrecer la retirada, y el endpoint

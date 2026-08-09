@@ -27,6 +27,7 @@ public static class InyeccionDeDependencias
         servicios.AddScoped<GestionDeFotos>();
         servicios.AddScoped<ImportarReceta>();
         servicios.AddScoped<GestionDeDenuncias>();
+        servicios.AddScoped<RetirarPorModeracion>();
         servicios.AddScoped<BorrarCuenta>();
         servicios.AddScoped<ConsultarResumenDeLaCuenta>();
         servicios.AddScoped<ExportarMisDatos>();
