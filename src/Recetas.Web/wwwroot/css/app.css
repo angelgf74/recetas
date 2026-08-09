@@ -680,8 +680,22 @@ a {
     background-color: rgb(255 255 255 / 24%);
 }
 
+/*
+ * `.boton-accion` trae fondo claro (pensado para la ficha) y aquí solo se
+ * cambiaba el color del icono: el resultado era un icono blanco sobre fondo
+ * claro, invisible. Se rehace el fondo igual que `.visor-paso`, con el mismo
+ * tono translúcido para que los tres controles de la barra se lean como un
+ * conjunto.
+ */
 .visor .boton-accion {
     color: #fff;
+    background-color: rgb(255 255 255 / 12%);
+    border-color: rgb(255 255 255 / 30%);
+}
+
+.visor .boton-accion:hover:not(:disabled) {
+    color: #fff;
+    background-color: rgb(255 255 255 / 24%);
     border-color: rgb(255 255 255 / 30%);
 }
 
