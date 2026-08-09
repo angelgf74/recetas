@@ -20,9 +20,16 @@ public sealed class PeticionDeImportacion
 /// para que la interfaz pueda decir de dónde viene lo que el usuario está a punto
 /// de guardar.
 /// </param>
+/// <param name="Imagen">
+/// La foto de la receta, ya descargada y sin metadatos, o <c>null</c> si la
+/// página no declaraba ninguna o no se pudo traer (027). El cliente la guarda
+/// en memoria y la sube con <c>POST /recetas/{id}/fotos</c> justo después de
+/// crear la receta: el servidor no guarda nada hasta entonces.
+/// </param>
 public sealed record RespuestaDeImportacion(
     string Nombre,
     string Elaboracion,
     int? Raciones,
     IReadOnlyCollection<LineaDeIngredientePeticion> Ingredientes,
-    string Origen);
+    string Origen,
+    byte[]? Imagen = null);

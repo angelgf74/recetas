@@ -1,11 +1,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Recetas.Aplicacion.Favoritos;
 using Recetas.Aplicacion.Moderacion;
 using Recetas.Aplicacion.Recetas;
 using Recetas.Contratos.Recetas;
 using Recetas.Contratos.Sesiones;
 using Recetas.Dominio.Recetas;
+using Recetas.Infraestructura.Fotos;
 using DominioReceta = Recetas.Dominio.Recetas.Receta;
 
 namespace Recetas.Api.Endpoints;
@@ -303,6 +305,7 @@ public static class RecetasEndpoints
         [FromBody] PeticionDeImportacion peticion,
         ClaimsPrincipal usuario,
         ImportarReceta casoDeUso,
+        IOptions<OpcionesDeFotos> opcionesDeFotos,
         CancellationToken cancelacion)
     {
         if (!usuario.TryObtenerId(out _))
@@ -310,7 +313,10 @@ public static class RecetasEndpoints
             return Results.Unauthorized();
         }
 
-        var (resultado, receta, origen) = await casoDeUso.EjecutarAsync(peticion.Direccion, cancelacion);
+        // Mismo tope que rige las fotos que sube el propio usuario (027): no hay
+        // una configuración aparte para las importadas.
+        var (resultado, receta, origen) = await casoDeUso.EjecutarAsync(
+            peticion.Direccion, opcionesDeFotos.Value.TamanoMaximoEnBytes, cancelacion);
 
         return resultado switch
         {
@@ -323,7 +329,8 @@ public static class RecetasEndpoints
                         .Select(linea => new LineaDeIngredientePeticion(
                             linea.Nombre, linea.Cantidad, linea.Unidad.ToString()))
                         .ToList(),
-                    origen.ToString())),
+                    origen.ToString(),
+                    receta.ImagenLimpia)),
 
             ResultadoDeImportacion.DireccionNoValida =>
                 Results.BadRequest(new RespuestaDeError(

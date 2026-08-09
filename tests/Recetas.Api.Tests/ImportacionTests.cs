@@ -19,12 +19,24 @@ public sealed class DescargadorEspia : IDescargadorDePaginas
 {
     public string? Html { get; set; }
 
+    /// <summary>Bytes que devuelve <see cref="DescargarImagenAsync"/>, o <c>null</c> para simular un fallo.</summary>
+    public byte[]? Imagen { get; set; }
+
     public Uri? UltimaDireccion { get; private set; }
+
+    public Uri? UltimaImagenPedida { get; private set; }
 
     public Task<string?> DescargarAsync(Uri direccion, CancellationToken cancelacion = default)
     {
         UltimaDireccion = direccion;
         return Task.FromResult(Html);
+    }
+
+    public Task<byte[]?> DescargarImagenAsync(
+        Uri direccion, long maximoDeBytes, CancellationToken cancelacion = default)
+    {
+        UltimaImagenPedida = direccion;
+        return Task.FromResult(Imagen);
     }
 }
 
@@ -121,6 +133,105 @@ public class ImportacionTests(ApiConDescargadorEspiaFixture api)
         });
 
         Assert.Equal(HttpStatusCode.Created, creada.StatusCode);
+    }
+
+    // -------------------------------------------------------------- Imagen (027)
+
+    private const string PaginaConRecetaYFoto =
+        """
+        <html><head>
+        <script type="application/ld+json">
+        { "@type": "Recipe", "name": "Fabada asturiana", "recipeYield": "4 raciones",
+          "recipeIngredient": ["500 g de fabes", "2 chorizos", "sal al gusto"],
+          "recipeInstructions": "Cocer todo a fuego lento.",
+          "image": "https://ejemplo.com/fabada.jpg" }
+        </script>
+        </head><body></body></html>
+        """;
+
+    [Fact]
+    public async Task ConUnaImagenValida_ElBorradorLaTrae()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        api.Descargador.Html = PaginaConRecetaYFoto;
+        api.Descargador.Imagen = ImagenDePrueba.Jpeg();
+
+        var borrador = await (await ImportarAsync(cliente, "https://ejemplo.com/fabada"))
+            .Content.ReadFromJsonAsync<RespuestaDeImportacion>();
+
+        Assert.NotNull(borrador!.Imagen);
+        Assert.NotEmpty(borrador.Imagen);
+    }
+
+    [Fact]
+    public async Task LaImagenImportada_SeSubeALaRecetaCreada()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        api.Descargador.Html = PaginaConRecetaYFoto;
+        api.Descargador.Imagen = ImagenDePrueba.Jpeg();
+
+        var borrador = await (await ImportarAsync(cliente, "https://ejemplo.com/fabada"))
+            .Content.ReadFromJsonAsync<RespuestaDeImportacion>();
+
+        var creada = await cliente.PostAsJsonAsync("/recetas", new PeticionDeReceta
+        {
+            Nombre = borrador!.Nombre,
+            TipoDePlato = "PlatoPrincipal",
+            Elaboracion = borrador.Elaboracion,
+            Raciones = borrador.Raciones,
+            Ingredientes = borrador.Ingredientes.ToList()
+        });
+        var recetaId = (await creada.Content.ReadFromJsonAsync<RespuestaDeReceta>())!.Id;
+
+        // El paso que hace el cliente: subir los bytes ya traídos por la
+        // importación, con el endpoint normal de fotos.
+        var subida = await cliente.PostAsync(
+            $"/recetas/{recetaId}/fotos", new ByteArrayContent(borrador.Imagen!));
+        Assert.Equal(HttpStatusCode.Created, subida.StatusCode);
+
+        var receta = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        Assert.Single(receta!.Fotos);
+    }
+
+    [Fact]
+    public async Task SinImagenEnLaPagina_ElBorradorLlegaSinFoto()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        api.Descargador.Html = PaginaConReceta; // sin "image"
+
+        var borrador = await (await ImportarAsync(cliente, "https://ejemplo.com/fabada"))
+            .Content.ReadFromJsonAsync<RespuestaDeImportacion>();
+
+        Assert.Null(borrador!.Imagen);
+    }
+
+    [Fact]
+    public async Task SiLaImagenFalla_LaImportacionSigueSiendoCorrecta()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        api.Descargador.Html = PaginaConRecetaYFoto;
+        api.Descargador.Imagen = null; // simula que la descarga falla
+
+        var respuesta = await ImportarAsync(cliente, "https://ejemplo.com/fabada");
+        var borrador = await respuesta.Content.ReadFromJsonAsync<RespuestaDeImportacion>();
+
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        Assert.Equal("Fabada asturiana", borrador!.Nombre);
+        Assert.Null(borrador.Imagen);
+    }
+
+    [Fact]
+    public async Task UnaImagenQueNoEsUnFormatoAdmitido_SeIgnora()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        api.Descargador.Html = PaginaConRecetaYFoto;
+        api.Descargador.Imagen = "esto no es una imagen"u8.ToArray();
+
+        var borrador = await (await ImportarAsync(cliente, "https://ejemplo.com/fabada"))
+            .Content.ReadFromJsonAsync<RespuestaDeImportacion>();
+
+        Assert.NotNull(borrador);
+        Assert.Null(borrador.Imagen);
     }
 
     [Fact]

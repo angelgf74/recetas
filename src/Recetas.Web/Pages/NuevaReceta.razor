@@ -62,11 +62,19 @@
     private string? _origen;
     private bool _importando;
 
+    /// <summary>
+    /// Foto ya descargada y limpia que trajo la importación (027), en memoria
+    /// hasta que haya una receta a la que subirla: el servidor no guarda nada
+    /// hasta que el usuario envía el formulario.
+    /// </summary>
+    private byte[]? _imagenImportada;
+
     private async Task ImportarAsync()
     {
         _importando = true;
         _avisoDeImportacion = null;
         _origen = null;
+        _imagenImportada = null;
 
         var (resultado, borrador) = await Api.ImportarRecetaAsync(_direccion);
 
@@ -83,6 +91,7 @@
             };
 
             _origen = borrador.Origen;
+            _imagenImportada = borrador.Imagen;
         }
         else
         {
@@ -97,11 +106,21 @@
         var (resultado, id) = await Api.CrearRecetaAsync(peticion);
         _resultado = resultado;
 
-        if (resultado.Correcta)
+        if (!resultado.Correcta)
         {
-            // A la ficha recién creada, no de vuelta al listado: lo natural tras
-            // guardar es ver el resultado.
-            Navegacion.NavigateTo($"/recetas/{id}");
+            return;
         }
+
+        // Si la foto importada no llega a subirse, la receta ya creada no se
+        // deshace por eso: queda sin foto, para añadirla a mano desde la ficha.
+        if (_imagenImportada is { Length: > 0 })
+        {
+            using var contenido = new MemoryStream(_imagenImportada);
+            await Api.SubirFotoAsync(id, contenido);
+        }
+
+        // A la ficha recién creada, no de vuelta al listado: lo natural tras
+        // guardar es ver el resultado.
+        Navegacion.NavigateTo($"/recetas/{id}");
     }
 }

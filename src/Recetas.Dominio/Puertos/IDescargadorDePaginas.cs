@@ -21,4 +21,21 @@ public interface IDescargadorDePaginas
     /// un escáner de la red del servidor manejado desde fuera.
     /// </remarks>
     Task<string?> DescargarAsync(Uri direccion, CancellationToken cancelacion = default);
+
+    /// <summary>
+    /// Descarga los bytes de una imagen, con las mismas garantías que
+    /// <see cref="DescargarAsync"/>: la petición no puede alcanzar la red interna
+    /// del servidor. Existe para la 027, que importa además la foto de la receta.
+    /// </summary>
+    /// <remarks>
+    /// <b>No filtra por el <c>Content-Type</c> que declare el servidor de
+    /// origen.</b> El formato se decide por los bytes, en la capa de aplicación,
+    /// igual que con las fotos que sube el propio usuario — un servidor de
+    /// terceros es al menos tan capaz de mentir en la cabecera como un cliente.
+    /// </remarks>
+    /// <param name="maximoDeBytes">
+    /// Tope de la descarga. Lo decide quien llama —el mismo que rige las fotos
+    /// que sube el propio usuario— y no este puerto.
+    /// </param>
+    Task<byte[]?> DescargarImagenAsync(Uri direccion, long maximoDeBytes, CancellationToken cancelacion = default);
 }

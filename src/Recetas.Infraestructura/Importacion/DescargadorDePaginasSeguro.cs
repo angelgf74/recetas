@@ -66,6 +66,43 @@ public sealed class DescargadorDePaginasSeguro : IDescargadorDePaginas, IDisposa
 
     public async Task<string?> DescargarAsync(Uri direccion, CancellationToken cancelacion = default)
     {
+        var resultado = await DescargarBytesAsync(
+            direccion,
+            respuesta => respuesta.Content.Headers.ContentType?.MediaType is "text/html" or "application/xhtml+xml",
+            _opciones.MaximoDeBytes,
+            cancelacion);
+
+        return resultado is null
+            ? null
+            : Decodificar(resultado.Value.Bytes, resultado.Value.Codificacion);
+    }
+
+    public async Task<byte[]?> DescargarImagenAsync(
+        Uri direccion, long maximoDeBytes, CancellationToken cancelacion = default)
+    {
+        // Sin filtro de Content-Type aquí a propósito: ver el comentario de
+        // IDescargadorDePaginas.DescargarImagenAsync. El tope de bytes no sale de
+        // aquí: lo trae quien llama, para que sea el mismo que rige las fotos que
+        // sube el propio usuario.
+        var resultado = await DescargarBytesAsync(direccion, respuesta => true, maximoDeBytes, cancelacion);
+
+        return resultado?.Bytes;
+    }
+
+    /// <summary>
+    /// Núcleo compartido: sigue redirecciones a mano, valida cada destino al
+    /// conectar (vía <see cref="ConectarSoloAPublicasAsync"/>, colgado del mismo
+    /// <see cref="_cliente"/> para las dos operaciones) y corta la lectura por
+    /// bytes. <see cref="DescargarAsync"/> y <see cref="DescargarImagenAsync"/> no
+    /// son dos implementaciones parecidas: son la misma, con un filtro de
+    /// contenido y un destino distintos.
+    /// </summary>
+    private async Task<(byte[] Bytes, string? Codificacion)?> DescargarBytesAsync(
+        Uri direccion,
+        Func<HttpResponseMessage, bool> tipoAceptado,
+        long maximoDeBytes,
+        CancellationToken cancelacion)
+    {
         var actual = direccion;
 
         try
@@ -100,7 +137,16 @@ public sealed class DescargadorDePaginasSeguro : IDescargadorDePaginas, IDisposa
                     return null;
                 }
 
-                return await LeerHtmlAsync(respuesta, cancelacion);
+                if (!tipoAceptado(respuesta))
+                {
+                    return null;
+                }
+
+                var bytes = await LeerBytesAsync(respuesta, maximoDeBytes, cancelacion);
+
+                return bytes is null
+                    ? null
+                    : (bytes, respuesta.Content.Headers.ContentType?.CharSet);
             }
 
             // Se han agotado los saltos: cadena de redirecciones demasiado larga,
@@ -114,26 +160,18 @@ public sealed class DescargadorDePaginasSeguro : IDescargadorDePaginas, IDisposa
             // Se registra el motivo real para poder diagnosticar, pero al usuario
             // le llega un único mensaje: ver el comentario de IDescargadorDePaginas.
             _registro.LogInformation(
-                excepcion, "No se pudo descargar la página {Direccion} para importar.", direccion);
+                excepcion, "No se pudo descargar {Direccion} para importar.", direccion);
 
             return null;
         }
     }
 
-    private async Task<string?> LeerHtmlAsync(HttpResponseMessage respuesta, CancellationToken cancelacion)
+    private static async Task<byte[]?> LeerBytesAsync(
+        HttpResponseMessage respuesta, long maximoDeBytes, CancellationToken cancelacion)
     {
-        var tipo = respuesta.Content.Headers.ContentType?.MediaType;
-
-        // Solo HTML. Sin esto, la importación serviría para traerse cualquier cosa
-        // que haya al otro lado.
-        if (tipo is not ("text/html" or "application/xhtml+xml"))
-        {
-            return null;
-        }
-
         // El Content-Length lo escribe el servidor de destino y puede mentir, así
         // que se comprueba antes de leer y además se corta la lectura por bytes.
-        if (respuesta.Content.Headers.ContentLength > _opciones.MaximoDeBytes)
+        if (respuesta.Content.Headers.ContentLength > maximoDeBytes)
         {
             return null;
         }
@@ -146,19 +184,17 @@ public sealed class DescargadorDePaginasSeguro : IDescargadorDePaginas, IDisposa
 
         while ((leidos = await flujo.ReadAsync(bufer, cancelacion)) > 0)
         {
-            if (memoria.Length + leidos > _opciones.MaximoDeBytes)
+            if (memoria.Length + leidos > maximoDeBytes)
             {
-                // Se corta y se descarta: una página que pasa del tope no es una
-                // página de receta, y seguir leyendo es regalar memoria.
+                // Se corta y se descarta: pasar del tope no es un documento válido
+                // de importar, y seguir leyendo es regalar memoria.
                 return null;
             }
 
             memoria.Write(bufer, 0, leidos);
         }
 
-        var codificacion = respuesta.Content.Headers.ContentType?.CharSet;
-
-        return Decodificar(memoria.ToArray(), codificacion);
+        return memoria.ToArray();
     }
 
     /// <summary>

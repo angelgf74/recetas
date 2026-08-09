@@ -249,4 +249,83 @@ public class LectorDeRecetaEnJsonLdTests
     {
         Assert.Null(LectorDeRecetaEnJsonLd.Leer(html));
     }
+
+    // --------------------------------------------------- Imagen (027)
+
+    [Fact]
+    public void Imagen_ComoTextoSuelto_SeLee()
+    {
+        var receta = LectorDeRecetaEnJsonLd.Leer(Pagina(
+            """
+            { "@type": "Recipe", "name": "Con foto", "recipeIngredient": ["1 unidad de algo"],
+              "image": "https://ejemplo.com/foto.jpg" }
+            """));
+
+        Assert.Equal("https://ejemplo.com/foto.jpg", receta!.UrlDeImagen);
+    }
+
+    [Fact]
+    public void Imagen_ComoListaDeTextos_SeQuedaConLaPrimera()
+    {
+        var receta = LectorDeRecetaEnJsonLd.Leer(Pagina(
+            """
+            { "@type": "Recipe", "name": "Con fotos", "recipeIngredient": ["1 unidad de algo"],
+              "image": ["https://ejemplo.com/una.jpg", "https://ejemplo.com/otra.jpg"] }
+            """));
+
+        Assert.Equal("https://ejemplo.com/una.jpg", receta!.UrlDeImagen);
+    }
+
+    [Fact]
+    public void Imagen_ComoImageObject_LeeSuUrl()
+    {
+        var receta = LectorDeRecetaEnJsonLd.Leer(Pagina(
+            """
+            { "@type": "Recipe", "name": "Con ImageObject", "recipeIngredient": ["1 unidad de algo"],
+              "image": { "@type": "ImageObject", "url": "https://ejemplo.com/objeto.jpg" } }
+            """));
+
+        Assert.Equal("https://ejemplo.com/objeto.jpg", receta!.UrlDeImagen);
+    }
+
+    [Fact]
+    public void Imagen_ComoListaDeImageObject_SeQuedaConLaPrimera()
+    {
+        var receta = LectorDeRecetaEnJsonLd.Leer(Pagina(
+            """
+            { "@type": "Recipe", "name": "Con lista de objetos", "recipeIngredient": ["1 unidad de algo"],
+              "image": [
+                { "@type": "ImageObject", "url": "https://ejemplo.com/primera.jpg" },
+                { "@type": "ImageObject", "url": "https://ejemplo.com/segunda.jpg" }
+              ] }
+            """));
+
+        Assert.Equal("https://ejemplo.com/primera.jpg", receta!.UrlDeImagen);
+    }
+
+    [Fact]
+    public void SinImagen_NoRompeLaImportacion()
+    {
+        var receta = LectorDeRecetaEnJsonLd.Leer(Pagina(
+            """
+            { "@type": "Recipe", "name": "Sin foto", "recipeIngredient": ["1 unidad de algo"] }
+            """));
+
+        Assert.NotNull(receta);
+        Assert.Null(receta.UrlDeImagen);
+    }
+
+    [Fact]
+    public void RecetaRecienLeida_TodaviaNoTraeLaImagenDescargada()
+    {
+        // LeerImagen solo saca la URL del JSON-LD; descargarla y limpiarla es
+        // cosa de ImportarReceta, no del lector.
+        var receta = LectorDeRecetaEnJsonLd.Leer(Pagina(
+            """
+            { "@type": "Recipe", "name": "Con foto", "recipeIngredient": ["1 unidad de algo"],
+              "image": "https://ejemplo.com/foto.jpg" }
+            """));
+
+        Assert.Null(receta!.ImagenLimpia);
+    }
 }

@@ -10,11 +10,23 @@ namespace Recetas.Dominio.Recetas;
 /// el que crea la receta. Reutilizar la entidad invitaría a saltarse ese paso, que
 /// es justo lo que mantiene la feature dentro de <c>mission.md</c>.
 /// </remarks>
+/// <param name="UrlDeImagen">
+/// La foto que declaraba la página, si la había, tal como venía escrita —sin
+/// descargar ni validar—. El dominio no sabe de HTTP: eso es cosa de quien
+/// orquesta la importación (027).
+/// </param>
+/// <param name="ImagenLimpia">
+/// Los bytes de esa foto, ya descargados y sin metadatos, o <c>null</c> si no
+/// había foto o no se pudo traer. Se rellena aparte, después de leer el JSON-LD:
+/// por eso empieza a <c>null</c> y se completa con un <c>with</c>.
+/// </param>
 public sealed record RecetaImportada(
     string Nombre,
     string Elaboracion,
     int? Raciones,
-    IReadOnlyList<LineaDeIngredienteImportada> Ingredientes);
+    IReadOnlyList<LineaDeIngredienteImportada> Ingredientes,
+    string? UrlDeImagen = null,
+    byte[]? ImagenLimpia = null);
 
 /// <summary>
 /// Una línea de ingrediente tal como se ha podido interpretar del texto de la web.

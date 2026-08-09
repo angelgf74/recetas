@@ -159,7 +159,59 @@ public static partial class LectorDeRecetaEnJsonLd
             Recortar(nombre, Receta.LongitudMaximaDelNombre),
             Recortar(elaboracion, Receta.LongitudMaximaDeLaElaboracion),
             LeerRaciones(receta),
-            ingredientes);
+            ingredientes,
+            LeerImagen(receta));
+    }
+
+    /// <summary>
+    /// La foto viene en varias formas según <c>schema.org</c>: texto suelto, lista
+    /// de textos, un objeto <c>ImageObject</c> con <c>url</c>, o una lista de esos
+    /// objetos. Se queda con la primera que parezca una dirección; validar que es
+    /// http(s) de verdad es cosa de quien la descarga (027).
+    /// </summary>
+    private static string? LeerImagen(JsonElement receta)
+    {
+        if (!receta.TryGetProperty("image", out var imagen))
+        {
+            return null;
+        }
+
+        return PrimeraUrlDeImagen(imagen, profundidad: 0);
+    }
+
+    private static string? PrimeraUrlDeImagen(JsonElement elemento, int profundidad)
+    {
+        if (profundidad > 3)
+        {
+            return null;
+        }
+
+        switch (elemento.ValueKind)
+        {
+            case JsonValueKind.String:
+                var texto = elemento.GetString();
+                return string.IsNullOrWhiteSpace(texto) ? null : texto.Trim();
+
+            case JsonValueKind.Array:
+                foreach (var hijo in elemento.EnumerateArray())
+                {
+                    var encontrada = PrimeraUrlDeImagen(hijo, profundidad + 1);
+
+                    if (encontrada is not null)
+                    {
+                        return encontrada;
+                    }
+                }
+
+                return null;
+
+            // ImageObject: { "@type": "ImageObject", "url": "..." }
+            case JsonValueKind.Object:
+                return TextoDe(elemento, "url");
+
+            default:
+                return null;
+        }
     }
 
     private static IReadOnlyList<LineaDeIngredienteImportada> LeerIngredientes(JsonElement receta)

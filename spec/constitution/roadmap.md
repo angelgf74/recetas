@@ -59,6 +59,10 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 26. **[026 · Convertir unidades al escalar](../features/026-convertir-unidades-al-escalar/spec.md)** — 500 g que se doblan pasan a leerse "1 kg", no "1000 g". Método nuevo (`EscalarConUnidad`) en vez de un parámetro booleano en `Escalar`, mismo criterio que separó `RetirarPorModeracion` en la 020: dos comportamientos que dejan de significar lo mismo no comparten camino. Solo se activa al pedir raciones explícitamente — la ficha en reposo y el formulario de edición piden lo mismo sin ese parámetro, y convertir siempre habría hecho que editar una receta guardada en gramos mostrara kilogramos y guardarla sin tocar ese campo cambiara la unidad guardada por el simple hecho de haberla mirado.
 
+27. **[027 · Importar también la foto](../features/027-importar-tambien-la-foto/spec.md)** — la imagen del `Recipe` de `schema.org` se descarga, se limpia de metadatos y viaja en el borrador; el cliente la sube tras crear la receta, porque `POST /recetas/importaciones` sigue sin crear nada. Ni un `HttpClient` nuevo ni un `ConnectCallback` nuevo: la descarga de la imagen reutiliza el mismo cliente endurecido de la 011, con el núcleo de descarga extraído a un método compartido.
+
+    **Nota sobre cómo se comprobó de verdad**, porque es una lección que vale para más que esta feature: los primeros tests contra `127.0.0.1` y direcciones internas fijas pasaban igual con protección que sin ella, porque en la máquina de desarrollo no hay nada escuchando ahí — "bloqueado" y "no hay nadie" dan el mismo resultado observable. El test que sí distingue levanta un servidor de verdad en bucle local, listo para responder, y comprueba que el descargador nunca llega a hablar con él. Comprobado saboteando el código a propósito: con un cliente sin protección, ese test falla; los de direcciones fijas no se enteran.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -140,7 +144,6 @@ buenas prácticas en abstracto._
 
   Eso confirma de paso la decisión delicada de aquel día: en `assetlinks.json` va la huella del certificado con el que **Play refirma** (`4A:7E:85:…`), no la de subida. Con la de subida seguiría fallando, y sin ningún error que lo explicara: el enlace simplemente abriría el navegador.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
-- **Importar también la foto de la receta** — descargar y republicar la imagen de un tercero tiene más aristas que el texto; quedó fuera de la 011.
 - **Más formatos de marcado al importar** (microdatos, RDFa) y páginas que montan la receta con JavaScript. Hoy solo se lee JSON-LD.
 
 - **Android sin conexión.** Es la mejora de producto con más recorrido: un
