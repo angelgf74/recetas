@@ -2,6 +2,7 @@
    grandes simplemente se queda centrada en lugar de estirarse. */
 
 .cabecera {
+    position: relative; /* ancla el menú desplegable de móvil */
     display: flex;
     align-items: center;
     min-height: var(--altura-tactil);

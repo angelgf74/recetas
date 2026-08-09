@@ -290,29 +290,80 @@ a {
     text-decoration: none;
 }
 
-/* Navegación de la cabecera ----------------------------------------------- */
+/* Navegación de la cabecera -------------------------------------------------
+   Cinco enlaces no caben en línea en un móvil estrecho. Por debajo de 40rem
+   —el mismo corte que ya separaba el padding de `.contenido`— la navegación
+   se pliega detrás de un botón de menú; a partir de ahí se enseña entera,
+   como siempre. Sin JavaScript: el estado abierto/cerrado es un bool de
+   Blazor, igual que el resto de desplegables del producto. */
 
-.navegacion {
-    display: flex;
+.boton-menu {
+    display: inline-flex;
     align-items: center;
-    gap: var(--espacio-4);
+    justify-content: center;
+    width: var(--altura-tactil);
+    height: var(--altura-tactil);
     margin-left: auto;
-    font-size: var(--texto-pequeno);
+    padding: 0;
+    color: var(--color-texto);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
 
-    /* Cinco enlaces no caben en un móvil estrecho. Sin esto, los flex-item se
-       encogen por debajo del ancho de su texto y las palabras se parten
-       ("Mi" / "recetario") en lugar de desbordar; con esto, la fila entera se
-       desliza y cada enlace conserva su ancho natural. */
-    flex-shrink: 1;
-    min-width: 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+/* Cerrada por defecto en móvil: un panel que cuelga de la cabecera, no una
+   fila que se aplasta. */
+.navegacion {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--espacio-1);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    padding: var(--espacio-3) var(--espacio-4);
+    background-color: var(--color-superficie);
+    border-bottom: 1px solid var(--color-borde);
+    box-shadow: var(--sombra);
+    font-size: var(--texto-pequeno);
+}
+
+.navegacion-abierta {
+    display: flex;
 }
 
 .navegacion a,
 .navegacion button {
-    flex-shrink: 0;
-    white-space: nowrap;
+    padding: var(--espacio-2) 0;
+}
+
+@media (min-width: 40rem) {
+    .boton-menu {
+        display: none;
+    }
+
+    /* A partir de aquí la navegación es siempre la fila de siempre, tanto si
+       el usuario la había abierto en móvil como si no: ensanchar la ventana
+       no debe dejar un panel desplegado a medias. */
+    .navegacion,
+    .navegacion-abierta {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        position: static;
+        gap: var(--espacio-4);
+        margin-left: auto;
+        padding: 0;
+        background: none;
+        border: 0;
+        box-shadow: none;
+    }
+
+    .navegacion a,
+    .navegacion button {
+        padding: 0;
+    }
 }
 
 /* Listados ---------------------------------------------------------------- */

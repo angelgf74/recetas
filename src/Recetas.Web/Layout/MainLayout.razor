@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@using Recetas.Web.Componentes
 @using Recetas.Web.Servicios
 @implements IDisposable
 @inject EstadoDeSesion Sesion
@@ -9,11 +10,23 @@
 
     @if (_haySesion)
     {
-        <nav class="navegacion">
-            <a href="/recetas">Mi recetario</a>
-            <a href="/favoritos">Favoritos</a>
-            <a href="/buscar">Buscar</a>
-            <a href="/mi-cuenta">Mi cuenta</a>
+        @*
+            Botón de menú: el CSS lo oculta a partir de 40rem, donde los cinco
+            enlaces ya caben en línea. Por debajo, la navegación cuelga de él.
+        *@
+        <button type="button" class="boton-menu"
+                aria-expanded="@(_menuAbierto ? "true" : "false")"
+                aria-controls="menu-de-navegacion"
+                aria-label="@(_menuAbierto ? "Cerrar menú" : "Abrir menú")"
+                @onclick="() => _menuAbierto = !_menuAbierto">
+            <Icono Nombre="@(_menuAbierto ? "cerrar" : "menu")" />
+        </button>
+
+        <nav id="menu-de-navegacion" class="navegacion @(_menuAbierto ? "navegacion-abierta" : "")">
+            <a href="/recetas" @onclick="CerrarMenu">Mi recetario</a>
+            <a href="/favoritos" @onclick="CerrarMenu">Favoritos</a>
+            <a href="/buscar" @onclick="CerrarMenu">Buscar</a>
+            <a href="/mi-cuenta" @onclick="CerrarMenu">Mi cuenta</a>
             <button type="button" class="enlace" @onclick="CerrarSesionAsync">Salir</button>
         </nav>
     }
@@ -25,6 +38,7 @@
 
 @code {
     private bool _haySesion;
+    private bool _menuAbierto;
 
     protected override async Task OnInitializedAsync()
     {
@@ -40,6 +54,13 @@
         _haySesion = await Sesion.ObtenerTokenAsync() is { Length: > 0 };
         await InvokeAsync(StateHasChanged);
     }
+
+    /// <summary>
+    /// Se cuelga de cada enlace del menú: en escritorio no hace nada visible
+    /// —el CSS ya mantiene la navegación en línea—, y en móvil cierra el panel
+    /// antes de que la navegación se complete.
+    /// </summary>
+    private void CerrarMenu() => _menuAbierto = false;
 
     private async Task CerrarSesionAsync()
     {
