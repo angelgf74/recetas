@@ -275,6 +275,10 @@ public sealed class ClienteDeApi(HttpClient http)
     public Task<ResultadoDeLlamada> BorrarFotoAsync(Guid recetaId, Guid fotoId) =>
         EnviarAsync(HttpMethod.Delete, $"recetas/{recetaId}/fotos/{fotoId}");
 
+    /// <summary>Designa esa foto como portada de la receta (025).</summary>
+    public Task<ResultadoDeLlamada> ElegirPortadaAsync(Guid recetaId, Guid fotoId) =>
+        EnviarAsync(HttpMethod.Put, $"recetas/{recetaId}/fotos/{fotoId}/portada");
+
     // ------------------------------------------------------------ Búsqueda
 
     public Task<(ResultadoDeLlamada Resultado, RespuestaDeBusqueda? Busqueda)> BuscarAsync(

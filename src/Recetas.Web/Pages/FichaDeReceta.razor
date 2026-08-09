@@ -70,10 +70,16 @@
                         var foto = _receta.Fotos.ElementAt(indice);
 
                         <button type="button" class="tira-foto"
-                                title="Ver la foto @(indice + 1)"
+                                title="@(foto.EsPortada ? $"Ver la foto {indice + 1} (portada)" : $"Ver la foto {indice + 1}")"
                                 aria-label="Ver la foto @(indice + 1) a tamaño completo"
                                 @onclick="() => AbrirVisor(indice)">
                             <FotoDeReceta RecetaId="_receta.Id" FotoId="foto.Id" Miniatura="true" />
+                            @if (foto.EsPortada)
+                            {
+                                <span class="tira-foto-portada" title="Portada" aria-hidden="true">
+                                    <Icono Nombre="estrella" />
+                                </span>
+                            }
                         </button>
                     }
                 </section>
@@ -282,7 +288,8 @@
                           Indice="_fotoEnElVisor"
                           PuedeBorrar="EsMia"
                           AlCerrar="CerrarVisorAsync"
-                          AlBorrar="BorrarFotoAsync" />
+                          AlBorrar="BorrarFotoAsync"
+                          AlElegirPortada="ElegirPortadaAsync" />
         }
     }
 </RutaProtegida>
@@ -423,6 +430,24 @@
         {
             _aviso = null;
             await RecargarAsync();
+        }
+    }
+
+    /// <summary>
+    /// Recarga sin cerrar el visor: a diferencia de borrar, la foto sigue
+    /// existiendo y tiene sentido seguir viéndola tras elegirla como portada.
+    /// </summary>
+    private async Task ElegirPortadaAsync(Guid fotoId)
+    {
+        var resultado = await Api.ElegirPortadaAsync(Id, fotoId);
+
+        if (resultado.Correcta)
+        {
+            await RecargarAsync();
+        }
+        else
+        {
+            _aviso = resultado;
         }
     }
 

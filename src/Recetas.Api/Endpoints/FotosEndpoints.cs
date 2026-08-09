@@ -26,6 +26,10 @@ public static class FotosEndpoints
         grupo.MapGet("/{fotoId:guid}", DescargarAsync);
         grupo.MapGet("/{fotoId:guid}/miniatura", DescargarMiniaturaAsync);
         grupo.MapDelete("/{fotoId:guid}", BorrarAsync);
+
+        // PUT: se fija un estado ("esta es la portada"), no se ejecuta un verbo
+        // que ocurre una vez. Mismo razonamiento que el favorito de la 021.
+        grupo.MapPut("/{fotoId:guid}/portada", ElegirPortadaAsync);
     }
 
     private static async Task<IResult> SubirAsync(
@@ -142,6 +146,23 @@ public static class FotosEndpoints
         }
 
         var resultado = await gestion.BorrarAsync(usuarioId, recetaId, fotoId, cancelacion);
+
+        return resultado is ResultadoDeFoto.Correcto ? Results.NoContent() : NoEncontrada();
+    }
+
+    private static async Task<IResult> ElegirPortadaAsync(
+        Guid recetaId,
+        Guid fotoId,
+        ClaimsPrincipal usuario,
+        GestionDeFotos gestion,
+        CancellationToken cancelacion)
+    {
+        if (!usuario.TryObtenerId(out var usuarioId))
+        {
+            return Results.Unauthorized();
+        }
+
+        var resultado = await gestion.ElegirPortadaAsync(usuarioId, recetaId, fotoId, cancelacion);
 
         return resultado is ResultadoDeFoto.Correcto ? Results.NoContent() : NoEncontrada();
     }

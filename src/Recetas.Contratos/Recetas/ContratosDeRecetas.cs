@@ -69,7 +69,11 @@ public sealed record LineaDeIngredienteRespuesta(string Nombre, decimal? Cantida
 /// <param name="Id">Identificador de la foto; con él se compone la URL de descarga.</param>
 /// <param name="Tipo">Formato: <c>Jpeg</c>, <c>Png</c> o <c>Webp</c>.</param>
 /// <param name="TamanoEnBytes">Tamaño del archivo.</param>
-public sealed record FotoRespuesta(Guid Id, string Tipo, long TamanoEnBytes);
+/// <param name="EsPortada">
+/// Si es la que representa a la receta en el recetario, la búsqueda y los
+/// favoritos (025). Nunca hay más de una <c>true</c> por receta.
+/// </param>
+public sealed record FotoRespuesta(Guid Id, string Tipo, long TamanoEnBytes, bool EsPortada = false);
 
 /// <summary>Receta completa, con sus ingredientes y sus fotos.</summary>
 public sealed record RespuestaDeReceta(

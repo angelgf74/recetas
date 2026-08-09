@@ -101,5 +101,19 @@ public sealed class ConfiguracionDeReceta : IEntityTypeConfiguration<Receta>
             .WithOne()
             .HasForeignKey(vinculo => vinculo.RecetaId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        constructor.Property(receta => receta.FotoDePortadaElegidaId)
+            .HasColumnName("foto_de_portada_elegida_id");
+
+        // Referencia cruzada a propósito: recetas -> fotos aquí, fotos -> recetas
+        // más arriba. SetNull y no Cascade: borrar la foto elegida no debe borrar
+        // la receta, solo dejar de tener una elección explícita. El dominio ya
+        // limpia esta misma columna en la misma transacción (`QuitarFoto`); la FK
+        // es la red por si algún día algo borra una fila de `fotos` sin pasar
+        // por ahí.
+        constructor.HasOne<Foto>()
+            .WithMany()
+            .HasForeignKey(receta => receta.FotoDePortadaElegidaId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

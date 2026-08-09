@@ -111,20 +111,44 @@ public sealed class Receta
     public IReadOnlyCollection<Foto> Fotos => _fotos;
 
     /// <summary>
-    /// Foto que representa a la receta en un listado: la primera que se subió, o
-    /// <c>null</c> si no hay ninguna.
+    /// Foto elegida por el autor como portada (025), o <c>null</c> si nunca ha
+    /// elegido ninguna y se usa la derivada.
+    /// </summary>
+    public Guid? FotoDePortadaElegidaId { get; private set; }
+
+    /// <summary>
+    /// Foto que representa a la receta en un listado: la que el autor eligió, o
+    /// si no ha elegido ninguna —o la que eligió ya no existe—, la más antigua.
     /// </summary>
     /// <remarks>
-    /// Derivada, no almacenada. Un campo con el identificador de la portada habría
-    /// que mantenerlo al borrar precisamente esa foto, y olvidarlo dejaría los
-    /// listados pidiendo una imagen que ya no existe.
-    /// <para>
-    /// Que el autor pueda elegir otra es otra feature; mientras tanto "la primera
-    /// que subiste" es la respuesta menos sorprendente.
-    /// </para>
+    /// La preferencia explícita vive en <see cref="FotoDePortadaElegidaId"/>; el
+    /// resto sigue siendo derivado. Un campo que apuntara solo a la portada, sin
+    /// esta caída a la más antigua, habría que mantenerlo al borrar precisamente
+    /// esa foto, y olvidarlo dejaría los listados pidiendo una imagen que ya no
+    /// existe. <see cref="QuitarFoto"/> limpia la elección cuando se borra
+    /// justo esa foto, así que en la práctica el `??` casi nunca actúa — pero
+    /// sigue ahí como red, no como mecanismo principal.
     /// </remarks>
     public Foto? FotoDePortada =>
-        _fotos.OrderBy(foto => foto.FechaDeSubida).ThenBy(foto => foto.Id).FirstOrDefault();
+        (FotoDePortadaElegidaId is { } elegidaId
+            ? _fotos.FirstOrDefault(foto => foto.Id == elegidaId)
+            : null)
+        ?? _fotos.OrderBy(foto => foto.FechaDeSubida).ThenBy(foto => foto.Id).FirstOrDefault();
+
+    /// <summary>
+    /// El autor designa una de sus fotos como portada. Elegir la que ya lo es no
+    /// es un error: es el mismo estado pedido de nuevo.
+    /// </summary>
+    public void ElegirFotoDePortada(Guid fotoId, DateTimeOffset ahora)
+    {
+        if (!_fotos.Any(foto => foto.Id == fotoId))
+        {
+            throw new ArgumentException("Esa foto no es de esta receta.", nameof(fotoId));
+        }
+
+        FotoDePortadaElegidaId = fotoId;
+        FechaDeModificacion = ahora;
+    }
 
     public static Receta Crear(
         Guid autorId,
@@ -363,6 +387,14 @@ public sealed class Receta
 
         _fotos.Remove(foto);
         FechaDeModificacion = ahora;
+
+        // Sin esto, la elección quedaría apuntando a una foto que ya no existe.
+        // FotoDePortada lo tolera con su `??`, pero no hay razón para dejar el
+        // dato incoherente cuando aquí mismo se sabe que ha dejado de valer.
+        if (FotoDePortadaElegidaId == fotoId)
+        {
+            FotoDePortadaElegidaId = null;
+        }
 
         return foto;
     }

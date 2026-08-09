@@ -238,6 +238,43 @@ public sealed class GestionDeFotos(
         return miniatura;
     }
 
+    /// <summary>
+    /// Designa una foto propia como portada.
+    /// </summary>
+    /// <remarks>
+    /// Exige <c>EsDe</c>, como subir y borrar: elegir portada cambia cómo se
+    /// presenta la receta, no es una lectura.
+    /// </remarks>
+    public async Task<ResultadoDeFoto> ElegirPortadaAsync(
+        Guid usuarioId,
+        Guid recetaId,
+        Guid fotoId,
+        CancellationToken cancelacion = default)
+    {
+        var receta = await recetas.BuscarPorIdAsync(recetaId, cancelacion);
+
+        if (receta is null || !receta.EsDe(usuarioId))
+        {
+            return ResultadoDeFoto.NoEncontrada;
+        }
+
+        try
+        {
+            receta.ElegirFotoDePortada(fotoId, reloj.Ahora);
+        }
+        catch (ArgumentException)
+        {
+            // La foto no es de esta receta. Distinguirlo de "no existe" no
+            // aporta nada: en los dos casos, quien pregunta no tiene nada que
+            // hacer con ese identificador.
+            return ResultadoDeFoto.NoEncontrada;
+        }
+
+        await recetas.GuardarCambiosAsync(cancelacion);
+
+        return ResultadoDeFoto.Correcto;
+    }
+
     public async Task<ResultadoDeFoto> BorrarAsync(
         Guid usuarioId,
         Guid recetaId,

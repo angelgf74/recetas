@@ -79,4 +79,87 @@ public class FotoDePortadaTests
 
         Assert.Equal(primera, receta.FotoDePortada!.Id);
     }
+
+    // ------------------------------------------------------- Elección (025)
+
+    [Fact]
+    public void Elegir_SustituyeALaDerivada()
+    {
+        var receta = Crear();
+        var primera = receta.AnadirFoto(TipoDeImagen.Jpeg, 1000, Momento);
+        var segunda = receta.AnadirFoto(TipoDeImagen.Jpeg, 2000, Momento.AddMinutes(5));
+
+        receta.ElegirFotoDePortada(segunda.Id, Momento.AddMinutes(6));
+
+        Assert.Equal(segunda.Id, receta.FotoDePortada!.Id);
+        // La primera seguía siendo la derivada: sin elección explícita, la
+        // portada habría sido ella.
+        Assert.NotEqual(primera.Id, receta.FotoDePortada.Id);
+    }
+
+    [Fact]
+    public void Elegir_LaQueYaEsPortada_NoEsError()
+    {
+        var receta = Crear();
+        var foto = receta.AnadirFoto(TipoDeImagen.Jpeg, 1000, Momento);
+
+        receta.ElegirFotoDePortada(foto.Id, Momento.AddMinutes(1));
+
+        Assert.Equal(foto.Id, receta.FotoDePortada!.Id);
+    }
+
+    [Fact]
+    public void Elegir_UnaFotoQueNoEsDeLaReceta_Falla()
+    {
+        var receta = Crear();
+        receta.AnadirFoto(TipoDeImagen.Jpeg, 1000, Momento);
+
+        Assert.Throws<ArgumentException>(() =>
+            receta.ElegirFotoDePortada(Guid.NewGuid(), Momento.AddMinutes(1)));
+    }
+
+    [Fact]
+    public void BorrarLaElegida_VuelveALaDerivada()
+    {
+        var receta = Crear();
+        var primera = receta.AnadirFoto(TipoDeImagen.Jpeg, 1000, Momento);
+        var segunda = receta.AnadirFoto(TipoDeImagen.Jpeg, 2000, Momento.AddMinutes(5));
+
+        receta.ElegirFotoDePortada(segunda.Id, Momento.AddMinutes(6));
+        receta.QuitarFoto(segunda.Id, Momento.AddMinutes(7));
+
+        // No queda un hueco ni una referencia colgada: cae de vuelta a la más
+        // antigua de las que quedan.
+        Assert.Equal(primera.Id, receta.FotoDePortada!.Id);
+    }
+
+    /// <summary>
+    /// El caso anterior pasaría igual sin esta limpieza: el `??` de
+    /// <c>FotoDePortada</c> ya tolera una elección que apunta a una foto
+    /// borrada. Este test mira el campo en sí, no lo derivado, para comprobar
+    /// que la elección no se queda como una referencia colgada dentro del
+    /// agregado.
+    /// </summary>
+    [Fact]
+    public void BorrarLaElegida_LimpiaLaEleccionEnSi()
+    {
+        var receta = Crear();
+        var foto = receta.AnadirFoto(TipoDeImagen.Jpeg, 1000, Momento);
+
+        receta.ElegirFotoDePortada(foto.Id, Momento.AddMinutes(1));
+        receta.QuitarFoto(foto.Id, Momento.AddMinutes(2));
+
+        Assert.Null(receta.FotoDePortadaElegidaId);
+    }
+
+    [Fact]
+    public void Elegir_MueveLaFechaDeModificacion()
+    {
+        var receta = Crear();
+        var foto = receta.AnadirFoto(TipoDeImagen.Jpeg, 1000, Momento);
+
+        receta.ElegirFotoDePortada(foto.Id, Momento.AddHours(2));
+
+        Assert.Equal(Momento.AddHours(2), receta.FechaDeModificacion);
+    }
 }

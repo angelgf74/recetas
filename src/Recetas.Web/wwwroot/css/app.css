@@ -656,6 +656,7 @@ a {
 }
 
 .tira-foto {
+    position: relative; /* ancla la insignia de portada */
     padding: 0;
     background: none;
     border: 0;
@@ -666,6 +667,27 @@ a {
 .tira-foto:focus-visible {
     outline: 2px solid var(--color-acento);
     outline-offset: 2px;
+}
+
+/* Insignia de portada (025): un aviso discreto sobre la miniatura, no un
+   control — elegirla se hace desde el visor, con la foto grande delante. */
+.tira-foto-portada {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #fff;
+    background-color: rgb(36 32 28 / 60%);
+    border-radius: 50%;
+}
+
+.tira-foto-portada .icono {
+    width: 0.75rem;
+    height: 0.75rem;
 }
 
 /* Visor de fotos ----------------------------------------------------------

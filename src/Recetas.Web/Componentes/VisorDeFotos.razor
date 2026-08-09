@@ -25,6 +25,15 @@
             </span>
 
             <div class="visor-barra-acciones">
+                @if (PuedeBorrar && !FotoActual.EsPortada)
+                {
+                    <button type="button" class="boton-accion" title="Hacer portada"
+                            aria-label="Hacer portada de la receta" disabled="@_eligiendoPortada"
+                            @onclick="ElegirPortadaAsync">
+                        <Icono Nombre="estrella" />
+                    </button>
+                }
+
                 @if (PuedeBorrar)
                 {
                     <Confirmacion Texto="Borrar foto"
@@ -95,8 +104,16 @@
     [Parameter]
     public EventCallback<Guid> AlBorrar { get; set; }
 
+    /// <summary>
+    /// Avisa de que hay que hacer portada esa foto. Igual que <see cref="AlBorrar"/>,
+    /// el visor no llama a la API directamente.
+    /// </summary>
+    [Parameter]
+    public EventCallback<Guid> AlElegirPortada { get; set; }
+
     private ElementReference _dialogo;
     private bool _enfocado;
+    private bool _eligiendoPortada;
     private int _indice;
 
     private bool HayVarias => Fotos.Count > 1;
@@ -144,6 +161,19 @@
     }
 
     private Task CerrarAsync() => AlCerrar.InvokeAsync();
+
+    /// <summary>
+    /// No cierra el visor: a diferencia de borrar, la foto sigue ahí y tiene
+    /// sentido seguir mirándola —o pasar a otra— después de elegirla.
+    /// </summary>
+    private async Task ElegirPortadaAsync()
+    {
+        _eligiendoPortada = true;
+
+        await AlElegirPortada.InvokeAsync(FotoActual.Id);
+
+        _eligiendoPortada = false;
+    }
 
     private async Task BorrarAsync()
     {

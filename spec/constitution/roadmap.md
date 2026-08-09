@@ -55,6 +55,8 @@ _Orden y estado de las features. Cada entrada apunta a su carpeta en `features/`
 
 24. **[024 · Etiquetas libres](../features/024-etiquetas-libres/spec.md)** — palabras libres sobre una receta ("sin gluten", "rápido", "de la abuela"), complemento de `TipoDePlato` y no sustituto. Calco exacto del catálogo de ingredientes (003/006): una entidad de vínculo explícita (`EtiquetaDeReceta`) en lugar de un many-to-many implícito de EF, precisamente para no reabrir el terreno de la trampa de EF que documenta este archivo — clave `Guid` puesta por el dominio colgada de un padre ya rastreado. Buscar por etiqueta usa el mismo filtro **Y** que los ingredientes, y hereda su garantía de seguridad: el filtro de visibilidad va primero en la misma consulta, así que una etiqueta de una receta privada ajena nunca se puede usar para inferir nada.
 
+25. **[025 · Elegir la foto de portada](../features/025-elegir-foto-de-portada/spec.md)** — el autor designa cuál de sus fotos representa a la receta, en vez de que sea siempre la más antigua. `Receta.FotoDePortada` pasa de puramente derivada a tener una preferencia opcional por delante, con caída automática a la derivada si la elegida se borra. La columna que guarda la elección lleva clave foránea a `fotos` con `ON DELETE SET NULL` — una referencia cruzada entre `recetas` y `fotos` a propósito, con red por partida doble: el dominio limpia la referencia en `QuitarFoto`, y la relación de EF hace *fixup* del lado cliente aunque nadie lo llame. Comprobado quitando cada red por separado: ninguna de las dos es la única que sostiene el comportamiento observable, y hizo falta un test que mirara el campo interno para pillar la que sí.
+
 ## Siguiente 🔜
 
 _Las siete features del plan inicial están hechas. Lo siguiente sale del backlog._
@@ -136,7 +138,6 @@ buenas prácticas en abstracto._
 
   Eso confirma de paso la decisión delicada de aquel día: en `assetlinks.json` va la huella del certificado con el que **Play refirma** (`4A:7E:85:…`), no la de subida. Con la de subida seguiría fallando, y sin ningún error que lo explicara: el enlace simplemente abriría el navegador.
 - **Cerrar sesiones al cambiar la contraseña** — hoy un JWT emitido antes del cambio sigue valiendo hasta siete días. Exige comprobar algo en la base de datos en cada petición (marca de versión de credenciales o lista de revocación), justo lo que la 002 evitó. Valorarlo junto con los tokens de refresco.
-- **Elegir la foto de portada** — hoy la receta se representa con la primera que se subió. Que el autor designe otra es un campo nuevo y un control en la ficha (sale de la 009).
 - **Convertir unidades al escalar** — que 1000 g pasen a 1 kg cuando se dobla la receta. Exige una tabla de equivalencias y decidir cuándo conviene cambiar de unidad (sale de la 010).
 - **Importar también la foto de la receta** — descargar y republicar la imagen de un tercero tiene más aristas que el texto; quedó fuera de la 011.
 - **Más formatos de marcado al importar** (microdatos, RDFa) y páginas que montan la receta con JavaScript. Hoy solo se lee JSON-LD.

@@ -468,7 +468,8 @@ public static class RecetasEndpoints
                 .ToList(),
             receta.Fotos
                 .OrderBy(foto => foto.FechaDeSubida)
-                .Select(foto => new FotoRespuesta(foto.Id, foto.Tipo.ToString(), foto.TamanoEnBytes))
+                .Select(foto => new FotoRespuesta(
+                    foto.Id, foto.Tipo.ToString(), foto.TamanoEnBytes, foto.Id == receta.FotoDePortada?.Id))
                 .ToList(),
             receta.EsDe(usuarioId),
             receta.Raciones,

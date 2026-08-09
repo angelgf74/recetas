@@ -128,6 +128,79 @@ public class FotosTests(ApiConPostgresFixture api) : IClassFixture<ApiConPostgre
         Assert.Equal(HttpStatusCode.BadRequest, respuesta.StatusCode);
     }
 
+    // -------------------------------------------------------------- Portada
+
+    [Fact]
+    public async Task ElegirPortada_CambiaCualEsPortadaEnLaFicha()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        var recetaId = await CrearRecetaAsync(cliente);
+
+        var primera = await (await SubirAsync(cliente, recetaId, Jpeg())).Content
+            .ReadFromJsonAsync<FotoRespuesta>();
+        var segunda = await (await SubirAsync(cliente, recetaId, Png())).Content
+            .ReadFromJsonAsync<FotoRespuesta>();
+
+        // Sin elegir nada, sigue siendo la más antigua: el comportamiento de la
+        // 009 no cambia para quien no toca nada.
+        var antesDeElegir = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        Assert.True(antesDeElegir!.Fotos.Single(f => f.Id == primera!.Id).EsPortada);
+
+        var eleccion = await cliente.PutAsync($"/recetas/{recetaId}/fotos/{segunda!.Id}/portada", null);
+        Assert.Equal(HttpStatusCode.NoContent, eleccion.StatusCode);
+
+        var receta = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        Assert.True(receta!.Fotos.Single(f => f.Id == segunda.Id).EsPortada);
+        Assert.False(receta.Fotos.Single(f => f.Id == primera!.Id).EsPortada);
+    }
+
+    [Fact]
+    public async Task BorrarLaPortadaElegida_VuelveALaDerivada()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        var recetaId = await CrearRecetaAsync(cliente);
+
+        var primera = await (await SubirAsync(cliente, recetaId, Jpeg())).Content
+            .ReadFromJsonAsync<FotoRespuesta>();
+        var segunda = await (await SubirAsync(cliente, recetaId, Png())).Content
+            .ReadFromJsonAsync<FotoRespuesta>();
+
+        await cliente.PutAsync($"/recetas/{recetaId}/fotos/{segunda!.Id}/portada", null);
+        await cliente.DeleteAsync($"/recetas/{recetaId}/fotos/{segunda.Id}");
+
+        var receta = await cliente.GetFromJsonAsync<RespuestaDeReceta>($"/recetas/{recetaId}");
+        Assert.True(receta!.Fotos.Single(f => f.Id == primera!.Id).EsPortada);
+    }
+
+    [Fact]
+    public async Task UnUsuarioCualquiera_NoPuedeElegirPortadaAjena()
+    {
+        var ana = await ClienteAutenticadoAsync();
+        var bruno = await ClienteAutenticadoAsync();
+
+        var recetaId = await CrearRecetaAsync(ana);
+        var foto = await (await SubirAsync(ana, recetaId, Jpeg())).Content.ReadFromJsonAsync<FotoRespuesta>();
+
+        var respuesta = await bruno.PutAsync($"/recetas/{recetaId}/fotos/{foto!.Id}/portada", null);
+
+        Assert.Equal(HttpStatusCode.NotFound, respuesta.StatusCode);
+    }
+
+    [Fact]
+    public async Task ElegirUnaFotoDeOtraReceta_Responde404()
+    {
+        var cliente = await ClienteAutenticadoAsync();
+        var recetaUno = await CrearRecetaAsync(cliente);
+        var recetaDos = await CrearRecetaAsync(cliente);
+
+        var fotoDeLaUno = await (await SubirAsync(cliente, recetaUno, Jpeg())).Content
+            .ReadFromJsonAsync<FotoRespuesta>();
+
+        var respuesta = await cliente.PutAsync($"/recetas/{recetaDos}/fotos/{fotoDeLaUno!.Id}/portada", null);
+
+        Assert.Equal(HttpStatusCode.NotFound, respuesta.StatusCode);
+    }
+
     // ------------------------------------------------------------ Persistencia
 
     [Fact]
