@@ -67,6 +67,28 @@ public class ReferenciasDeProyectoTests
     }
 
     [Fact]
+    public void LaLecturaDeReferencias_DevuelveNombresDeProyecto_NoRutas()
+    {
+        // Vigila la herramienta, no el código. Si esto se rompe, el resto de
+        // tests de este archivo dejan de proteger nada **sin fallar**: son casi
+        // todos `DoesNotContain`, y un valor mal extraído nunca coincide con lo
+        // prohibido, así que pasan siempre.
+        //
+        // No es hipotético: en Linux ocurría exactamente eso, porque los .csproj
+        // escriben las rutas con barras invertidas.
+        var referencias = ProyectosReferenciadosPor("src/Recetas.Api/Recetas.Api.csproj");
+
+        Assert.NotEmpty(referencias);
+
+        Assert.All(referencias, referencia =>
+        {
+            Assert.DoesNotContain("\\", referencia);
+            Assert.DoesNotContain("/", referencia);
+            Assert.StartsWith("Recetas.", referencia);
+        });
+    }
+
+    [Fact]
     public void Web_NoReferenciaAInfraestructuraNiALaApi()
     {
         // El cliente Blazor habla HTTP con la API y comparte los contratos. Si
@@ -114,9 +136,28 @@ public class ReferenciasDeProyectoTests
     private static string[] ProyectosReferenciadosPor(string rutaRelativa) =>
         DocumentoDe(rutaRelativa)
             .Descendants("ProjectReference")
-            .Select(elemento => Path.GetFileNameWithoutExtension(
-                elemento.Attribute("Include")?.Value ?? string.Empty))
+            .Select(elemento => NombreDelProyecto(elemento.Attribute("Include")?.Value ?? string.Empty))
             .ToArray();
+
+    /// <summary>
+    /// Extrae el nombre del proyecto de una ruta de <c>ProjectReference</c>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Las barras invertidas se normalizan primero, y no es cosmético.</b> Los
+    /// <c>.csproj</c> escriben las rutas al estilo de Windows
+    /// (<c>..\..\src\Recetas.Web\Recetas.Web.csproj</c>), y en Linux
+    /// <c>Path.GetFileNameWithoutExtension</c> no reconoce <c>\</c> como
+    /// separador: devolvía la ruta entera en lugar del nombre.
+    /// <para>
+    /// El efecto era peor que un test roto. Las comprobaciones de este archivo
+    /// son en su mayoría <c>DoesNotContain</c>, así que en Linux <b>pasaban
+    /// siempre</b>, hubiera violación de la regla de dependencias o no: el valor
+    /// comparado nunca podía coincidir. Lo destapó la integración continua al
+    /// ejecutarlas por primera vez fuera de Windows.
+    /// </para>
+    /// </remarks>
+    private static string NombreDelProyecto(string include) =>
+        Path.GetFileNameWithoutExtension(include.Replace('\\', '/'));
 
     /// <summary>
     /// Admite ruta relativa a la raíz del repositorio o absoluta: <c>Path.Combine</c>
