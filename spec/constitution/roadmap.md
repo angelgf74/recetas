@@ -147,11 +147,6 @@ buenas prácticas en abstracto._
   ha abierto —texto y miniatura— cubre el caso real sin sincronización completa.
   Obliga a decidir qué se enseña cuando lo local está desactualizado.
 
-- **Exportar tus datos.** Es el derecho de portabilidad del RGPD, que la 016
-  dejó fuera a propósito: hoy se atiende escribiendo un correo y a mano. Un
-  archivo con las recetas y las fotos, pedido desde la misma pantalla que la
-  baja, lo resuelve. Conviene tenerlo **antes** de que alguien lo pida.
-
 - **La clave primaria se llama `"Id"` y el resto de columnas van en snake_case.**
   La configuración de EF renombró todo menos la clave, así que PostgreSQL la
   creó entrecomillada y es sensible a mayúsculas: cualquier consulta escrita a
