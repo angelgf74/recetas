@@ -235,12 +235,33 @@ Si algo falla ahí, es R8, no el servidor.
 
 ---
 
-## 6. Añadir la huella de publicación a assetlinks.json
+## 6. ~~Añadir la huella de publicación a assetlinks.json~~ · HECHO Y COMPROBADO
 
-**Por qué:** los enlaces del correo del alta y de recuperar contraseña abren la
-aplicación gracias a `/.well-known/assetlinks.json`, que hoy solo lleva la huella
-del certificado de **depuración**. La aplicación descargada de Play tendrá otra
-firma, y **los enlaces dejarán de abrirla**.
+Los enlaces del correo del alta y de recuperar contraseña abren la aplicación
+gracias a `/.well-known/assetlinks.json`. **La huella que va ahí es la del
+certificado con el que Play refirma** (`4A:7E:85:…`), junto a la de depuración;
+la de subida **no sirve** para esto.
+
+**Comprobado el 9 de agosto de 2026 con la aplicación instalada desde la tienda:**
+
+```powershell
+adb shell pm get-app-links com.angelgf.recetas
+```
+
+```
+Signatures: [4A:7E:85:0B:...]          <- la de Play, no la de subida
+recetas.angelgf.com.es: verified
+```
+
+Con la copia instalada por cable —firmada con la clave de subida— ese mismo
+comando decía `1024`, verificación fallida. **Es la forma de distinguir los dos
+casos**, porque el síntoma de que esto no funcione es silencioso: el enlace
+simplemente abre el navegador, sin ningún error.
+
+Lo que sigue se conserva por si hay que rehacerlo.
+
+**Por qué:** la aplicación descargada de Play tiene otra firma que la compilada
+en casa, y con la huella equivocada **los enlaces dejan de abrirla**.
 
 **La huella del certificado con el que se firma hoy** ya está sacada. Se lee del
 propio paquete, sin necesidad de la contraseña del almacén:
